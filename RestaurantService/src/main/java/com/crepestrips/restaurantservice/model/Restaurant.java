@@ -1,5 +1,7 @@
 package com.crepestrips.restaurantservice.model;
 
+import com.crepestrips.fooditemservice.observer.Observer;
+import com.crepestrips.fooditemservice.observer.Subject;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -7,11 +9,11 @@ import java.util.List;
 import java.util.ArrayList;
 
 @Document(collection = "restaurants")
-public class Restaurant {
+public class Restaurant implements Observer {
 
     @Id
     private String id;
-
+    private Subject foodItem;
     private String name;
     private String location;
     private double rating;
@@ -19,7 +21,11 @@ public class Restaurant {
 
     private List<String> foodItemIds = new ArrayList<>();
 
-    public Restaurant() {}
+    public Restaurant(Subject foodItem) {
+        this.foodItem = foodItem;
+        foodItem.registerObserver(this);
+
+    }
 
     public Restaurant(String name, String location, double rating, boolean isOpen) {
         this.name = name;
@@ -60,4 +66,8 @@ public class Restaurant {
 
     public void setFoodItemIds(List<String> foodItemIds) { this.foodItemIds = foodItemIds; }
 
+    @Override
+    public void update() {
+        System.out.println("[" + name + "] ALERT: '" + foodItem + "' is out of stock.");
+    }
 }

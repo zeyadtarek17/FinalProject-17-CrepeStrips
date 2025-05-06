@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "food_items")
-public class FoodItem implements IFoodItem , Subject {
+public class FoodItem implements IFoodItem, Subject {
 
     @Id
     private String id;
@@ -24,7 +24,7 @@ public class FoodItem implements IFoodItem , Subject {
     private String restaurantId;   
 
     public FoodItem() {
-        observers = new ArrayList<Observer>();
+        observers = new ArrayList<>();
     }
 
     public FoodItem(String name, String description, double price, double discount, double rating, int availableStock, FoodCategory category, String restaurantId) {
@@ -36,7 +36,8 @@ public class FoodItem implements IFoodItem , Subject {
         this.availableStock = availableStock;
         this.category = category;
         this.restaurantId = restaurantId;
-        observers= new ArrayList<Observer>();
+        observers = new ArrayList<>();
+
     }
 
     public FoodItem(String id, String name, String description, double price, double discount, double rating, int availableStock, FoodCategory category, String restaurantId) {
@@ -49,7 +50,8 @@ public class FoodItem implements IFoodItem , Subject {
         this.availableStock = availableStock;
         this.category = category;
         this.restaurantId = restaurantId;
-        observers= new ArrayList<Observer>();
+        observers = new ArrayList<>();
+
     }
 
     public String getId() {
@@ -106,9 +108,7 @@ public class FoodItem implements IFoodItem , Subject {
 
     public void setAvailableStock(int availableStock) {
         this.availableStock = availableStock;
-        if(availableStock<=0)
-            notifyObservers();
-
+        notifyObservers();
     }
 
     public FoodCategory getCategory() {
