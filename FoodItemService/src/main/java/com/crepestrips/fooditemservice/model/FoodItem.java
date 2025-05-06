@@ -1,14 +1,19 @@
 package com.crepestrips.fooditemservice.model;
 
+import com.crepestrips.fooditemservice.observer.Observer;
+import com.crepestrips.fooditemservice.observer.Subject;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Document(collection = "food_items")
-public class FoodItem implements IFoodItem {
+public class FoodItem implements IFoodItem , Subject {
 
     @Id
     private String id;
-
+    private List<Observer> observers;
     private String name;
     private String description;
     private double price;
@@ -18,7 +23,9 @@ public class FoodItem implements IFoodItem {
     private FoodCategory category;
     private String restaurantId;   
 
-    public FoodItem() {}
+    public FoodItem() {
+        observers = new ArrayList<Observer>();
+    }
 
     public FoodItem(String name, String description, double price, double discount, double rating, int availableStock, FoodCategory category, String restaurantId) {
         this.name = name;
@@ -29,6 +36,7 @@ public class FoodItem implements IFoodItem {
         this.availableStock = availableStock;
         this.category = category;
         this.restaurantId = restaurantId;
+        observers= new ArrayList<Observer>();
     }
 
     public FoodItem(String id, String name, String description, double price, double discount, double rating, int availableStock, FoodCategory category, String restaurantId) {
@@ -41,6 +49,7 @@ public class FoodItem implements IFoodItem {
         this.availableStock = availableStock;
         this.category = category;
         this.restaurantId = restaurantId;
+        observers= new ArrayList<Observer>();
     }
 
     public String getId() {
@@ -97,6 +106,9 @@ public class FoodItem implements IFoodItem {
 
     public void setAvailableStock(int availableStock) {
         this.availableStock = availableStock;
+        if(availableStock<=0)
+            notifyObservers();
+
     }
 
     public FoodCategory getCategory() {
@@ -113,5 +125,22 @@ public class FoodItem implements IFoodItem {
 
     public void setRestaurantId(String restaurantId) {
         this.restaurantId = restaurantId;
+    }
+
+    @Override
+    public void registerObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer) {
+        observers.remove(observer);
+    }
+
+    @Override
+    public void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update();
+        }
     }
 }
