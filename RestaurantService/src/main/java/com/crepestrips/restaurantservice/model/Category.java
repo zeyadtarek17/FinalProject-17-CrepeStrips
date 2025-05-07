@@ -8,5 +8,32 @@ public class Category {
 
     @Id
     private String id;
-    private String name;
+
+    private RestaurantCategory name;
+
+    public Category() {}
+
+    public Category(RestaurantCategory name) {
+        this.name = name;
+
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public RestaurantCategory getName() {
+        return name;
+    }
+
+    public void setName(RestaurantCategory name) {
+        this.name = name;
+    }
+
+
+
 }

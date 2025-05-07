@@ -107,4 +107,7 @@ public class RestaurantService {
     }
 
 
+    public List<Restaurant> getAllRestaurants() {
+        return repository.findAll();
+    }
 }

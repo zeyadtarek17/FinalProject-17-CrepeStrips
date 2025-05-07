@@ -1,4 +1,4 @@
-package com.crepestrips.restaurantservice.factories;
+package com.crepestrips.restaurantservice.strategy;
 
 public class FilterFactory {
 
@@ -7,7 +7,7 @@ public class FilterFactory {
             case "category":
                 return new CategoryFilter();
             case "hours":
-                return new com.crepestrips.restaurantservice.factories.OperatingHoursFilter();
+                return new com.crepestrips.restaurantservice.strategy.OperatingHoursFilter();
             default:
                 throw new IllegalArgumentException("Invalid filter type");
         }

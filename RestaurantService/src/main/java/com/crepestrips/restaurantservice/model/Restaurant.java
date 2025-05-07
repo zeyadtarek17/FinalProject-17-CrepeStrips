@@ -22,6 +22,7 @@ public class Restaurant implements Observer {
     private String location;
     private double rating;
     private boolean isOpen;
+    private Category category;
 
     private List<String> foodItemIds = new ArrayList<>();
 
@@ -80,5 +81,9 @@ public class Restaurant implements Observer {
     @Override
     public void update() {
         System.out.println("[" + name + "] ALERT: '" + foodItem + "' is out of stock.");
+    }
+
+    public String getCategoryId() {
+        return category != null ? category.getId() : null;
     }
 }
