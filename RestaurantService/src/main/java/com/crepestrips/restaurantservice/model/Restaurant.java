@@ -3,6 +3,8 @@ package com.crepestrips.restaurantservice.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -13,19 +15,19 @@ public class Restaurant {
     private String id;
 
     private String name;
+    private LocalTime openingTime;
+    private LocalTime closingTime;
     private String location;
     private double rating;
-    private boolean isOpen;
 
     private List<String> foodItemIds = new ArrayList<>();
 
     public Restaurant() {}
 
-    public Restaurant(String name, String location, double rating, boolean isOpen) {
+    public Restaurant(String name, String location, double rating) {
         this.name = name;
         this.location = location;
         this.rating = rating;
-        this.isOpen = isOpen;
     }
 
     public Restaurant(String id, String name, String location, double rating, boolean isOpen) {
@@ -33,7 +35,6 @@ public class Restaurant {
         this.name = name;
         this.location = location;
         this.rating = rating;
-        this.isOpen = isOpen;
     }
 
     public String getId() { return id; }
@@ -52,12 +53,16 @@ public class Restaurant {
 
     public void setRating(double rating) { this.rating = rating; }
 
-    public boolean isOpen() { return isOpen; }
-
-    public void setOpen(boolean open) { isOpen = open; }
-
     public List<String> getFoodItemIds() { return foodItemIds; }
 
     public void setFoodItemIds(List<String> foodItemIds) { this.foodItemIds = foodItemIds; }
+
+    public LocalTime getOpeningTime() { return openingTime; }
+
+    public void setOpeningTime(LocalTime openingTime) { this.openingTime = openingTime; }
+
+    public LocalTime getClosingTime() { return closingTime; }
+
+    public void setClosingTime(LocalTime closingTime) { this.closingTime = closingTime; }
 
 }
