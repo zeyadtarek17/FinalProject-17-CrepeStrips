@@ -3,6 +3,7 @@ package com.crepestrips.restaurantservice.model;
 import com.crepestrips.fooditemservice.observer.Observer;
 import com.crepestrips.fooditemservice.observer.Subject;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalTime;
@@ -22,6 +23,11 @@ public class Restaurant implements Observer {
     private String location;
     private double rating;
     private boolean isOpen;
+    private boolean hasSeating;
+    private boolean supportsDelivery;
+    private RestaurantType type;
+
+    @DBRef
     private Category category;
 
     private List<String> foodItemIds = new ArrayList<>();
@@ -44,6 +50,10 @@ public class Restaurant implements Observer {
         this.location = location;
         this.rating = rating;
         this.isOpen = isOpen;
+    }
+
+    public Restaurant() {
+
     }
 
     public String getId() { return id; }
@@ -85,5 +95,45 @@ public class Restaurant implements Observer {
 
     public String getCategoryId() {
         return category != null ? category.getId() : null;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public Subject getFoodItem() {
+        return foodItem;
+    }
+
+    public void setFoodItem(Subject foodItem) {
+        this.foodItem = foodItem;
+    }
+
+    public boolean isHasSeating() {
+        return hasSeating;
+    }
+
+    public void setHasSeating(boolean hasSeating) {
+        this.hasSeating = hasSeating;
+    }
+
+    public boolean isSupportsDelivery() {
+        return supportsDelivery;
+    }
+
+    public void setSupportsDelivery(boolean supportsDelivery) {
+        this.supportsDelivery = supportsDelivery;
+    }
+
+    public RestaurantType getType() {
+        return type;
+    }
+
+    public void setType(RestaurantType type) {
+        this.type = type;
+    }
+
+    public Category getCategory() {
+        return category;
     }
 }

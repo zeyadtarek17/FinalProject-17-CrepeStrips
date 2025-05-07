@@ -1,5 +1,8 @@
 package com.crepestrips.restaurantservice.controller;
 
+import com.crepestrips.restaurantservice.dto.RestaurantDto;
+import com.crepestrips.restaurantservice.factory.RestaurantFactory;
+import com.crepestrips.restaurantservice.repository.RestaurantRepository;
 import com.crepestrips.restaurantservice.strategy.FilterFactory;
 import com.crepestrips.restaurantservice.strategy.FilterStrategy;
 import com.crepestrips.restaurantservice.model.Restaurant;
@@ -21,6 +24,10 @@ public class RestaurantController {
     private RestaurantService service;
     @Autowired
     private RestaurantFilterContext context;
+    @Autowired
+    private RestaurantFactory restaurantFactory;
+    @Autowired
+    private RestaurantRepository restaurantRepository;
 
     @GetMapping
     public ResponseEntity<List<Restaurant>> getAll() {
@@ -35,8 +42,15 @@ public class RestaurantController {
     }
 
     @PostMapping
-    public ResponseEntity<Restaurant> create(@RequestBody Restaurant restaurant) {
-        return ResponseEntity.ok(service.create(restaurant));
+    public ResponseEntity<Restaurant> createRestaurant(@RequestBody RestaurantDto dto) {
+        Restaurant restaurant = new Restaurant();
+        restaurant.setName(dto.getName());
+        restaurant.setLocation(dto.getLocation());
+
+        // Apply factory behavior
+        restaurant = restaurantFactory.createRestaurant(restaurant, dto.getType());
+
+        return ResponseEntity.ok(restaurantRepository.save(restaurant));
     }
 
     @PutMapping("/{id}")
