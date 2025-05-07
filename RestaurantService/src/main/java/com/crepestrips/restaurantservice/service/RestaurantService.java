@@ -5,8 +5,10 @@ import com.crepestrips.restaurantservice.repository.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class RestaurantService {
@@ -86,6 +88,22 @@ public class RestaurantService {
                 repository.save(restaurant);
             }
         }
+    }
+
+    public List<Restaurant> getRestaurantsOpenNow() {
+        LocalTime now = LocalTime.now();
+        return repository.findAll().stream()
+                .filter(restaurant -> {
+                    LocalTime opening = restaurant.getOpeningTime();
+                    LocalTime closing = restaurant.getClosingTime();
+                    if (opening == null || closing == null) return false;
+
+                    if (closing.isBefore(opening)) {
+                        return !now.isBefore(opening) || !now.isAfter(closing);
+                    }
+                    return !now.isBefore(opening) && !now.isAfter(closing);
+                })
+                .collect(Collectors.toList());
     }
 
 

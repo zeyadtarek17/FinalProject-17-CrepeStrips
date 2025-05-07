@@ -7,7 +7,7 @@ public class FilterFactory {
             case "category":
                 return new CategoryFilter();
             case "hours":
-                return new com.crepestrips.restaurantservice.filterFactory.OperatingHoursFilter();
+                return new com.crepestrips.restaurantservice.factories.OperatingHoursFilter();
             default:
                 throw new IllegalArgumentException("Invalid filter type");
         }

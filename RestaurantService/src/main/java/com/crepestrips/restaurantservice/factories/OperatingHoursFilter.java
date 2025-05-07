@@ -1,4 +1,4 @@
-package com.crepestrips.restaurantservice.filterFactory;
+package com.crepestrips.restaurantservice.factories;
 
 import com.crepestrips.restaurantservice.model.Restaurant;
 import com.crepestrips.restaurantservice.factories.FilterStrategy;
