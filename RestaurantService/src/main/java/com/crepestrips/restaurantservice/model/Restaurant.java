@@ -1,5 +1,7 @@
 package com.crepestrips.restaurantservice.model;
 
+import com.crepestrips.fooditemservice.observer.Observer;
+import com.crepestrips.fooditemservice.observer.Subject;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -9,20 +11,25 @@ import java.util.List;
 import java.util.ArrayList;
 
 @Document(collection = "restaurants")
-public class Restaurant {
+public class Restaurant implements Observer {
 
     @Id
     private String id;
-
+    private Subject foodItem;
     private String name;
     private LocalTime openingTime;
     private LocalTime closingTime;
     private String location;
     private double rating;
+    private boolean isOpen;
 
     private List<String> foodItemIds = new ArrayList<>();
 
-    public Restaurant() {}
+    public Restaurant(Subject foodItem) {
+        this.foodItem = foodItem;
+        foodItem.registerObserver(this);
+
+    }
 
     public Restaurant(String name, String location, double rating) {
         this.name = name;
@@ -35,6 +42,7 @@ public class Restaurant {
         this.name = name;
         this.location = location;
         this.rating = rating;
+        this.isOpen = isOpen;
     }
 
     public String getId() { return id; }
@@ -53,6 +61,10 @@ public class Restaurant {
 
     public void setRating(double rating) { this.rating = rating; }
 
+    public boolean isOpen() { return isOpen; }
+
+    public void setOpen(boolean open) { isOpen = open; }
+
     public List<String> getFoodItemIds() { return foodItemIds; }
 
     public void setFoodItemIds(List<String> foodItemIds) { this.foodItemIds = foodItemIds; }
@@ -65,4 +77,8 @@ public class Restaurant {
 
     public void setClosingTime(LocalTime closingTime) { this.closingTime = closingTime; }
 
+    @Override
+    public void update() {
+        System.out.println("[" + name + "] ALERT: '" + foodItem + "' is out of stock.");
+    }
 }
