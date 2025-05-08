@@ -1,12 +1,19 @@
-
 spring:
+  application:
+    name: fooditem-service
+
   data:
     mongodb:
       host: ${SPRING_DATA_MONGODB_HOST:localhost}
       port: ${SPRING_DATA_MONGODB_PORT:27017}
       database: fooditemdb
-  application:
-    name: fooditem-service
+
+  rabbitmq:
+      host: localhost
+      port: 5672
+      username: guest
+      password: guest
+
 
 server:
   port: 8082

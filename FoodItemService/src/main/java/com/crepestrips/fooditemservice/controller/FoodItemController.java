@@ -1,5 +1,6 @@
 package com.crepestrips.fooditemservice.controller;
 
+import com.crepestrips.fooditemservice.dto.FoodItemDTO;
 import com.crepestrips.fooditemservice.model.FoodItem;
 import com.crepestrips.fooditemservice.service.FoodItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,4 +61,7 @@ public class FoodItemController {
     public ResponseEntity<List<FoodItem>> getTopRatedItems() {
         return ResponseEntity.ok(service.getItemsSortedByRating());
     }
+
+
+
 }
