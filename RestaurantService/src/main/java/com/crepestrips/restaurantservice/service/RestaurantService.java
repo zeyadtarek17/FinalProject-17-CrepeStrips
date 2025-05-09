@@ -1,5 +1,8 @@
 package com.crepestrips.restaurantservice.service;
 
+import com.crepestrips.restaurantservice.config.RestaurantProducer;
+import com.crepestrips.restaurantservice.dto.FoodItemDTO;
+import com.crepestrips.restaurantservice.dto.RestaurantDto;
 import com.crepestrips.restaurantservice.model.Restaurant;
 import com.crepestrips.restaurantservice.repository.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,8 @@ public class RestaurantService {
 
     @Autowired
     private RestaurantRepository repository;
+    @Autowired
+    private RestaurantProducer producer;
 
 
     public List<Restaurant> getAll() {
@@ -110,4 +115,8 @@ public class RestaurantService {
     public List<Restaurant> getAllRestaurants() {
         return repository.findAll();
     }
+    public void sendMessage(FoodItemDTO item) {
+        producer.sendFoodItem(item);
+    }
+
 }

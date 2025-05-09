@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FoodItemConsumer {
-    @RabbitListener(queues= RabbitMQConfig.FOOD_ITEM_QUEUE)
+    @RabbitListener(queues= RabbitMQConfig.QUEUE_NAME)
     public void consume(FoodItemDTO item) {
         System.out.println("Recieved in FoodItem : " + item.getName());
 

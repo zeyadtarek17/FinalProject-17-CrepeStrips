@@ -1,5 +1,7 @@
 package com.crepestrips.restaurantservice.controller;
 
+import com.crepestrips.restaurantservice.config.RestaurantProducer;
+import com.crepestrips.restaurantservice.dto.FoodItemDTO;
 import com.crepestrips.restaurantservice.dto.RestaurantDto;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
 import com.crepestrips.restaurantservice.repository.RestaurantRepository;
@@ -28,7 +30,12 @@ public class RestaurantController {
     private RestaurantFactory restaurantFactory;
     @Autowired
     private RestaurantRepository restaurantRepository;
+    @Autowired
+    private final RestaurantProducer producer;
 
+    public RestaurantController(RestaurantProducer producer) {
+        this.producer = producer;
+    }
     @GetMapping
     public ResponseEntity<List<Restaurant>> getAll() {
         return ResponseEntity.ok(service.getAll());
@@ -108,13 +115,18 @@ public class RestaurantController {
 //
 //        return ResponseEntity.ok(filtered);
 //    }
-@GetMapping("/filter")
-public List<Restaurant> filterRestaurants(
-        @RequestParam String filterType,
-        @RequestParam String criteria) {
+    @GetMapping("/filter")
+    public List<Restaurant> filterRestaurants(
+            @RequestParam String filterType,
+            @RequestParam String criteria) {
 
-    List<Restaurant> allRestaurants = service.getAllRestaurants();
-    return context.applyFilter(filterType, allRestaurants, criteria);
-}
-
+        List<Restaurant> allRestaurants = service.getAllRestaurants();
+        return context.applyFilter(filterType, allRestaurants, criteria);
+    }
+    @PostMapping("/send")
+    public ResponseEntity<Void> publishFoodItem(@RequestBody FoodItemDTO dto) {
+        // you might look up the restaurant by id, build a DTO, etc.
+       service.sendMessage(dto);
+        return ResponseEntity.accepted().build();
+    }
 }

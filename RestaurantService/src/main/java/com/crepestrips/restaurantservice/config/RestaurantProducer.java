@@ -14,7 +14,7 @@ public class RestaurantProducer {
     public void sendFoodItem(FoodItemDTO item) {
         rabbitTemplate.convertAndSend(
                 com.crepestrips.fooditemservice.config.RabbitMQConfig.EXCHANGE,
-                RabbitMQConfig.FOOD_ITEM_ROUTING_KEY,
+                RabbitMQConfig.ROUTING_KEY,
                 item
         );
         System.out.println("Sending from Restaurant: " + item.getName());

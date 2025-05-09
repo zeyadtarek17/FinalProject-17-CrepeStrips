@@ -13,12 +13,12 @@ import org.springframework.amqp.core.Queue;
 
 @Configuration
 public class RabbitMQConfig {
-    public static final String FOOD_ITEM_QUEUE = "food_item_queue";
-    public static final String EXCHANGE = "shared_exchange";
-    public  static final String FOOD_ITEM_ROUTING_KEY = "RESTAURANT_ROUTING_KEY";
+    public static final String EXCHANGE       = "shared_exchange";
+    public static final String ROUTING_KEY    = "RESTAURANT_ROUTING_KEY";
+    public static final String QUEUE_NAME     = "food_item_queue";
     @Bean
     public Queue queue() {
-        return new Queue(FOOD_ITEM_QUEUE);
+        return new Queue(QUEUE_NAME);
     }
     @Bean
     public TopicExchange exchange() {
@@ -29,7 +29,7 @@ public class RabbitMQConfig {
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
-                .with(FOOD_ITEM_ROUTING_KEY);
+                .with(ROUTING_KEY);
     }
     @Bean
     public Jackson2JsonMessageConverter messageConverter() {
