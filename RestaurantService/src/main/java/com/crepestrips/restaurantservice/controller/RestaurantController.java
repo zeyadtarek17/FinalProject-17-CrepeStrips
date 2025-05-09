@@ -1,5 +1,6 @@
 package com.crepestrips.restaurantservice.controller;
 
+import com.crepestrips.restaurantservice.config.RestaurantProducer;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
 import com.crepestrips.restaurantservice.repository.RestaurantRepository;
@@ -8,6 +9,7 @@ import com.crepestrips.restaurantservice.strategy.FilterStrategy;
 import com.crepestrips.restaurantservice.model.Restaurant;
 import com.crepestrips.restaurantservice.service.RestaurantService;
 import com.crepestrips.restaurantservice.strategy.RestaurantFilterContext;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,12 @@ public class RestaurantController {
     private RestaurantFactory restaurantFactory;
     @Autowired
     private RestaurantRepository restaurantRepository;
+
+    private final RestaurantProducer restaurantProducer;
+
+    public RestaurantController(RestaurantProducer restaurantProducer) {
+        this.restaurantProducer = restaurantProducer;
+    }
 
     @GetMapping
     public ResponseEntity<List<Restaurant>> getAll() {
@@ -114,6 +122,11 @@ public class RestaurantController {
 
         List<Restaurant> allRestaurants = service.getAllRestaurants();
         return context.applyFilter(filterType, allRestaurants, criteria);
+    }
+    @PostMapping("/add-food-item")
+    public ResponseEntity<String> addFoodItemToRestaurant(@RequestBody FoodItemDTO dto) {
+        restaurantProducer.sendNewFoodItem(dto);
+        return ResponseEntity.ok("Food item sent asynchronously!");
     }
 
 }
