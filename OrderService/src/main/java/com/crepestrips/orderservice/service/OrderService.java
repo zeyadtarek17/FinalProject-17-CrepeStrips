@@ -24,6 +24,9 @@ public class OrderService {
     @Transactional
     public ResponseEntity<Order> createOrder(UUID userId, UUID restaurantId) {
         Order order = new Order(userId, restaurantId, null);
+        // To-Do needs user microservice to get the cartId from the user and fetch the
+        // cart items
+
         order = orderRepository.save(order);
         return ResponseEntity.ok(order);
     }
@@ -69,8 +72,44 @@ public class OrderService {
         Optional<List<Order>> orders = orderRepository.findByStatus(status);
         if (orders.isPresent()) {
             return ResponseEntity.ok(orders);
-        }   
+        }
         return ResponseEntity.notFound().build();
     }
+
+    @Transactional
+    public ResponseEntity<Optional<Order>> updateOrderPriority(UUID id, OrderPriority priority) {
+        Optional<Order> order = orderRepository.findById(id);
+        if (order.isPresent()) {
+            order.get().setPriority(priority);
+            orderRepository.save(order.get());
+            return ResponseEntity.ok(order);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @Transactional
+    public ResponseEntity<Optional<Order>> updateOrderStatus(UUID id, OrderStatus status) {
+        Optional<Order> order = orderRepository.findById(id);
+        if (order.isPresent()) {
+            order.get().setStatus(status);
+            orderRepository.save(order.get());
+            return ResponseEntity.ok(order);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @Transactional
+    public ResponseEntity<Optional<Order>> deleteOrder(UUID id) {
+        Optional<Order> order = orderRepository.findById(id);
+        if (order.isPresent()) {
+            orderRepository.delete(order.get());
+            return ResponseEntity.ok(order);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    //To-do add item to order
+
+    // To-do remove item from order
 
 }
