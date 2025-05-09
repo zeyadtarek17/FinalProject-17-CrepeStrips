@@ -73,24 +73,24 @@ public class OrderController {
     public ResponseEntity<Optional<Order>> deleteOrder(@PathVariable UUID id) {
         return orderService.deleteOrder(id);
     }
-    // Add item to order
-    @PostMapping("/{orderId}/items")
-    public ResponseEntity<Order> addItemToOrder(
-            @PathVariable UUID orderId,
-            @RequestParam UUID foodItemId,
-            @RequestParam String foodItemName,
-            @RequestParam int quantity,
-            @RequestParam double price) {
-        Order updatedOrder = orderService.addItemToOrder(orderId, foodItemId, foodItemName, quantity, price);
-        return ResponseEntity.ok(updatedOrder);
-    }
+    // // Add item to order
+    // @PostMapping("/{orderId}/items")
+    // public ResponseEntity<Order> addItemToOrder(
+    //         @PathVariable UUID orderId,
+    //         @RequestParam UUID foodItemId,
+    //         @RequestParam String foodItemName,
+    //         @RequestParam int quantity,
+    //         @RequestParam double price) {
+    //     Order updatedOrder = orderService.addItemToOrder(orderId, foodItemId, foodItemName, quantity, price);
+    //     return ResponseEntity.ok(updatedOrder);
+    // }
 
-    // Remove item from order
-    @DeleteMapping("/{orderId}/items/{itemId}")
-    public ResponseEntity<Order> removeItemFromOrder(@PathVariable UUID orderId, @PathVariable UUID itemId) {
-        Order updatedOrder = orderService.removeItemFromOrder(orderId, itemId);
-        return ResponseEntity.ok(updatedOrder);
-    }
+    // // Remove item from order
+    // @DeleteMapping("/{orderId}/items/{itemId}")
+    // public ResponseEntity<Order> removeItemFromOrder(@PathVariable UUID orderId, @PathVariable UUID itemId) {
+    //     Order updatedOrder = orderService.removeItemFromOrder(orderId, itemId);
+    //     return ResponseEntity.ok(updatedOrder);
+    // }
 
 
 }
