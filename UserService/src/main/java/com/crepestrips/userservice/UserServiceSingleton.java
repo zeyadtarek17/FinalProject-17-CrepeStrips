@@ -1,4 +1,4 @@
-package com.crepestrips.userservice.singleton;
+package com.crepestrips.userservice;
 
 import com.crepestrips.userservice.service.UserService;
 

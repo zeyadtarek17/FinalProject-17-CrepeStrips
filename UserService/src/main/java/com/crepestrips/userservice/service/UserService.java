@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.CacheEvict;
 
@@ -19,6 +20,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
+    private PasswordEncoder passwordEncoder;   
 
     @Autowired
     public UserService(UserRepository userRepository, ReportRepository reportRepository) {
@@ -39,7 +41,7 @@ public class UserService {
         User builtUser = new User.Builder()
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .password(user.getPassword())
+                .password(passwordEncoder.encode(user.getPassword()))
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .build();
@@ -53,7 +55,7 @@ public class UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Invalid username or password"));
 
-        if (!user.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid username or password");
         }
 

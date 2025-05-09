@@ -2,23 +2,37 @@ package com.crepestrips.userservice.controller;
 
 import com.crepestrips.userservice.model.Report;
 import com.crepestrips.userservice.model.User;
+import com.crepestrips.userservice.security.JwtService;
 import com.crepestrips.userservice.service.UserService;
-import com.crepestrips.userservice.singleton.UserServiceSingleton;
+import com.crepestrips.userservice.UserServiceSingleton;
+import com.crepestrips.userservice.dto.AuthRequest;
+import com.crepestrips.userservice.dto.AuthResponse;
+
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
 
     private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtUtil;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtUtil) {
         this.userService = userService;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
         UserServiceSingleton.getInstance(userService);
     }
 
@@ -28,13 +42,30 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam String username, @RequestParam String password) {
-        return userService.login(username, password);
+    public AuthResponse login(@RequestBody AuthRequest authRequest) {
+        try {
+
+            // check if user exists
+            // String user = userService.login(authRequest.getUsername(), authRequest.getPassword());
+            // Create authentication token with provided username and password
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+
+            if (authentication.isAuthenticated()) {
+                return new AuthResponse(jwtUtil.generateToken(authRequest.getUsername()));
+            } else {
+                throw new UsernameNotFoundException("Invalid user request!");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid username or password", e);
+        }
     }
 
     @PostMapping("/logout")
     public String logout(@RequestParam String username) {
-        return userService.logout(username);
+        // Logout logic (e.g., invalidate session, clear context, etc.)
+        SecurityContextHolder.clearContext();
+        return "User " + username + " logged out successfully.";
     }
 
     @PutMapping("/password")
