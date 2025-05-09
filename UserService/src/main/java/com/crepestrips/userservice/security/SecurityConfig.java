@@ -15,18 +15,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.crepestrips.userservice.service.CustomUserDetailsService;
+import com.crepestrips.userservice.service.UserService;
+
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-    private final CustomUserDetailsService userDetailsService;
+    private final UserService userDetailsService;
 
     // Constructor injection for required dependencies
     public SecurityConfig(JwtAuthFilter jwtAuthFilter, 
-                         CustomUserDetailsService userDetailsService) {
+                         UserService userDetailsService) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.userDetailsService = userDetailsService;
     }
