@@ -84,21 +84,24 @@ public class RestaurantController {
     }
 
     @PutMapping("/{restaurantId}/addFoodItem/{foodItemId}")
-    public void addFoodItemToRestaurant(@PathVariable String restaurantId, @PathVariable String foodItemId) {
+    public ResponseEntity<String> addFoodItemToRestaurant(@PathVariable String restaurantId, @PathVariable String foodItemId) {
         service.addFoodItemToRestaurant(restaurantId, foodItemId);
+        return ResponseEntity.ok("Food item added to restaurant");
     }
 
     @PutMapping("/{restaurantId}/removeFoodItem/{foodItemId}")
-    public void removeFoodItemFromRestaurant(@PathVariable String restaurantId, @PathVariable String foodItemId) {
+    public ResponseEntity<String> removeFoodItemFromRestaurant(@PathVariable String restaurantId, @PathVariable String foodItemId) {
         service.removeFoodItemFromRestaurant(restaurantId, foodItemId);
+        return ResponseEntity.ok("Food item removed from restaurant");
     }
 
     @PutMapping("/{restaurantId}/updateFoodItem")
-    public void updateFoodItemInRestaurant(
+    public ResponseEntity<String> updateFoodItemInRestaurant(
             @PathVariable String restaurantId,
             @RequestParam String oldFoodItemId,
             @RequestParam String newFoodItemId) {
         service.updateFoodItemInRestaurant(restaurantId, oldFoodItemId, newFoodItemId);
+        return ResponseEntity.ok("Food item updated in restaurant");
     }
 
 //    @GetMapping("/filter/by-hours")
@@ -122,6 +125,8 @@ public class RestaurantController {
             @RequestParam String criteria) {
 
         List<Restaurant> allRestaurants = service.getAllRestaurants();
+        System.out.println("filterType: " + filterType + ", criteria: " + criteria);
+
         return context.applyFilter(filterType, allRestaurants, criteria);
     }
     @PostMapping("/add-food-item")

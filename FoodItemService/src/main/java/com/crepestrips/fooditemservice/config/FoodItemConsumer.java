@@ -28,6 +28,7 @@ public class FoodItemConsumer {
     }
     @RabbitListener(queues = RabbitMQConfig.FOODITEM_QUEUE)
     public void handleFoodItemMessage(String json) {
+        System.out.println("Received message: " + json);
         try {
             FoodItemMessage message = objectMapper.readValue(json, FoodItemMessage.class);
             String action = message.getAction();
@@ -42,12 +43,15 @@ public class FoodItemConsumer {
                 }
                 case "UPDATE" -> {
                     if (id != null && dto != null) {
+                        System.out.println("Update :"+id);
                         FoodItem item = objectMapper.convertValue(dto, FoodItem.class);
                         foodItemService.update(id, item);
                         System.out.println("✅ Updated: " + id);
                     }
                 }
                 case "DELETE" -> {
+
+                    System.out.println("Delete :"+id);
                     if (id != null) {
                         foodItemService.delete(id);
                         System.out.println("✅ Deleted: " + id);
