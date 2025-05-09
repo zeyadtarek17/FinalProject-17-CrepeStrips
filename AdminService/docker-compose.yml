@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  admin-service:
+    build: .
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATA_MONGODB_HOST: mongodb
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: adminDB
+
+volumes:
+  mongodb_data:

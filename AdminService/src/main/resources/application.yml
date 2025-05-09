@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: admin-service
+
+  data:
+    mongodb:
+      host: ${SPRING_DATA_MONGODB_HOST:localhost}
+      port: ${SPRING_DATA_MONGODB_PORT:27017}
+      database: adminDB
+
+server:
+  port: 8083
