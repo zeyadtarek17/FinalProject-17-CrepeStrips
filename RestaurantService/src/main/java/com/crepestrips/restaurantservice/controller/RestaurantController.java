@@ -1,5 +1,6 @@
 package com.crepestrips.restaurantservice.controller;
 
+import com.crepestrips.restaurantservice.config.FoodItemMessage;
 import com.crepestrips.restaurantservice.config.RestaurantProducer;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
@@ -128,5 +129,26 @@ public class RestaurantController {
         restaurantProducer.sendNewFoodItem(dto);
         return ResponseEntity.ok("Food item sent asynchronously!");
     }
+    @PutMapping("/update-food-item/{id}")
+    public ResponseEntity<String> updateFoodItemAsync(
+            @PathVariable String id,
+            @RequestBody FoodItemDTO dto) {
+        FoodItemMessage message = new FoodItemMessage();
+        message.setAction("UPDATE");
+        message.setFoodItemId(id);
+        message.setPayload(dto);
+        restaurantProducer.sendFoodItemCommand(message);
+        return ResponseEntity.ok("Update message sent!");
+    }
+
+    @DeleteMapping("/delete-food-item/{id}")
+    public ResponseEntity<String> deleteFoodItemAsync(@PathVariable String id) {
+        FoodItemMessage message = new FoodItemMessage();
+        message.setAction("DELETE");
+        message.setFoodItemId(id);
+        restaurantProducer.sendFoodItemCommand(message);
+        return ResponseEntity.ok("Delete message sent!");
+    }
+
 
 }
