@@ -4,6 +4,8 @@ package com.crepestrips.fooditemservice.FoodItemFactory;
 import com.crepestrips.fooditemservice.model.FoodItem;
 
 public class MainCourseItem extends FoodItem {
+    public MainCourseItem() {
+        super();}
     public MainCourseItem(FoodItem item) {
         super(item.getName(), item.getDescription(),
                 item.getPrice(),
