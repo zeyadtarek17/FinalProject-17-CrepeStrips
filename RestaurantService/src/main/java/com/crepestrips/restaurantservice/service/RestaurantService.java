@@ -1,7 +1,6 @@
 package com.crepestrips.restaurantservice.service;
 
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
-import com.crepestrips.restaurantservice.dto.RestaurantDto;
 import com.crepestrips.restaurantservice.model.Restaurant;
 import com.crepestrips.restaurantservice.repository.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
