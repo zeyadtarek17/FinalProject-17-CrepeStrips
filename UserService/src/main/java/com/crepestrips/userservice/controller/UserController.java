@@ -7,6 +7,7 @@ import com.crepestrips.userservice.service.UserService;
 import com.crepestrips.userservice.UserServiceSingleton;
 import com.crepestrips.userservice.dto.AuthRequest;
 import com.crepestrips.userservice.dto.AuthResponse;
+import com.crepestrips.userservice.dto.ChangePasswordRequest;
 
 import jakarta.validation.Valid;
 
@@ -68,8 +69,8 @@ public class UserController {
     }
 
     @PutMapping("/password")
-    public String changePassword(@RequestParam Long userId, @RequestParam String newPassword) {
-        return userService.changePassword(userId, newPassword);
+    public String changePassword(@RequestBody ChangePasswordRequest request) {
+        return userService.changePassword(request.getUserName(), request.getOldPassword(), request.getNewPassword());
     }
 
     @PostMapping("/{userId}/report")

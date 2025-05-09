@@ -70,10 +70,13 @@ public class UserService implements UserDetailsService {
         return "User " + username + " logged out successfully.";
     }
 
-    public String changePassword(Long userId, String newPassword) {
-        User user = userRepository.findById(userId)
+    public String changePassword(String userName, String oldPassword, String newPassword) {
+        User user = userRepository.findByUsername(userName)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new RuntimeException("Old password is incorrect");
+        }
         user.setPassword(newPassword);
         userRepository.save(user);
         return "Password updated.";
