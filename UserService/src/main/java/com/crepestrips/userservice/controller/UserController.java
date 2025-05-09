@@ -45,8 +45,6 @@ public class UserController {
     public AuthResponse login(@RequestBody AuthRequest authRequest) {
         try {
 
-            // check if user exists
-            // String user = userService.login(authRequest.getUsername(), authRequest.getPassword());
             // Create authentication token with provided username and password
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));

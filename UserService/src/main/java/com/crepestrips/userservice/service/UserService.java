@@ -20,12 +20,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
-    private PasswordEncoder passwordEncoder;   
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, ReportRepository reportRepository) {
+    public UserService(UserRepository userRepository, ReportRepository reportRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User registerUser(User user) {
