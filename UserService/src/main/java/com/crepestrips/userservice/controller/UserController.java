@@ -77,11 +77,13 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public User getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
@@ -92,6 +94,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String deleteUser(@PathVariable Long id) {
         return userService.deleteUser(id);
     }

@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -92,6 +93,7 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
@@ -115,7 +117,7 @@ public class UserService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                List.of() // Or map user roles/authorities here
+                List.of(new SimpleGrantedAuthority("ROLE_USER")) // Or map user roles/authorities here
         );
     }
 }

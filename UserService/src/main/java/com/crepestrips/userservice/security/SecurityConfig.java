@@ -16,21 +16,23 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.crepestrips.userservice.service.UserService;
+import org.springframework.context.annotation.Lazy;
 
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final UserService userDetailsService;
 
     // Constructor injection for required dependencies
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, 
-                         UserService userDetailsService) {
+    public SecurityConfig(@Lazy JwtAuthFilter jwtAuthFilter, @Lazy UserService userDetailsService) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.userDetailsService = userDetailsService;
     }
+
 
     /* 
      * Main security configuration
@@ -48,9 +50,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/user/login", "/api/user/register").permitAll()
                 
                 // Role-based endpoints
-                // .requestMatchers("/auth/user/**").hasAuthority("ROLE_USER")
-                // .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")
-                
+//                 .requestMatchers("/api/user/**").hasAuthority("ROLE_USER")
+
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
