@@ -1,6 +1,5 @@
 package com.crepestrips.restaurantservice.config;
 
-import com.crepestrips.fooditemservice.model.FoodItem;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
