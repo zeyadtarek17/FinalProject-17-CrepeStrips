@@ -33,16 +33,6 @@ public class AdminController {
 //        this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createAdmin(@RequestBody Admin admin) {
-        try {
-            Admin createdAdmin = adminService.createAdmin(admin);
-
-        }
-        catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
 
 
 
