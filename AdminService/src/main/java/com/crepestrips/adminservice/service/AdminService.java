@@ -53,7 +53,7 @@ public class AdminService implements UserDetailsService {
         );
     }
 
-    public Admin CreateAdmin(Admin admin) {
+    public Admin createAdmin(Admin admin) {
         if (adminRepo.findByUsername(admin.getUsername()) != null) {
             throw new RuntimeException("Admin already exists");
         }
