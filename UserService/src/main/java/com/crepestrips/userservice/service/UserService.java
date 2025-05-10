@@ -11,19 +11,27 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, ReportRepository reportRepository) {
+    public UserService(UserRepository userRepository, ReportRepository reportRepository,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User registerUser(User user) {
@@ -39,7 +47,7 @@ public class UserService {
         User builtUser = new User.Builder()
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .password(user.getPassword())
+                .password(passwordEncoder.encode(user.getPassword()))
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .build();
@@ -47,35 +55,32 @@ public class UserService {
         return userRepository.save(builtUser);
     }
 
-
-
     public String login(String username, String password) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Invalid username or password"));
 
-        if (!user.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid username or password");
         }
 
         return "Login successful";
     }
 
-
-
-
     public String logout(String username) {
         return "User " + username + " logged out successfully.";
     }
 
-    public String changePassword(Long userId, String newPassword) {
-        User user = userRepository.findById(userId)
+    public String changePassword(String userName, String oldPassword, String newPassword) {
+        User user = userRepository.findByUsername(userName)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setPassword(newPassword);
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new RuntimeException("Old password is incorrect");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         return "Password updated.";
     }
-
 
     public Report reportIssue(Long userId, Report report) {
         User user = userRepository.findById(userId)
@@ -85,13 +90,11 @@ public class UserService {
         return reportRepository.save(report);
     }
 
-
     @Cacheable(value = "Users", key = "#id")
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
-
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -102,9 +105,21 @@ public class UserService {
         newData.setId(id);
         return userRepository.save(newData);
     }
+
     @CacheEvict(value = "Users", key = "#id")
     public String deleteUser(Long id) {
         userRepository.deleteById(id);
         return "User deleted.";
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username) // adjust method
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                List.of(new SimpleGrantedAuthority("ROLE_USER")) // Or map user roles/authorities here
+        );
     }
 }
