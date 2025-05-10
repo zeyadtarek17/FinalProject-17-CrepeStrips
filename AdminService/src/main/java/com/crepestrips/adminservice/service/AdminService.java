@@ -3,51 +3,58 @@ package com.crepestrips.adminservice.service;
 import com.crepestrips.adminservice.model.Admin;
 import com.crepestrips.adminservice.repository.AdminRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
-import java.util.Optional;
+
 
 @Service
-public class AdminService {
-    private final AdminRepository adminRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+public class AdminService implements UserDetailsService {
 
     @Autowired
-    public AdminService(AdminRepository adminRepository, BCryptPasswordEncoder passwordEncoder) {
-        this.adminRepository = adminRepository;
+    private AdminRepository adminRepo;
+    private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public AdminService(AdminRepository adminRepo,PasswordEncoder passwordEncoder) {
+        this.adminRepo = adminRepo;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Admin createAdmin(Admin admin) {
-        if (adminRepository.existsByUsername(admin.getUsername())) {
-            throw new IllegalArgumentException("Username already exists");
+    public String login(String username, String password) {
+        Admin admin = adminRepo.findByUsername(username);
+        if (admin == null) {
+            throw new UsernameNotFoundException("Invalid username or password");
         }
-        else {
-            String hashedPassword = passwordEncoder.encode(admin.getPassword());
-            admin.setPassword(hashedPassword);
-            return adminRepository.save(admin);
+
+        if (!passwordEncoder.matches(password, admin.getPassword())) {
+            throw new RuntimeException("Invalid username or password");
         }
+
+        return "Login successful";
     }
 
-    public boolean authenticateAdmin(String username, String password) {
-        Optional<Admin> admin = adminRepository.findByUsername(username);
-        if (admin.isEmpty()) {
-            return false;
+    public String logout(String username) {
+        return "Admin " + username + " logged out successfully.";
+    }
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Admin admin = adminRepo.findByUsername(username);
+        if (admin == null) {
+            throw new UsernameNotFoundException("Invalid username or password");
         }
-        return passwordEncoder.matches(password, admin.get().getPassword());
+        return new org.springframework.security.core.userdetails.User(
+                admin.getUsername(),
+                admin.getPassword(),
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")) // Or map user roles/authorities here
+        );
     }
 
-    public Optional<Admin> findByUsername(String username) {
-        return adminRepository.findByUsername(username);
-    }
 
-    public List<Admin> getAllAdmins() {
-        return adminRepository.findAll();
-    }
 
-    public void deleteAdmin(String id) {
-        adminRepository.deleteById(id);
-    }
 }
+
+
