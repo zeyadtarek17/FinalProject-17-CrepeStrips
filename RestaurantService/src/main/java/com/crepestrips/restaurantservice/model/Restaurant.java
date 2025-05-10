@@ -82,7 +82,13 @@ public class Restaurant implements Observer {
 
     public void setRating(double rating) { this.rating = rating; }
 
-    public boolean isOpen() { return isOpen; }
+    public boolean isOpen() {
+        if (openingTime == null || closingTime == null) {
+            return false;
+        }
+        LocalTime now = LocalTime.now();
+        return !now.isBefore(openingTime) && !now.isAfter(closingTime);
+    }
 
     public void setOpen(boolean open) { isOpen = open; }
 

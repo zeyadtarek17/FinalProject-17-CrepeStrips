@@ -45,8 +45,20 @@ public class RestaurantController {
 
     @GetMapping
     public ResponseEntity<List<Restaurant>> getAll() {
-        return ResponseEntity.ok(service.getAll());
-    }
+        List<Restaurant> restaurants = service.getAll();
+
+        LocalTime now = LocalTime.now();
+
+        for (Restaurant r : restaurants) {
+            if (r.getOpeningTime() != null && r.getClosingTime() != null) {
+                boolean isOpen = !now.isBefore(r.getOpeningTime()) && !now.isAfter(r.getClosingTime());
+                r.setOpen(isOpen);
+            } else {
+                r.setOpen(false);
+            }
+        }
+
+        return ResponseEntity.ok(restaurants);    }
 
     @GetMapping("/{id}")
     public ResponseEntity<Restaurant> getById(@PathVariable String id) {
