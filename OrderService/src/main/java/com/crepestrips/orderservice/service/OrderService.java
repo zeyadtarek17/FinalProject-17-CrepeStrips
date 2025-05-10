@@ -6,7 +6,10 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import com.crepestrips.orderservice.client.UserServiceClient;
 import com.crepestrips.orderservice.model.Order;
+import com.crepestrips.orderservice.model.OrderItem;
 import com.crepestrips.orderservice.model.OrderPriority;
 import com.crepestrips.orderservice.model.OrderStatus;
 import com.crepestrips.orderservice.repository.OrderItemRepository;
@@ -21,13 +24,31 @@ public class OrderService {
     @Autowired
     private OrderItemRepository orderItemRepository;
 
+    @Autowired
+    private RabbitMQPublisher rabbitMQPublisher;
+
+    @Autowired
+    private UserServiceClient userServiceClient;
+
+    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
+            RabbitMQPublisher rabbitMQPublisher, UserServiceClient userServiceClient) {
+        this.orderRepository = orderRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.rabbitMQPublisher = rabbitMQPublisher;
+        this.userServiceClient = userServiceClient;
+    }
+
     @Transactional
     public ResponseEntity<Order> createOrder(UUID userId, UUID restaurantId) {
         Order order = new Order(userId, restaurantId, null);
-        // To-Do needs user microservice to get the cartId from the user and fetch the
-        // cart items
-
+        ResponseEntity<?> response = userServiceClient.getUserCart(userId);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            ResponseEntity<?> cartResponse = userServiceClient.getUserCart(userId);
+            // to do when i have cart data is that i first need to create an order item for
+            // each item in the cart and then add them to the order
+        }
         order = orderRepository.save(order);
+        rabbitMQPublisher.publishOrderCreated(order);
         return ResponseEntity.ok(order);
     }
 
@@ -108,7 +129,7 @@ public class OrderService {
         return ResponseEntity.notFound().build();
     }
 
-    //To-do add item to order
+    // To-do add item to order
 
     // To-do remove item from order
 
