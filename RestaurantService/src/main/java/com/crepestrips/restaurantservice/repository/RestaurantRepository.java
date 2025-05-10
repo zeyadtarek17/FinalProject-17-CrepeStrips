@@ -7,4 +7,5 @@ import java.util.List;
 public interface RestaurantRepository extends MongoRepository<Restaurant, String> {
     List<Restaurant> findByIsOpenTrue();
     List<Restaurant> findAllByOrderByRatingDesc();
+    List<Restaurant> findByType(String type);
 }

@@ -31,6 +31,9 @@ public class CategoryController {
 
     @PostMapping
     public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+        if (category.getName() == null) {
+            return ResponseEntity.badRequest().body(null);  // Ensure name is not null
+        }
         return ResponseEntity.ok(categoryService.create(category));
     }
 

@@ -1,7 +1,12 @@
 package com.crepestrips.restaurantservice.service;
 
+import com.crepestrips.fooditemservice.FoodItemFactory.FoodItemFactory;
+import com.crepestrips.fooditemservice.model.FoodItem;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
+import com.crepestrips.restaurantservice.factory.RestaurantFactory;
+import com.crepestrips.restaurantservice.model.Category;
 import com.crepestrips.restaurantservice.model.Restaurant;
+import com.crepestrips.restaurantservice.repository.CategoryRepository;
 import com.crepestrips.restaurantservice.repository.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,7 +22,36 @@ public class RestaurantService {
     @Autowired
     private RestaurantRepository repository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
 
+    @Autowired
+    private RestaurantFactory restaurantFactory;
+
+    public Restaurant create(Restaurant restaurant) {
+//        Restaurant restaurant = new Restaurant();
+//        Category category = restaurant.getCategory();
+//        if (category != null) {
+//            category = categoryRepository.save(category);
+//        }
+//        restaurant.setCategory(category);
+//        restaurant.setName(dto.getName());
+//        restaurant.setLocation(dto.getLocation());
+//        restaurant.setOpeningTime(dto.getOpeningTime());
+//        restaurant.setClosingTime(dto.getClosingTime());
+////        restaurant.setHasSeating(dto.isHasSeating());
+////        restaurant.setSupportsDelivery(dto.isSupportsDelivery());
+////        restaurant.setRating(dto.getRating());
+//        restaurant.setCategory(dto.getCategory());
+//        restaurant.setCategoryID(dto.getCategoryId());
+//        restaurant = restaurantFactory.createRestaurant(restaurant, dto.getType().name());
+//        return restaurant;
+        if (restaurant.getCategory() != null && restaurant.getCategory().getId() == null) {
+            Category savedCategory = categoryRepository.save(restaurant.getCategory());
+            restaurant.setCategory(savedCategory);  // Set the saved category with its ID
+        }
+        return repository.save(restaurant);
+    }
 
     public List<Restaurant> getAll() {
         return repository.findAll();
@@ -27,16 +61,13 @@ public class RestaurantService {
         return repository.findById(id);
     }
 
-    public Restaurant create(Restaurant restaurant) {
-        return repository.save(restaurant);
-    }
 
     public Optional<Restaurant> update(String id, Restaurant updated) {
         return repository.findById(id).map(existing -> {
             existing.setName(updated.getName());
             existing.setLocation(updated.getLocation());
             existing.setRating(updated.getRating());
-            existing.setOpen(updated.isOpen());
+            existing.setOpen(isWithinOperatingHours(updated.getOpeningTime(), updated.getClosingTime()));
             existing.setOpeningTime(updated.getOpeningTime());
             existing.setClosingTime(updated.getClosingTime());
             existing.setFoodItemIds(updated.getFoodItemIds());
@@ -45,6 +76,16 @@ public class RestaurantService {
             existing.setCategory(updated.getCategory());
             return repository.save(existing);
         });
+    }
+
+    private boolean isWithinOperatingHours(LocalTime openingTime, LocalTime closingTime) {
+        if (openingTime == null || closingTime == null) return false;
+        LocalTime now = LocalTime.now();
+
+        if (closingTime.isBefore(openingTime)) {
+            return !now.isBefore(openingTime) || !now.isAfter(closingTime);
+        }
+        return !now.isBefore(openingTime) && !now.isAfter(closingTime);
     }
 
     public boolean delete(String id) {

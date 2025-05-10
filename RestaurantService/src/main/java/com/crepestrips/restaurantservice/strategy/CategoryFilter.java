@@ -10,9 +10,11 @@ import java.util.stream.Collectors;
 public class CategoryFilter implements FilterStrategy {
 
     @Override
-    public List<Restaurant> filter(List<Restaurant> restaurants, String categoryId) {
+    public List<Restaurant> filter(List<Restaurant> restaurants, String categoryName) {
         return restaurants.stream()
-                .filter(r -> r.getCategoryId().contains(categoryId))
+                .filter(r -> r.getCategory() != null &&
+                        r.getCategory().getName() != null &&
+                        r.getCategory().getName().name().equalsIgnoreCase(categoryName))
                 .collect(Collectors.toList());
     }
 }

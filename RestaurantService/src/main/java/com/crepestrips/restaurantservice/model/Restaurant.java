@@ -56,6 +56,16 @@ public class Restaurant implements Observer {
 
     }
 
+    public Restaurant(String name, String location, double rating, boolean isOpen, LocalTime openingTime, LocalTime closingTime, Category category) {
+        this.name = name;
+        this.location = location;
+        this.rating = rating;
+        this.isOpen = isOpen;
+        this.openingTime = openingTime;
+        this.closingTime = closingTime;
+        this.category = category;
+    }
+
     public String getId() { return id; }
 
     public void setId(String id) { this.id = id; }
@@ -136,4 +146,12 @@ public class Restaurant implements Observer {
     public Category getCategory() {
         return category;
     }
+
+    public void setCategoryID(String categoryId) {
+        if (this.category == null) {
+            this.category = new Category(); // or fetch existing if needed
+        }
+        this.category.setId(categoryId);
+    }
 }
+

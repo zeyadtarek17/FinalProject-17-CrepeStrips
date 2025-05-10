@@ -14,6 +14,13 @@ public class OperatingHoursFilter implements FilterStrategy {
     @Override
     public List<Restaurant> filter(List<Restaurant> restaurants, String currentTimeStr) {
         LocalTime currentTime = LocalTime.parse(currentTimeStr);
-        return restaurants.stream().filter(restaurant -> currentTime.isAfter(restaurant.getOpeningTime())&&currentTime.isBefore(restaurant.getClosingTime())).collect(Collectors.toList());
+        return restaurants.stream().filter(restaurant -> {
+                    if (restaurant.getOpeningTime() == null || restaurant.getClosingTime() == null) {
+                        System.out.println("Null time detected for restaurant: " + restaurant.getName());
+                    }
+                    return restaurant.getOpeningTime() != null && restaurant.getClosingTime() != null &&
+                            currentTime.isAfter(restaurant.getOpeningTime()) && currentTime.isBefore(restaurant.getClosingTime());
+                })
+                .collect(Collectors.toList());
     }
 }

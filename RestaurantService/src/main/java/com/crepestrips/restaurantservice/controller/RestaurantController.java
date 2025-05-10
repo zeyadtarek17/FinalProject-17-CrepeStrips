@@ -4,6 +4,8 @@ import com.crepestrips.restaurantservice.config.FoodItemMessage;
 import com.crepestrips.restaurantservice.config.RestaurantProducer;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
+import com.crepestrips.restaurantservice.model.Category;
+import com.crepestrips.restaurantservice.repository.CategoryRepository;
 import com.crepestrips.restaurantservice.repository.RestaurantRepository;
 import com.crepestrips.restaurantservice.strategy.FilterFactory;
 import com.crepestrips.restaurantservice.strategy.FilterStrategy;
@@ -12,6 +14,7 @@ import com.crepestrips.restaurantservice.service.RestaurantService;
 import com.crepestrips.restaurantservice.strategy.RestaurantFilterContext;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +34,8 @@ public class RestaurantController {
     private RestaurantFactory restaurantFactory;
     @Autowired
     private RestaurantRepository restaurantRepository;
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     private final RestaurantProducer restaurantProducer;
 
@@ -51,14 +56,9 @@ public class RestaurantController {
     }
 
     @PostMapping
-    public ResponseEntity<Restaurant> createRestaurant(@RequestBody Restaurant dto) {
-        Restaurant restaurant = new Restaurant();
-        restaurant.setName(dto.getName());
-        restaurant.setLocation(dto.getLocation());
-
-        restaurant = restaurantFactory.createRestaurant(restaurant, dto.getType().name());
-
-        return ResponseEntity.ok(restaurantRepository.save(restaurant));
+    public ResponseEntity<Restaurant> createRestaurant(@RequestBody Restaurant restaurant) {
+        Restaurant createdRestaurant = service.create(restaurant);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdRestaurant);
     }
 
     @PutMapping("/{id}")

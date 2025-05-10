@@ -26,6 +26,9 @@ public class CategoryService {
     }
 
     public Category create(Category category) {
+        if (category.getId() == null) {
+            return categoryRepository.save(category);  // Save, MongoDB will generate an ID.
+        }
         return categoryRepository.save(category);
     }
 
