@@ -1,13 +1,9 @@
 package com.crepestrips.adminservice.controller;
 
-import com.crepestrips.adminservice.model.Admin;
 import com.crepestrips.adminservice.security.JwtService;
 import com.crepestrips.adminservice.service.AdminService;
 import com.crepestrips.adminservice.dto.LoginRequest;
 import com.crepestrips.adminservice.dto.LoginResponse;
-
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
