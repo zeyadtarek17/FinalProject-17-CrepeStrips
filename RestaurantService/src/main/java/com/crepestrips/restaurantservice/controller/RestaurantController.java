@@ -1,5 +1,6 @@
 package com.crepestrips.restaurantservice.controller;
 
+import com.crepestrips.restaurantservice.config.FoodItemMessage;
 import com.crepestrips.restaurantservice.config.RestaurantProducer;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
@@ -83,21 +84,24 @@ public class RestaurantController {
     }
 
     @PutMapping("/{restaurantId}/addFoodItem/{foodItemId}")
-    public void addFoodItemToRestaurant(@PathVariable String restaurantId, @PathVariable String foodItemId) {
+    public ResponseEntity<String> addFoodItemToRestaurant(@PathVariable String restaurantId, @PathVariable String foodItemId) {
         service.addFoodItemToRestaurant(restaurantId, foodItemId);
+        return ResponseEntity.ok("Food item added to restaurant");
     }
 
     @PutMapping("/{restaurantId}/removeFoodItem/{foodItemId}")
-    public void removeFoodItemFromRestaurant(@PathVariable String restaurantId, @PathVariable String foodItemId) {
+    public ResponseEntity<String> removeFoodItemFromRestaurant(@PathVariable String restaurantId, @PathVariable String foodItemId) {
         service.removeFoodItemFromRestaurant(restaurantId, foodItemId);
+        return ResponseEntity.ok("Food item removed from restaurant");
     }
 
     @PutMapping("/{restaurantId}/updateFoodItem")
-    public void updateFoodItemInRestaurant(
+    public ResponseEntity<String> updateFoodItemInRestaurant(
             @PathVariable String restaurantId,
             @RequestParam String oldFoodItemId,
             @RequestParam String newFoodItemId) {
         service.updateFoodItemInRestaurant(restaurantId, oldFoodItemId, newFoodItemId);
+        return ResponseEntity.ok("Food item updated in restaurant");
     }
 
 //    @GetMapping("/filter/by-hours")
@@ -121,6 +125,8 @@ public class RestaurantController {
             @RequestParam String criteria) {
 
         List<Restaurant> allRestaurants = service.getAllRestaurants();
+        System.out.println("filterType: " + filterType + ", criteria: " + criteria);
+
         return context.applyFilter(filterType, allRestaurants, criteria);
     }
     @PostMapping("/add-food-item")
@@ -128,5 +134,26 @@ public class RestaurantController {
         restaurantProducer.sendNewFoodItem(dto);
         return ResponseEntity.ok("Food item sent asynchronously!");
     }
+    @PutMapping("/update-food-item/{id}")
+    public ResponseEntity<String> updateFoodItemAsync(
+            @PathVariable String id,
+            @RequestBody FoodItemDTO dto) {
+        FoodItemMessage message = new FoodItemMessage();
+        message.setAction("UPDATE");
+        message.setFoodItemId(id);
+        message.setPayload(dto);
+        restaurantProducer.sendFoodItemCommand(message);
+        return ResponseEntity.ok("Update message sent!");
+    }
+
+    @DeleteMapping("/delete-food-item/{id}")
+    public ResponseEntity<String> deleteFoodItemAsync(@PathVariable String id) {
+        FoodItemMessage message = new FoodItemMessage();
+        message.setAction("DELETE");
+        message.setFoodItemId(id);
+        restaurantProducer.sendFoodItemCommand(message);
+        return ResponseEntity.ok("Delete message sent!");
+    }
+
 
 }

@@ -1,6 +1,7 @@
 package com.crepestrips.restaurantservice.config;
 
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
@@ -27,4 +28,14 @@ public class RestaurantProducer {
         }
 
     }
+    public void sendFoodItemCommand(FoodItemMessage message) {
+        try {
+            String json= objectMapper.writeValueAsString(message);
+            rabbitTemplate.convertAndSend(EXCHANGE, FOODITEM_ROUTING_KEY, json);
+            System.out.println(" Sent food item to FoodItemService: " + message.getAction());
+        } catch (Exception e) {
+            System.err.println(" Failed to send food item: " + e.getMessage());
+        }
+    }
+
 }

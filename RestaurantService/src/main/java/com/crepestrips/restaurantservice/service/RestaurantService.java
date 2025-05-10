@@ -37,6 +37,12 @@ public class RestaurantService {
             existing.setLocation(updated.getLocation());
             existing.setRating(updated.getRating());
             existing.setOpen(updated.isOpen());
+            existing.setOpeningTime(updated.getOpeningTime());
+            existing.setClosingTime(updated.getClosingTime());
+            existing.setFoodItemIds(updated.getFoodItemIds());
+            existing.setFoodItem(updated.getFoodItem());
+            existing.setType(updated.getType());
+            existing.setCategory(updated.getCategory());
             return repository.save(existing);
         });
     }
