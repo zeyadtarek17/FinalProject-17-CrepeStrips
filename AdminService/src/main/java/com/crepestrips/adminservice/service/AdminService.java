@@ -53,7 +53,27 @@ public class AdminService implements UserDetailsService {
         );
     }
 
+    public Admin CreateAdmin(Admin admin) {
+        if (adminRepo.findByUsername(admin.getUsername()) != null) {
+            throw new RuntimeException("Admin already exists");
+        }
+        else {
+            admin.setPassword(passwordEncoder.encode(admin.getPassword()));
+            return adminRepo.save(admin);
+        }
+    }
 
+    public List<Admin> getAllAdmins() {
+        return adminRepo.findAll();
+    }
+
+    public Admin getAdminById(String id) {
+        return adminRepo.findById(id).orElseThrow(() -> new RuntimeException("Admin not found with id: " + id));
+    }
+
+    public void deleteAdminById(String id) {
+        adminRepo.deleteById(id);
+    }
 
 }
 
