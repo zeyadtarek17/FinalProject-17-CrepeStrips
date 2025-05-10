@@ -26,12 +26,12 @@ import org.springframework.context.annotation.Lazy;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-    private final UserService userDetailsService;
+    private final AdminService userDetailsService;
 
     // Constructor injection for required dependencies
-    public SecurityConfig(@Lazy JwtAuthFilter jwtAuthFilter, @Lazy UserService userDetailsService) {
+    public SecurityConfig(@Lazy JwtAuthFilter jwtAuthFilter, @Lazy AdminService adminDetailsService) {
         this.jwtAuthFilter = jwtAuthFilter;
-        this.userDetailsService = userDetailsService;
+        this.userDetailsService = adminDetailsService;
     }
 
 
