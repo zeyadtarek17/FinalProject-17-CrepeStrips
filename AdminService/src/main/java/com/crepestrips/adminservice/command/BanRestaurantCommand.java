@@ -1,16 +1,15 @@
 //package com.crepestrips.adminservice.command;
 //
 //public class BanRestaurantCommand implements AdminCommand {
-//    private final ModerationService moderationService;
 //    private final String restaurantId;
+//    private final RestaurantService restaurantService;
 //
-//    public BanRestaurantCommand(ModerationService moderationService, String restaurantId) {
-//        this.moderationService = moderationService;
+//    public BanRestaurantCommand(String restaurantId, RestaurantService restaurantService) {
 //        this.restaurantId = restaurantId;
+//        this.restaurantService = restaurantService;
 //    }
 //
 //    @Override
 //    public void execute() {
-//        moderationService.banRestaurant(restaurantId);
-//    }
-//}
+//        restaurantService.banRestaurant(restaurantId);
+//    }}
