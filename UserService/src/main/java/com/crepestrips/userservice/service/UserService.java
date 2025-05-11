@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -43,7 +44,6 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("Email already exists.");
         }
 
-        // Optional: rebuild via Builder to enforce pattern
         User builtUser = new User.Builder()
                 .username(user.getUsername())
                 .email(user.getEmail())
@@ -101,7 +101,7 @@ public class UserService implements UserDetailsService {
     }
 
     @CachePut(value = "Users", key = "#result.id")
-    public User updateUser(Long id, User newData) {
+    public User updateUser(UUID id, User newData) {
         newData.setId(id);
         return userRepository.save(newData);
     }
