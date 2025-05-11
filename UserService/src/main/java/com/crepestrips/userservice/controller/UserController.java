@@ -12,6 +12,7 @@ import com.crepestrips.userservice.dto.ChangePasswordRequest;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,7 +53,7 @@ public class UserController {
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
 
             if (authentication.isAuthenticated()) {
-                return new AuthResponse(jwtUtil.generateToken(authRequest.getUsername()));
+                return new AuthResponse(jwtUtil.generateToken(authRequest.getUsername(), authRequest.getId()));
             } else {
                 throw new UsernameNotFoundException("Invalid user request!");
             }
@@ -74,13 +75,13 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/report")
-    public Report reportIssue(@PathVariable Long userId, @RequestBody Report report) {
+    public Report reportIssue(@PathVariable UUID userId, @RequestBody Report report) {
         return userService.reportIssue(userId, report);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public User getUserById(@PathVariable Long id) {
+    public User getUserById(@PathVariable UUID id) {
         return userService.getUserById(id);
     }
 
@@ -91,13 +92,13 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable Long id, @Valid @RequestBody User user) {
+    public User updateUser(@PathVariable UUID id, @Valid @RequestBody User user) {
         return userService.updateUser(id, user);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public String deleteUser(@PathVariable Long id) {
+    public String deleteUser(@PathVariable UUID id) {
         return userService.deleteUser(id);
     }
 }

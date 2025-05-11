@@ -82,7 +82,7 @@ public class UserService implements UserDetailsService {
         return "Password updated.";
     }
 
-    public Report reportIssue(Long userId, Report report) {
+    public Report reportIssue(UUID userId, Report report) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -91,7 +91,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Cacheable(value = "Users", key = "#id")
-    public User getUserById(Long id) {
+    public User getUserById(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
@@ -107,7 +107,7 @@ public class UserService implements UserDetailsService {
     }
 
     @CacheEvict(value = "Users", key = "#id")
-    public String deleteUser(Long id) {
+    public String deleteUser(UUID id) {
         userRepository.deleteById(id);
         return "User deleted.";
     }
