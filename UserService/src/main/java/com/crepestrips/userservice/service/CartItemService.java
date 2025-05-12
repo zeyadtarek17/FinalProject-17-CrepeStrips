@@ -1,24 +1,22 @@
 package com.crepestrips.userservice.service;
-
 import com.crepestrips.userservice.model.CartItem;
-import com.crepestrips.userservice.repository.CartItemRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
-@Service
-public class CartItemService {
+public interface CartItemService {
 
-    @Autowired
-    private CartItemRepository cartItemRepository;
+    List<CartItem> getItemsByCartId(UUID cartId);
 
-    public List<CartItem> getItemsByCartId(UUID cartId) {
-        return cartItemRepository.findByCartId(cartId);
-    }
+    CartItem getCartItemById(UUID itemId);
 
-    public CartItem saveCartItem(CartItem cartItem) {
-        return cartItemRepository.save(cartItem);
-    }
+    CartItem saveCartItem(CartItem cartItem);
+
+    CartItem updateCartItem(UUID itemId, CartItem updatedItem);
+
+    void deleteCartItem(UUID itemId);
+
+    CartItem addItemToCart(UUID cartId, CartItem item);
+
+    void removeItem(UUID itemId);
 }
