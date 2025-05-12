@@ -1,4 +1,5 @@
-package com.crepestrips.adminservice.security;
+package com.crepestrips.userservice.security;
+
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

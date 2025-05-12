@@ -52,7 +52,6 @@ public class AdminService implements UserDetailsService {
                 List.of(new SimpleGrantedAuthority("ROLE_ADMIN")) // Or map user roles/authorities here
         );
     }
-
     public Admin createAdmin(Admin admin) {
         if (adminRepo.findByUsername(admin.getUsername()) != null) {
             throw new RuntimeException("Admin already exists");
@@ -74,6 +73,7 @@ public class AdminService implements UserDetailsService {
     public void deleteAdminById(String id) {
         adminRepo.deleteById(id);
     }
+
 
 }
 
