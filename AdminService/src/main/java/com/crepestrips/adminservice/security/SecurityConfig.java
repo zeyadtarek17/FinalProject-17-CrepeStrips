@@ -19,81 +19,61 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.crepestrips.adminservice.service.AdminService;
 import org.springframework.context.annotation.Lazy;
 
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-    private final AdminService userDetailsService;
+    private final AdminService adminDetailsService;
 
     // Constructor injection for required dependencies
-    public SecurityConfig(@Lazy JwtAuthFilter jwtAuthFilter, @Lazy AdminService userDetailsService) {
+    public SecurityConfig(@Lazy JwtAuthFilter jwtAuthFilter, @Lazy AdminService adminDetailsService) {
         this.jwtAuthFilter = jwtAuthFilter;
-        this.userDetailsService = userDetailsService;
+        this.adminDetailsService = adminDetailsService;
     }
 
-
-    /*
-     * Main security configuration
-     * Defines endpoint access rules and JWT filter setup
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Disable CSRF (not needed for stateless JWT)
                 .csrf(csrf -> csrf.disable())
-
-                // Configure endpoint authorization
                 .authorizeHttpRequests(auth -> auth
-                                // Public endpoints
-                                .requestMatchers("/api/user/login", "/api/user/register").permitAll()
+                        // Public endpoints
+                        .requestMatchers(
+                                "/api/admin/login",
+                                "/api/admin/login",
+                                "/api/admin/create",
+                                "/api/admin/getAdmins",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**"
+                        ).permitAll()
 
-                                // Role-based endpoints
-//                 .requestMatchers("/api/user/**").hasAuthority("ROLE_USER")
+                        // Admin endpoints require authentication
+                        .requestMatchers("/api/admin/**").authenticated()
 
-                                // All other endpoints require authentication
-                                .anyRequest().authenticated()
+                        // All other requests denied
+                        .anyRequest().denyAll()
                 )
-
-                // Stateless session (required for JWT)
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // Set custom authentication provider
                 .authenticationProvider(authenticationProvider())
-
-                // Add JWT filter before Spring Security's default filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /*
-     * Password encoder bean (uses BCrypt hashing)
-     * Critical for secure password storage
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /*
-     * Authentication provider configuration
-     * Links UserDetailsService and PasswordEncoder
-     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
+        provider.setUserDetailsService(adminDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
 
-    /*
-     * Authentication manager bean
-     * Required for programmatic authentication (e.g., in /generateToken)
-     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
