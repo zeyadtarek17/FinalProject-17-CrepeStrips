@@ -9,6 +9,8 @@ import com.crepestrips.userservice.UserServiceSingleton;
 import com.crepestrips.userservice.dto.AuthRequest;
 import com.crepestrips.userservice.dto.AuthResponse;
 import com.crepestrips.userservice.dto.ChangePasswordRequest;
+import com.crepestrips.userservice.dto.FoodItemResponse;
+import com.crepestrips.userservice.dto.UserMessage;
 
 import jakarta.validation.Valid;
 
@@ -47,10 +49,29 @@ public class UserController {
         UserServiceSingleton.getInstance(userService);
     }
 
-    @PostMapping("/send")
-    public ResponseEntity<String> sendUserId(@RequestBody UUID userId) {
-        producer.sendUserId(userId);
-        return ResponseEntity.ok("User ID sent to OrderService.");
+    @PostMapping("/order/add")
+    public ResponseEntity<String> createOrder(@RequestBody UUID userId) {
+        //get the cart by userId
+        Optional<Cart> cart = userService.getCartByUserId(userId);
+        if (cart.isEmpty()) {
+            return ResponseEntity.badRequest().body("Cart not found for user ID: " + userId);
+        }
+        //get the list of item ids from the cart
+        List<UUID> itemIds = cart.get().getItems();
+        //call the endpoint that retrieves list of fooditems (sync)
+
+        List<FoodItemResponse> items = null;
+        //extract the restaurant id from the first item
+        if (itemIds.isEmpty()) {
+            return ResponseEntity.badRequest().body("No items found in the cart for user ID: " + userId);
+        }
+        UUID restaurantId = items.get(0).getRestaurantId();
+        //generate orderid to be tracked
+        UUID orderId = UUID.randomUUID();
+        //send the message to the order service
+        producer.createOrder(userId, restaurantId, items, orderId);
+        //now these data to order service(async using rabbitmq)
+        return ResponseEntity.ok("Order being created with ID: " + orderId);
     }
 
     @PostMapping("/register")
