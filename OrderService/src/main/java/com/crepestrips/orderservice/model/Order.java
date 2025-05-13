@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.crepestrips.orderservice.dto.FoodItemResponse;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +23,6 @@ public class Order {
     private UUID id;
     private UUID userId;
     private UUID restaurantId;
-    private UUID cartId;
     private LocalDateTime orderTime;
 
     @Enumerated(EnumType.STRING)
@@ -30,45 +31,41 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderPriority priority;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItems = new ArrayList<>();
+    private List<FoodItemResponse> orderItems = new ArrayList<>();
 
     private double totalAmount;
 
-    public Order(UUID userId, UUID restaurantId, UUID cartId) {
+    public Order(UUID userId, UUID restaurantId, List<FoodItemResponse> orderItems) {
         this.id = UUID.randomUUID(); // Generate ID on creation
         this.userId = userId;
         this.restaurantId = restaurantId;
-        this.cartId = cartId;
         this.orderTime = LocalDateTime.now();
         this.status = OrderStatus.CREATED;
         this.priority = OrderPriority.NORMAL;
         this.totalAmount = 0.0;
-        this.orderItems = new ArrayList<>();
+        this.orderItems = orderItems;
     }
 
     // Helper method to add an item and update total amount
-    public void addOrderItem(OrderItem item) {
+    public void addOrderItem(FoodItemResponse item) {
         if (this.orderItems == null) {
             this.orderItems = new ArrayList<>();
         }
         this.orderItems.add(item);
-        item.setOrder(this);
         calculateTotalAmount();
     }
 
-    public void removeOrderItem(OrderItem item) {
+    public void removeOrderItem(FoodItemResponse item) {
         if (this.orderItems != null) {
             this.orderItems.remove(item);
-            item.setOrder(null);
             calculateTotalAmount();
         }
     }
 
     // Helper method to calculate total amount
-    private void calculateTotalAmount() {
+    public void calculateTotalAmount() {
         this.totalAmount = 0.0;
-        for (OrderItem item : this.orderItems) {
+        for (FoodItemResponse item : this.orderItems) {
             this.totalAmount += item.getSubTotal();
         }
 
