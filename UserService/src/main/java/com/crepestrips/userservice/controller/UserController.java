@@ -24,6 +24,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import com.crepestrips.userservice.service.UserProducer;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
@@ -32,13 +35,22 @@ public class UserController {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtUtil;
+    private final UserProducer producer;
+
 
     @Autowired
-    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtUtil) {
+    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtUtil, UserProducer producer) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.producer = producer;
         UserServiceSingleton.getInstance(userService);
+    }
+
+    @PostMapping("/send")
+    public ResponseEntity<String> sendUserId(@RequestBody UUID userId) {
+        producer.sendUserId(userId);
+        return ResponseEntity.ok("User ID sent to OrderService.");
     }
 
     @PostMapping("/register")

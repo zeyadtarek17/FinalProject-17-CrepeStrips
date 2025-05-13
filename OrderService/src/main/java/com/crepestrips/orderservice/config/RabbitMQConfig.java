@@ -17,6 +17,22 @@ public class RabbitMQConfig {
     
     public static final String ORDER_CREATED_ROUTING_KEY = "order.created";
     public static final String ORDER_UPDATED_ROUTING_KEY = "order.updated";
+    public static final String USER_TO_ORDER_QUEUE = "user.to.order.queue";
+    public static final String USER_TO_ORDER_ROUTING_KEY = "user.to.order";
+
+    @Bean
+    public Queue userToOrderQueue() {
+        return new Queue(USER_TO_ORDER_QUEUE);
+    }
+
+    @Bean
+    public Binding userToOrderBinding() {
+        return BindingBuilder
+                .bind(userToOrderQueue())
+                .to(orderExchange())
+                .with(USER_TO_ORDER_ROUTING_KEY);
+    }
+
 
     // Create queues
     @Bean
