@@ -1,5 +1,5 @@
 package com.crepestrips.userservice.dto;
-
+//DTO
 import java.util.UUID;
 
 public class UserMessage {
