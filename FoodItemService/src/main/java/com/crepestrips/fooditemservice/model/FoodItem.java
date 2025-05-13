@@ -18,14 +18,14 @@ public class FoodItem implements IFoodItem {
     private double discount;       
     private double rating;         
     private int availableStock;
-    private String category;
+    private FoodCategory category;
     private String restaurantId;   
 
     public FoodItem() {
 
     }
 
-    public FoodItem(String name, String description, double price, double discount, double rating, int availableStock, String category, String restaurantId) {
+    public FoodItem(String name, String description, double price, double discount, double rating, int availableStock, FoodCategory category, String restaurantId) {
         this.name = name;
         this.description = description;
         this.price = price;
@@ -38,7 +38,7 @@ public class FoodItem implements IFoodItem {
 
     }
 
-    public FoodItem(String id, String name, String description, double price, double discount, double rating, int availableStock, String category, String restaurantId) {
+    public FoodItem(String id, String name, String description, double price, double discount, double rating, int availableStock, FoodCategory category, String restaurantId) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -109,11 +109,11 @@ public class FoodItem implements IFoodItem {
 
     }
 
-    public String getCategory() {
+    public FoodCategory getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(FoodCategory category) {
         this.category = category;
     }
 
