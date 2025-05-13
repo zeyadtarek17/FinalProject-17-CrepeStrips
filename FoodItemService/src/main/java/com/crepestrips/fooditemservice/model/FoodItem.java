@@ -20,12 +20,13 @@ public class FoodItem implements IFoodItem {
     private int availableStock;
     private FoodCategory category;
     private String restaurantId;   
+    private String status;
 
     public FoodItem() {
 
     }
 
-    public FoodItem(String name, String description, double price, double discount, double rating, int availableStock, FoodCategory category, String restaurantId) {
+    public FoodItem(String name, String description, double price, double discount, double rating, int availableStock, FoodCategory category, String restaurantId, String status) {
         this.name = name;
         this.description = description;
         this.price = price;
@@ -34,8 +35,7 @@ public class FoodItem implements IFoodItem {
         this.availableStock = availableStock;
         this.category = category;
         this.restaurantId = restaurantId;
-
-
+        this.status = status;
     }
 
     public FoodItem(String id, String name, String description, double price, double discount, double rating, int availableStock, FoodCategory category, String restaurantId) {
