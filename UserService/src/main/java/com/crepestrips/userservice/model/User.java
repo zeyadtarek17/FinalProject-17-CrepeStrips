@@ -4,14 +4,16 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
 public class User {
 
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
 
     @NotBlank(message = "Username is required")
     @Size(max = 15, message = "Username must be at most 15 characters")
@@ -39,6 +41,17 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Report> reports;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Cart cart;
+
+    public Cart getCart() {
+        return cart;
+    }
+
+    public void setCart(Cart cart) {
+        this.cart = cart;
+    }
+
     // Builder pattern
     private User(Builder builder) {
         this.username = builder.username;
@@ -48,7 +61,7 @@ public class User {
         this.lastName = builder.lastName;
     }
 
-    private User() {}
+    public User() {}
 
     public static class Builder {
         private String username;
@@ -97,7 +110,7 @@ public class User {
     }
 
     // Getters
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
@@ -122,7 +135,7 @@ public class User {
     }
 
     // Setters
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -152,7 +165,7 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        if (id != null && id != 0L && user.id != null && user.id != 0L) {
+        if (id != null && user.id != null) {
             return Objects.equals(id, user.id);
         }
         return Objects.equals(username, user.username) && Objects.equals(email, user.email);
@@ -160,7 +173,7 @@ public class User {
 
     @Override
     public int hashCode() {
-        if (id != null && id != 0L) {
+        if (id != null) {
             return Objects.hash(id);
         }
         return Objects.hash(username, email);

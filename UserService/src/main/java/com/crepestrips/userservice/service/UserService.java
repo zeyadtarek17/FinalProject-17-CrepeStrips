@@ -1,14 +1,17 @@
 package com.crepestrips.userservice.service;
 
 import com.crepestrips.userservice.model.User;
+import com.crepestrips.userservice.model.Cart;
 import com.crepestrips.userservice.model.Report;
 import com.crepestrips.userservice.repository.UserRepository;
+import com.crepestrips.userservice.repository.CartRepository;
 import com.crepestrips.userservice.repository.ReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,13 +28,15 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CartRepository cartRepository;
 
     @Autowired
     public UserService(UserRepository userRepository, ReportRepository reportRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder, CartRepository cartRepository) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
         this.passwordEncoder = passwordEncoder;
+        this.cartRepository = cartRepository;
     }
 
     public User registerUser(User user) {
@@ -43,7 +48,6 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("Email already exists.");
         }
 
-        // Optional: rebuild via Builder to enforce pattern
         User builtUser = new User.Builder()
                 .username(user.getUsername())
                 .email(user.getEmail())
@@ -82,7 +86,7 @@ public class UserService implements UserDetailsService {
         return "Password updated.";
     }
 
-    public Report reportIssue(Long userId, Report report) {
+    public Report reportIssue(UUID userId, Report report) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -91,7 +95,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Cacheable(value = "Users", key = "#id")
-    public User getUserById(Long id) {
+    public User getUserById(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
@@ -101,13 +105,13 @@ public class UserService implements UserDetailsService {
     }
 
     @CachePut(value = "Users", key = "#result.id")
-    public User updateUser(Long id, User newData) {
+    public User updateUser(UUID id, User newData) {
         newData.setId(id);
         return userRepository.save(newData);
     }
 
     @CacheEvict(value = "Users", key = "#id")
-    public String deleteUser(Long id) {
+    public String deleteUser(UUID id) {
         userRepository.deleteById(id);
         return "User deleted.";
     }
@@ -121,5 +125,26 @@ public class UserService implements UserDetailsService {
                 user.getPassword(),
                 List.of(new SimpleGrantedAuthority("ROLE_USER")) // Or map user roles/authorities here
         );
+    }
+
+    //cart
+    
+    @Cacheable(value = "Carts", key = "#userId")
+    public Optional<Cart> getCartByUserId(UUID userId) {
+        return cartRepository.findByUserId(userId);
+    }
+
+    @CachePut(value = "Carts", key = "#result.userId")
+    public Cart saveCart(Cart cart) {
+        return cartRepository.save(cart);
+    }
+
+    @CacheEvict(value = "Carts", key = "#userId")
+    public void evictCartFromCache(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("UserId must not be null.");
+        }
+        // Additional logic can be added here if needed, such as logging
+        System.out.println("Cart evicted from cache for userId: " + userId);
     }
 }
