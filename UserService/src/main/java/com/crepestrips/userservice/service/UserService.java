@@ -1,8 +1,10 @@
 package com.crepestrips.userservice.service;
 
 import com.crepestrips.userservice.model.User;
+import com.crepestrips.userservice.model.Cart;
 import com.crepestrips.userservice.model.Report;
 import com.crepestrips.userservice.repository.UserRepository;
+import com.crepestrips.userservice.repository.CartRepository;
 import com.crepestrips.userservice.repository.ReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,13 +28,15 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CartRepository cartRepository;
 
     @Autowired
     public UserService(UserRepository userRepository, ReportRepository reportRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder, CartRepository cartRepository) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
         this.passwordEncoder = passwordEncoder;
+        this.cartRepository = cartRepository;
     }
 
     public User registerUser(User user) {
@@ -121,5 +125,26 @@ public class UserService implements UserDetailsService {
                 user.getPassword(),
                 List.of(new SimpleGrantedAuthority("ROLE_USER")) // Or map user roles/authorities here
         );
+    }
+
+    //cart
+    
+    @Cacheable(value = "Carts", key = "#userId")
+    public Optional<Cart> getCartByUserId(UUID userId) {
+        return cartRepository.findByUserId(userId);
+    }
+
+    @CachePut(value = "Carts", key = "#result.userId")
+    public Cart saveCart(Cart cart) {
+        return cartRepository.save(cart);
+    }
+
+    @CacheEvict(value = "Carts", key = "#userId")
+    public void evictCartFromCache(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("UserId must not be null.");
+        }
+        // Additional logic can be added here if needed, such as logging
+        System.out.println("Cart evicted from cache for userId: " + userId);
     }
 }

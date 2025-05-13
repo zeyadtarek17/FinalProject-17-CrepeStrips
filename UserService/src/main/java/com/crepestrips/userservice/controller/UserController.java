@@ -1,5 +1,6 @@
 package com.crepestrips.userservice.controller;
 
+import com.crepestrips.userservice.model.Cart;
 import com.crepestrips.userservice.model.Report;
 import com.crepestrips.userservice.model.User;
 import com.crepestrips.userservice.security.JwtService;
@@ -12,6 +13,7 @@ import com.crepestrips.userservice.dto.ChangePasswordRequest;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,9 +98,19 @@ public class UserController {
         return userService.updateUser(id, user);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String deleteUser(@PathVariable UUID id) {
         return userService.deleteUser(id);
+    }
+
+    @GetMapping("cart/{userId}")
+    public Optional<Cart> getCartByUserId(@PathVariable UUID userId) {
+        return userService.getCartByUserId(userId);
+    }
+
+    @PostMapping("/cart")
+    public Cart saveCart(@Valid @RequestBody Cart cart) {
+        return userService.saveCart(cart);
     }
 }
