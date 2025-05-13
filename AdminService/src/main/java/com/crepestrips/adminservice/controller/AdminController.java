@@ -102,18 +102,18 @@ public class AdminController {
     @PostMapping("/suspend-food")
     public ResponseEntity<CommandResponse> suspendFoodItem(@RequestBody SuspendFoodRequest request) {
 
-            AdminCommand command = new SuspendFoodItemCommand(foodItemServiceClient, request.getFoodItemId());
-            invoker.executeCommand(command);
-            return ResponseEntity.ok(new CommandResponse("SUCCESS", "Food item suspended", "SUSPEND_FOOD"));
+        AdminCommand command = new SuspendFoodItemCommand(foodItemServiceClient, request.getFoodItemId());
+        invoker.executeCommand(command);
+        return ResponseEntity.ok(new CommandResponse("SUCCESS", "Food item suspended", "SUSPEND_FOOD"));
 
     }
 
     @PostMapping("/ban-restaurant")
     public ResponseEntity<CommandResponse> banRestaurant(@RequestBody BanRestaurantRequest request) {
 
-            AdminCommand command = new BanRestaurantCommand(restaurantServiceClient, request.getRestaurantId());
-            invoker.executeCommand(command);
-            return ResponseEntity.ok(new CommandResponse("SUCCESS", "Restaurant banned", "BAN_RESTAURANT"));
+        AdminCommand command = new BanRestaurantCommand(restaurantServiceClient, request.getRestaurantId());
+        invoker.executeCommand(command);
+        return ResponseEntity.ok(new CommandResponse("SUCCESS", "Restaurant banned", "BAN_RESTAURANT"));
 
     }
 

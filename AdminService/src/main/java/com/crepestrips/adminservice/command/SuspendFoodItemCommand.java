@@ -6,10 +6,10 @@ import com.crepestrips.adminservice.client.dto.FoodItemDTO;
 
 public class SuspendFoodItemCommand implements AdminCommand {
     private final FoodItemServiceClient client;
-    private final Long foodItemId;
+    private final String foodItemId;
     private boolean previousStatus;
 
-    public SuspendFoodItemCommand(FoodItemServiceClient client, Long foodItemId) {
+    public SuspendFoodItemCommand(FoodItemServiceClient client, String foodItemId) {
         this.client = client;
         this.foodItemId = foodItemId;
     }

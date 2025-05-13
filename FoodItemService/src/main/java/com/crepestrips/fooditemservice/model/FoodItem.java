@@ -21,7 +21,8 @@ public class FoodItem implements IFoodItem, Subject {
     private double rating;         
     private int availableStock;
     private String category;
-    private String restaurantId;   
+    private String restaurantId;
+
 
     public FoodItem() {
         observers = new ArrayList<>();
