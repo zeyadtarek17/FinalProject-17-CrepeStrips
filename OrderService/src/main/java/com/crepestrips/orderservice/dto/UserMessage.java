@@ -18,5 +18,4 @@ public class UserMessage {
     public void setUserId(UUID userId) {
         this.userId = userId;
     }
-    //User Message
 }
