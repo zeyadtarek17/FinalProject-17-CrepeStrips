@@ -1,5 +1,6 @@
 package com.crepestrips.restaurantservice.controller;
 
+import com.crepestrips.restaurantservice.client.FoodItemClient;
 import com.crepestrips.restaurantservice.config.FoodItemMessage;
 import com.crepestrips.restaurantservice.config.RestaurantProducer;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
@@ -38,9 +39,12 @@ public class RestaurantController {
     private CategoryRepository categoryRepository;
 
     private final RestaurantProducer restaurantProducer;
+    private final FoodItemClient foodItemClient;
 
-    public RestaurantController(RestaurantProducer restaurantProducer) {
+
+    public RestaurantController(RestaurantProducer restaurantProducer, FoodItemClient foodItemClient) {
         this.restaurantProducer = restaurantProducer;
+        this.foodItemClient = foodItemClient;
     }
 
     @GetMapping
@@ -171,6 +175,36 @@ public class RestaurantController {
     public ResponseEntity<String> fetchOrderHistory(@PathVariable String restaurantId) {
         restaurantProducer.sendOrderHistoryRequest(restaurantId);
         return ResponseEntity.ok("Order history request sent via RabbitMQ.");
+    }
+    @PostMapping("/{restaurantId}/fooditems")
+    public ResponseEntity<FoodItemDTO> createFoodItem( @PathVariable String restaurantId, @RequestBody FoodItemDTO dto) {
+
+        FoodItemDTO created = foodItemClient.createFoodItem(dto);
+        service.addFoodItemToRestaurant(restaurantId, created.getId());
+        return ResponseEntity.ok(created);
+    }
+    @PutMapping("/{restaurantId}/fooditems/{foodItemId}")
+    public ResponseEntity<FoodItemDTO> updateFoodItemSync(
+            @PathVariable String restaurantId,
+            @PathVariable String foodItemId,
+            @RequestBody FoodItemDTO dto) {
+
+        FoodItemDTO updated = foodItemClient.updateFoodItem(foodItemId, dto);
+
+
+        service.updateFoodItemInRestaurant(restaurantId, foodItemId, updated.getId());
+
+        return ResponseEntity.ok(updated);
+    }
+    @DeleteMapping("/{restaurantId}/fooditems/{foodItemId}")
+    public ResponseEntity<String> deleteFoodItemSync(
+            @PathVariable String restaurantId,
+            @PathVariable String foodItemId) {
+
+        foodItemClient.deleteFoodItem(foodItemId);
+        service.removeFoodItemFromRestaurant(restaurantId, foodItemId);
+
+        return ResponseEntity.ok("Food item deleted successfully and unlinked from restaurant.");
     }
 
 }
