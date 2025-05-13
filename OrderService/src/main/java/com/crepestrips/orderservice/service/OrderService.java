@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.crepestrips.orderservice.dto.RestaurantOrderHistoryRequest;
+import com.crepestrips.orderservice.dto.RestaurantOrderHistoryResponse;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -132,5 +134,19 @@ public class OrderService {
     // To-do add item to order
 
     // To-do remove item from order
+
+
+    // added by team1
+    @RabbitListener(queues = RabbitMQConfig.ORDER_HISTORY_REQUEST_QUEUE)
+    public void handleOrderHistoryRequest(RestaurantOrderHistoryRequest request) {
+        UUID restaurantUUID = UUID.fromString(request.getRestaurantId());
+        Optional<List<Order>> orders = orderRepository.findByRestaurantId(restaurantUUID);
+
+        RestaurantOrderHistoryResponse response = new RestaurantOrderHistoryResponse();
+        response.setRestaurantId(request.getRestaurantId());
+        response.setOrders(orders.orElse(List.of()));
+
+        rabbitMQPublisher.publishOrderHistoryResponse(response);
+    }
 
 }

@@ -71,4 +71,11 @@ public class Order {
 
     }
 
+    public UUID getId() {
+        return id;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
 }

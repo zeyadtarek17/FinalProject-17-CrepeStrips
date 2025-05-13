@@ -167,5 +167,10 @@ public class RestaurantController {
         return ResponseEntity.ok("Delete message sent!");
     }
 
+    @PostMapping("/{restaurantId}/order-history-request")
+    public ResponseEntity<String> fetchOrderHistory(@PathVariable String restaurantId) {
+        restaurantProducer.sendOrderHistoryRequest(restaurantId);
+        return ResponseEntity.ok("Order history request sent via RabbitMQ.");
+    }
 
 }

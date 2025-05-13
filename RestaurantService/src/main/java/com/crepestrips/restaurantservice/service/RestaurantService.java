@@ -1,11 +1,13 @@
 package com.crepestrips.restaurantservice.service;
 
 
+import com.crepestrips.restaurantservice.dto.RestaurantOrderHistoryResponse;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
 import com.crepestrips.restaurantservice.model.Category;
 import com.crepestrips.restaurantservice.model.Restaurant;
 import com.crepestrips.restaurantservice.repository.CategoryRepository;
 import com.crepestrips.restaurantservice.repository.RestaurantRepository;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -166,5 +168,12 @@ public class RestaurantService {
         }
     }
 
+//    @RabbitListener(queues = "restaurant.order.response.queue")
+//    public void handleOrderHistoryResponse(RestaurantOrderHistoryResponse response) {
+//        System.out.println("📦 Received orders for restaurant " + response.getRestaurantId());
+//        response.getOrders().forEach(order ->
+//                System.out.println("Order ID: " + order.getId() + " | Total: " + order.getTotalAmount())
+//        );
+//    }
 
 }
