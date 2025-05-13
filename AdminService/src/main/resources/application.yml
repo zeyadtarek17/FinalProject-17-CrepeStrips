@@ -6,7 +6,14 @@ spring:
     mongodb:
       host: ${SPRING_DATA_MONGODB_HOST:localhost}
       port: ${SPRING_DATA_MONGODB_PORT:27017}
-      database: adminDB
+      database: admindb
+
+
+  rabbitmq:
+    host:     localhost
+    port:     5672
+    username: guest
+    password: guest
 
 server:
-  port: 8083
+  port: 8080
