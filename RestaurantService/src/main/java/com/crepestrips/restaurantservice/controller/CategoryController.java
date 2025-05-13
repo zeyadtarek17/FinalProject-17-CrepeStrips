@@ -38,7 +38,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Category> updateCategory(@PathVariable String id, @RequestBody Category category) {
+        public ResponseEntity<Category> updateCategory(@PathVariable String id, @RequestBody Category category) {
         return categoryService.update(id, category)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
