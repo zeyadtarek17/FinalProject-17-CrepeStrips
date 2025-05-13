@@ -1,7 +1,8 @@
 package com.crepestrips.userservice.service;
 
-import com.crepestrips.common.dto.UserMessage;
 import com.crepestrips.userservice.config.RabbitMQConfig;
+import com.crepestrips.userservice.dto.UserMessage;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
