@@ -109,9 +109,13 @@ public class UserController {
         return userService.changePassword(request.getUserName(), request.getOldPassword(), request.getNewPassword());
     }
 
-    @PostMapping("/{userId}/report")
-    public Report reportIssue(@PathVariable UUID userId, @RequestBody Report report) {
-        return userService.reportIssue(userId, report);
+    @PostMapping("/report")
+    public ResponseEntity<Report> reportIssue(@RequestParam UUID userId,
+                                              @RequestParam String type,
+                                              @RequestParam String content,
+                                              @RequestParam UUID targetId) {
+        Report savedReport = userService.reportIssue(userId, type, content, targetId);
+        return ResponseEntity.ok(savedReport);
     }
 
     @GetMapping("/{id}")
