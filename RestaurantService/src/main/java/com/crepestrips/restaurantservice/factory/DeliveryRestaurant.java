@@ -1,12 +1,19 @@
 package com.crepestrips.restaurantservice.factory;
 
 import com.crepestrips.restaurantservice.model.Restaurant;
+import com.crepestrips.restaurantservice.model.RestaurantType;
+
 import org.springframework.stereotype.Component;
 
-@Component("DELIVERY")
+// @Component("DELIVERY")
 public class DeliveryRestaurant extends Restaurant {
     private String deliveryZone; // unique attribute
 
     public String getDeliveryZone() { return deliveryZone; }
     public void setDeliveryZone(String deliveryZone) { this.deliveryZone = deliveryZone; }
+
+    public DeliveryRestaurant(Restaurant restaurant, String deliveryZone) {
+        super(restaurant.getName(), restaurant.getLocation(), restaurant.getRating(), restaurant.isOpen(), restaurant.getOpeningTime(), restaurant.getClosingTime(), restaurant.getCategory());
+        this.deliveryZone = deliveryZone;
+    }
 }

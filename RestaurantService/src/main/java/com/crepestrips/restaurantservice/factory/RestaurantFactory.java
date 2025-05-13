@@ -10,34 +10,38 @@ import java.util.Map;
 @Component
 public class RestaurantFactory {
 
-    public Restaurant createRestaurant(String type) {
-        switch (type.toUpperCase()) {
-            case "DINE_IN":
-                DineInRestaurant dineIn = new DineInRestaurant();
-                dineIn.setHasSeating(true);
-                dineIn.setSupportsDelivery(false);
-                dineIn.setType(RestaurantType.DINE_IN);
-                dineIn.setTableCount(20); // unique config
+    public Restaurant createRestaurant(Restaurant restaurant) {
+        switch (restaurant.getType()) {
+            case DINE_IN:
+                int tableCount = (restaurant instanceof DineInRestaurant) ? ((DineInRestaurant) restaurant).getTableCount() : 0;
+                DineInRestaurant dineIn = new DineInRestaurant(restaurant, tableCount);
+                // dineIn.setHasSeating(true);
+                // dineIn.setSupportsDelivery(false);
+                // dineIn.setType(RestaurantType.DINE_IN);
+                // dineIn.setTableCount(20); // unique config
                 return dineIn;
 
-            case "DELIVERY":
-                DeliveryRestaurant delivery = new DeliveryRestaurant();
-                delivery.setHasSeating(false);
-                delivery.setSupportsDelivery(true);
-                delivery.setType(RestaurantType.DELIVERY);
-                delivery.setDeliveryZone("Zone A"); // unique config
+            case DELIVERY:
+                String zone = (restaurant instanceof DeliveryRestaurant) ? ((DeliveryRestaurant) restaurant).getDeliveryZone() : null;
+                DeliveryRestaurant delivery = new DeliveryRestaurant(restaurant, zone);
+                // delivery.setHasSeating(false);
+                // delivery.setSupportsDelivery(true);
+                // delivery.setType(RestaurantType.DELIVERY);
+                // delivery.setDeliveryZone("Zone A"); // unique config
                 return delivery;
 
-            case "TAKEAWAY":
-                TakeawayRestaurant takeaway = new TakeawayRestaurant();
-                takeaway.setHasSeating(false);
-                takeaway.setSupportsDelivery(false);
-                takeaway.setType(RestaurantType.TAKEAWAY);
-                takeaway.setSelfService(true); // unique config
+            case TAKEAWAY:
+                boolean selfService = restaurant instanceof TakeawayRestaurant ? ((TakeawayRestaurant) restaurant).isSelfService() : false;
+                System.out.println("Self Service: " + selfService);
+                TakeawayRestaurant takeaway = new TakeawayRestaurant(restaurant, selfService);
+                // takeaway.setHasSeating(false);
+                // takeaway.setSupportsDelivery(false);
+                // takeaway.setType(RestaurantType.TAKEAWAY);
+                // takeaway.setSelfService(true); // unique config
                 return takeaway;
 
             default:
-                throw new IllegalArgumentException("Unknown restaurant type: " + type);
+                throw new IllegalArgumentException("Unknown restaurant type: " + restaurant.getType());
         }
     }
 }

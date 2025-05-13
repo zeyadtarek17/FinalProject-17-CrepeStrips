@@ -37,28 +37,16 @@ public class RestaurantService {
     }
 
     public Restaurant create(Restaurant restaurant) {
-//        Restaurant restaurant = new Restaurant();
-//        Category category = restaurant.getCategory();
-//        if (category != null) {
-//            category = categoryRepository.save(category);
-//        }
-//        restaurant.setCategory(category);
-//        restaurant.setName(dto.getName());
-//        restaurant.setLocation(dto.getLocation());
-//        restaurant.setOpeningTime(dto.getOpeningTime());
-//        restaurant.setClosingTime(dto.getClosingTime());
-////        restaurant.setHasSeating(dto.isHasSeating());
-////        restaurant.setSupportsDelivery(dto.isSupportsDelivery());
-////        restaurant.setRating(dto.getRating());
-//        restaurant.setCategory(dto.getCategory());
-//        restaurant.setCategoryID(dto.getCategoryId());
-//        restaurant = restaurantFactory.createRestaurant(restaurant, dto.getType().name());
-//        return restaurant;
+        
         if (restaurant.getCategory() != null && restaurant.getCategory().getId() == null) {
-            Category savedCategory = categoryRepository.save(restaurant.getCategory());
-            restaurant.setCategory(savedCategory);  // Set the saved category with its ID
-        }
-        return repository.save(restaurant);
+        Category savedCategory = categoryRepository.save(restaurant.getCategory());
+        restaurant.setCategory(savedCategory);
+    }
+
+    String typeName = restaurant.getType() != null ? restaurant.getType().name() : "DEFAULT";
+    Restaurant newRestaurant = restaurantFactory.createRestaurant(restaurant);
+
+    return repository.save(newRestaurant);
     }
 
     public List<Restaurant> getAll() {

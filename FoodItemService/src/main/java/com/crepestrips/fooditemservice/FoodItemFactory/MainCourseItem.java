@@ -4,7 +4,7 @@ package com.crepestrips.fooditemservice.FoodItemFactory;
 import com.crepestrips.fooditemservice.model.FoodItem;
 
 public class MainCourseItem extends FoodItem {
-    private String description;
+    private String descriptionMaincourse;
     public MainCourseItem() {
         super();
     }
@@ -13,17 +13,15 @@ public class MainCourseItem extends FoodItem {
                 item.getPrice(),
                 item.getDiscount(), item.getRating(),
                 item.getAvailableStock(), item.getCategory(), item.getRestaurantId(),item.getStatus());
-                this.description="250 grams of steak served with 200 grams of rice";
+                this.descriptionMaincourse="250 grams of steak served with 200 grams of rice";
     }
 
 
-    @Override
-    public String getDescription() {
-        return description;
+    public String getDescriptionMaincourse() {
+        return descriptionMaincourse;
     }
 
-    @Override
-    public void setDescription(String description) {
-        this.description = description;
+    public void setDescriptionMaincourse(String description) {
+        this.descriptionMaincourse = description;
     }
 }
