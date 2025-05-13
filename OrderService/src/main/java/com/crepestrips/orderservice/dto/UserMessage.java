@@ -6,12 +6,12 @@ import java.util.UUID;
 
 public class UserMessage {
     private UUID userId;
-    private UUID restrauntId;
+    private String restrauntId;
     private List<FoodItemResponse> foodItems;
     private UUID orderId;
     public UserMessage() {}
 
-    public UserMessage(UUID userId, UUID restrauntId, List<FoodItemResponse> foodItems, UUID orderId) {
+    public UserMessage(UUID userId, String restrauntId, List<FoodItemResponse> foodItems, UUID orderId) {
         this.userId = userId;
         this.restrauntId = restrauntId;
         this.foodItems = foodItems;
@@ -30,11 +30,11 @@ public class UserMessage {
         this.userId = userId;
     }
 
-    public UUID getRestrauntId() {
+    public String getRestrauntId() {
         return restrauntId;
     }
 
-    public void setRestrauntId(UUID restrauntId) {
+    public void setRestrauntId(String restrauntId) {
         this.restrauntId = restrauntId;
     }
 

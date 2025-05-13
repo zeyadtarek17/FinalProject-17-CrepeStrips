@@ -5,17 +5,17 @@ import java.util.Observer;
 import java.util.UUID;
 
 public class FoodItemResponse {
-    private UUID id;
+    private String id;
     private String name;
     private double price;
     private double discount;
     private int availableStock;
-    private UUID restaurantId;
+    private String restaurantId;
 
     public FoodItemResponse() {
     }
 
-    public FoodItemResponse(UUID id, String name, double price, double discount, int availableStock, UUID restaurantId) {
+    public FoodItemResponse(String id, String name, double price, double discount, int availableStock, String restaurantId) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -25,11 +25,11 @@ public class FoodItemResponse {
     }
 
     
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -65,11 +65,11 @@ public class FoodItemResponse {
         this.availableStock = availableStock;
     }
 
-    public UUID getRestaurantId() {
+    public String getRestaurantId() {
         return restaurantId;
     }
 
-    public void setRestaurantId(UUID restaurantId) {
+    public void setRestaurantId(String restaurantId) {
         this.restaurantId = restaurantId;
     }
     

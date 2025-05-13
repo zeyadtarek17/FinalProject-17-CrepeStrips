@@ -62,6 +62,15 @@ public class FoodItemController {
         return ResponseEntity.ok(service.getItemsSortedByRating());
     }
 
+    @PostMapping("/all")
+    public ResponseEntity<List<FoodItem>> getItemsById(@RequestBody List<String> ids) {
+        List<FoodItem> items = service.getItemsById(ids);
+        return ResponseEntity.ok(items);
+    }
 
+    @PostMapping("/decrement")
+    public ResponseEntity<Boolean> decrementStock(@RequestBody List<String> ids) {
+        return ResponseEntity.ok(service.decrementStock(ids));
+    }
 
 }
