@@ -1,7 +1,6 @@
 package com.crepestrips.restaurantservice.model;
 
-import com.crepestrips.fooditemservice.observer.Observer;
-import com.crepestrips.fooditemservice.observer.Subject;
+import com.crepestrips.fooditemservice.model.FoodItem;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -12,11 +11,10 @@ import java.util.List;
 import java.util.ArrayList;
 
 @Document(collection = "restaurants")
-public class Restaurant implements Observer {
+public class Restaurant{
 
     @Id
     private String id;
-    private Subject foodItem;
     private String name;
     private LocalTime openingTime;
     private LocalTime closingTime;
@@ -27,18 +25,13 @@ public class Restaurant implements Observer {
     private boolean supportsDelivery;
     private RestaurantType type;
     private boolean isBanned;
-
+    private FoodItem foodItem;
     @DBRef
     private Category category;
 
     private List<String> foodItemIds = new ArrayList<>();
 
-    public Restaurant(Subject foodItem) {
-        this.foodItem = foodItem;
-        foodItem.registerObserver(this);
-        isBanned = false;
 
-    }
 
     public Restaurant(String name, String location, double rating) {
         this.name = name;
@@ -110,10 +103,7 @@ public class Restaurant implements Observer {
 
     public void setClosingTime(LocalTime closingTime) { this.closingTime = closingTime; }
 
-    @Override
-    public void update() {
-        System.out.println("[" + name + "] ALERT: '" + foodItem + "' is out of stock.");
-    }
+
 
     public String getCategoryId() {
         return category != null ? category.getId() : null;
@@ -123,11 +113,9 @@ public class Restaurant implements Observer {
         this.category = category;
     }
 
-    public Subject getFoodItem() {
-        return foodItem;
-    }
 
-    public void setFoodItem(Subject foodItem) {
+
+    public void setFoodItem(FoodItem foodItem) {
         this.foodItem = foodItem;
     }
 
@@ -170,6 +158,10 @@ public class Restaurant implements Observer {
     }
     public void setBanned(boolean banned) {
         isBanned = banned;
+    }
+
+    public FoodItem getFoodItem() {
+        return foodItem;
     }
 }
 
