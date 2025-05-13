@@ -1,6 +1,6 @@
 package com.crepestrips.restaurantservice.model;
 
-import com.crepestrips.fooditemservice.model.FoodItem;
+import com.crepestrips.restaurantservice.dto.FoodItemDTO;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -25,7 +25,7 @@ public class Restaurant{
     private boolean supportsDelivery;
     private RestaurantType type;
     private boolean isBanned;
-    private FoodItem foodItem;
+    private FoodItemDTO foodItem;
     @DBRef
     private Category category;
 
@@ -115,7 +115,7 @@ public class Restaurant{
 
 
 
-    public void setFoodItem(FoodItem foodItem) {
+    public void setFoodItem(FoodItemDTO foodItem) {
         this.foodItem = foodItem;
     }
 
@@ -160,7 +160,7 @@ public class Restaurant{
         isBanned = banned;
     }
 
-    public FoodItem getFoodItem() {
+    public FoodItemDTO getFoodItem() {
         return foodItem;
     }
 }

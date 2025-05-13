@@ -1,6 +1,8 @@
 package com.crepestrips.restaurantservice.service;
 
 
+import com.crepestrips.restaurantservice.client.FoodItemClient;
+import com.crepestrips.restaurantservice.dto.FoodItemDTO;
 import com.crepestrips.restaurantservice.dto.RestaurantOrderHistoryResponse;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
 import com.crepestrips.restaurantservice.model.Category;
@@ -27,6 +29,12 @@ public class RestaurantService {
 
     @Autowired
     private RestaurantFactory restaurantFactory;
+
+    private final FoodItemClient foodItemClient;
+
+    public RestaurantService(FoodItemClient foodItemClient) {
+        this.foodItemClient = foodItemClient;
+    }
 
     public Restaurant create(Restaurant restaurant) {
 //        Restaurant restaurant = new Restaurant();
@@ -167,6 +175,24 @@ public class RestaurantService {
 
         }
     }
+    public boolean addFoodItemIdToRestaurant(String restaurantId, String foodItemId) {
+        Optional<Restaurant> optionalRestaurant = repository.findById(restaurantId);
+
+        if (optionalRestaurant.isEmpty()) {
+            return false; // restaurant not found
+        }
+
+        Restaurant restaurant = optionalRestaurant.get();
+        List<String> foodItems = restaurant.getFoodItemIds();
+
+        if (!foodItems.contains(foodItemId)) {
+            foodItems.add(foodItemId);
+            repository.save(restaurant);
+        }
+
+        return true;
+    }
+
 
 //    @RabbitListener(queues = "restaurant.order.response.queue")
 //    public void handleOrderHistoryResponse(RestaurantOrderHistoryResponse response) {
