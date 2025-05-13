@@ -10,7 +10,7 @@ public class DessertItem extends FoodItem {
         super(item.getName(), item.getDescription(), item.getPrice(), 
               item.getDiscount(),
               item.getRating(), item.getAvailableStock(), 
-              item.getCategory(), item.getRestaurantId());
+              item.getCategory(), item.getRestaurantId(),item.getStatus());
         this.sweetnessLevel = 4;
     }
 }
