@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(name = "food-item-service", url = "http://localhost:8082")
 public interface FoodItemServiceClient {
     @GetMapping("/api/food-items/{id}")
-    FoodItemDTO getFoodItem(@PathVariable Long id);
+    FoodItemDTO getFoodItem(@PathVariable String id);
 
     @PostMapping("/api/food-items/{id}/suspend")
-    void suspendFoodItem(@PathVariable Long id);
+    void suspendFoodItem(@PathVariable String id);
 
     @PostMapping("/api/food-items/{id}/activate")
-    void activateFoodItem(@PathVariable Long id);
+    void activateFoodItem(@PathVariable String id);
 }
