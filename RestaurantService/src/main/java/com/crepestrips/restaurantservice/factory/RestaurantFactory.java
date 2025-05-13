@@ -9,20 +9,36 @@ import java.util.Map;
 
 @Component
 public class RestaurantFactory {
-    private final Map<String,RestaurantTypeStrategy> strategies;
 
-    @Autowired
-    public RestaurantFactory(Map<String, RestaurantTypeStrategy> strategies) {
-        this.strategies = strategies;
+    public Restaurant createRestaurant(String type) {
+        switch (type.toUpperCase()) {
+            case "DINE_IN":
+                DineInRestaurant dineIn = new DineInRestaurant();
+                dineIn.setHasSeating(true);
+                dineIn.setSupportsDelivery(false);
+                dineIn.setType(RestaurantType.DINE_IN);
+                dineIn.setTableCount(20); // unique config
+                return dineIn;
+
+            case "DELIVERY":
+                DeliveryRestaurant delivery = new DeliveryRestaurant();
+                delivery.setHasSeating(false);
+                delivery.setSupportsDelivery(true);
+                delivery.setType(RestaurantType.DELIVERY);
+                delivery.setDeliveryZone("Zone A"); // unique config
+                return delivery;
+
+            case "TAKEAWAY":
+                TakeawayRestaurant takeaway = new TakeawayRestaurant();
+                takeaway.setHasSeating(false);
+                takeaway.setSupportsDelivery(false);
+                takeaway.setType(RestaurantType.TAKEAWAY);
+                takeaway.setSelfService(true); // unique config
+                return takeaway;
+
+            default:
+                throw new IllegalArgumentException("Unknown restaurant type: " + type);
+        }
     }
-
-    public Restaurant createRestaurant(Restaurant base, String type){
-        RestaurantTypeStrategy strategy = strategies.get(type.toUpperCase());
-        if (strategy == null) throw new IllegalArgumentException("Unknown type: " + type);
-        strategy.configure(base);
-        base.setType(RestaurantType.valueOf(type.toUpperCase()));
-        return base;
-    }
-
-
 }
+

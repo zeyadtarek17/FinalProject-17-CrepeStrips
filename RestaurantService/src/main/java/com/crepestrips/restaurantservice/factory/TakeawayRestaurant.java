@@ -4,10 +4,9 @@ import com.crepestrips.restaurantservice.model.Restaurant;
 import org.springframework.stereotype.Component;
 
 @Component("TAKEAWAY")
-public class TakeawayRestaurant implements RestaurantTypeStrategy {
-    @Override
-    public void configure(Restaurant restaurant) {
-        restaurant.setHasSeating(false);
-        restaurant.setSupportsDelivery(false);
-    }
+public class TakeawayRestaurant extends Restaurant {
+    private boolean selfService; // unique attribute
+
+    public boolean isSelfService() { return selfService; }
+    public void setSelfService(boolean selfService) { this.selfService = selfService; }
 }

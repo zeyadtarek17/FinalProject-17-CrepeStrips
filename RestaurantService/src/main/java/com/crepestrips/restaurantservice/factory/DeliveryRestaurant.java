@@ -4,10 +4,9 @@ import com.crepestrips.restaurantservice.model.Restaurant;
 import org.springframework.stereotype.Component;
 
 @Component("DELIVERY")
-public class DeliveryRestaurant implements RestaurantTypeStrategy {
-    @Override
-    public void configure(Restaurant restaurant) {
-        restaurant.setHasSeating(false);
-        restaurant.setSupportsDelivery(true);
-    }
+public class DeliveryRestaurant extends Restaurant {
+    private String deliveryZone; // unique attribute
+
+    public String getDeliveryZone() { return deliveryZone; }
+    public void setDeliveryZone(String deliveryZone) { this.deliveryZone = deliveryZone; }
 }
