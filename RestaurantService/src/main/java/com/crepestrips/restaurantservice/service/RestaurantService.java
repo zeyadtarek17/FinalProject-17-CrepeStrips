@@ -1,8 +1,6 @@
 package com.crepestrips.restaurantservice.service;
 
-import com.crepestrips.fooditemservice.FoodItemFactory.FoodItemFactory;
-import com.crepestrips.fooditemservice.model.FoodItem;
-import com.crepestrips.restaurantservice.dto.FoodItemDTO;
+
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
 import com.crepestrips.restaurantservice.model.Category;
 import com.crepestrips.restaurantservice.model.Restaurant;
@@ -158,6 +156,14 @@ public class RestaurantService {
 
     public List<Restaurant> getAllRestaurants() {
         return repository.findAll();
+    }
+    public void banRestaurant(String restaurantId) {
+        Restaurant restaurant = repository.findById(restaurantId).orElse(null);
+        if (restaurant != null) {
+           restaurant.setBanned(true);
+           repository.save(restaurant);
+
+        }
     }
 
 

@@ -23,9 +23,20 @@ public class AdminService implements UserDetailsService {
         this.adminRepo = adminRepo;
         this.passwordEncoder = passwordEncoder;
     }
+    public Admin createAdmin(Admin admin) {
+
+        if (adminRepo.findByUsername(admin.getUsername()) != null) {
+            throw new RuntimeException("Admin already exists");
+        }
+        else {
+            admin.setPassword(passwordEncoder.encode(admin.getPassword()));
+            return adminRepo.save(admin);
+        }
+    }
 
     public String login(String username, String password) {
         Admin admin = adminRepo.findByUsername(username);
+
         if (admin == null) {
             throw new UsernameNotFoundException("Invalid username or password");
         }
@@ -52,15 +63,7 @@ public class AdminService implements UserDetailsService {
                 List.of(new SimpleGrantedAuthority("ROLE_ADMIN")) // Or map user roles/authorities here
         );
     }
-    public Admin createAdmin(Admin admin) {
-        if (adminRepo.findByUsername(admin.getUsername()) != null) {
-            throw new RuntimeException("Admin already exists");
-        }
-        else {
-            admin.setPassword(passwordEncoder.encode(admin.getPassword()));
-            return adminRepo.save(admin);
-        }
-    }
+
 
     public List<Admin> getAllAdmins() {
         return adminRepo.findAll();

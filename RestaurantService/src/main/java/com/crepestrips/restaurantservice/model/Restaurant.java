@@ -26,6 +26,7 @@ public class Restaurant implements Observer {
     private boolean hasSeating;
     private boolean supportsDelivery;
     private RestaurantType type;
+    private boolean isBanned;
 
     @DBRef
     private Category category;
@@ -35,6 +36,7 @@ public class Restaurant implements Observer {
     public Restaurant(Subject foodItem) {
         this.foodItem = foodItem;
         foodItem.registerObserver(this);
+        isBanned = false;
 
     }
 
@@ -42,6 +44,7 @@ public class Restaurant implements Observer {
         this.name = name;
         this.location = location;
         this.rating = rating;
+        isBanned = false;
     }
 
     public Restaurant(String id, String name, String location, double rating, boolean isOpen) {
@@ -50,9 +53,11 @@ public class Restaurant implements Observer {
         this.location = location;
         this.rating = rating;
         this.isOpen = isOpen;
+        isBanned = false;
     }
 
     public Restaurant() {
+        isBanned = false;
 
     }
 
@@ -64,6 +69,7 @@ public class Restaurant implements Observer {
         this.openingTime = openingTime;
         this.closingTime = closingTime;
         this.category = category;
+        isBanned = false;
     }
 
     public String getId() { return id; }
@@ -158,6 +164,12 @@ public class Restaurant implements Observer {
             this.category = new Category(); // or fetch existing if needed
         }
         this.category.setId(categoryId);
+    }
+    public boolean isBanned() {
+        return isBanned;
+    }
+    public void setBanned(boolean banned) {
+        isBanned = banned;
     }
 }
 

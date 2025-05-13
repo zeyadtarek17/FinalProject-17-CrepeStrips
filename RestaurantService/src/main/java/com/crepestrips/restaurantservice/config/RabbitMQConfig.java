@@ -30,4 +30,5 @@ public class RabbitMQConfig {
                 .to(exchange)
                 .with(FOODITEM_ROUTING_KEY);
     }
+
 }
