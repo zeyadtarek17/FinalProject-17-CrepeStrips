@@ -7,14 +7,14 @@ import org.springframework.stereotype.Component;
 
 // @Component("DINE_IN")
 public class DineInRestaurant extends Restaurant {
-    private int tableCount; // unique attribute
+    private int tableCount;
 
     public int getTableCount() { return tableCount; }
     public void setTableCount(int tableCount) { this.tableCount = tableCount; }
 
      public DineInRestaurant(Restaurant restaurant, int tableCount) {
     
-        super(restaurant.getName(), restaurant.getLocation(), restaurant.getRating(), restaurant.isOpen(), restaurant.getOpeningTime(), restaurant.getClosingTime(), restaurant.getCategory());
+        super(restaurant.getName(), restaurant.getLocation(), restaurant.isOpen(), restaurant.getOpeningTime(), restaurant.getClosingTime(), restaurant.getCategory());
         this.tableCount = tableCount;
     }
 }

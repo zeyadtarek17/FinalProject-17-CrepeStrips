@@ -7,6 +7,7 @@ import com.crepestrips.restaurantservice.dto.RestaurantOrderHistoryResponse;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
 import com.crepestrips.restaurantservice.model.Category;
 import com.crepestrips.restaurantservice.model.Restaurant;
+import com.crepestrips.restaurantservice.model.RestaurantCreation;
 import com.crepestrips.restaurantservice.repository.CategoryRepository;
 import com.crepestrips.restaurantservice.repository.RestaurantRepository;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -36,15 +37,15 @@ public class RestaurantService {
         this.foodItemClient = foodItemClient;
     }
 
-    public Restaurant create(Restaurant restaurant) {
-        
+    public Restaurant create(RestaurantCreation restaurantCreation) {
+        Restaurant restaurant = restaurantCreation.getRestaurant();
         if (restaurant.getCategory() != null && restaurant.getCategory().getId() == null) {
         Category savedCategory = categoryRepository.save(restaurant.getCategory());
         restaurant.setCategory(savedCategory);
     }
 
     String typeName = restaurant.getType() != null ? restaurant.getType().name() : "DEFAULT";
-    Restaurant newRestaurant = restaurantFactory.createRestaurant(restaurant);
+    Restaurant newRestaurant = restaurantFactory.createRestaurant(restaurant,restaurantCreation.getExtras());
 
     return repository.save(newRestaurant);
     }
@@ -62,7 +63,7 @@ public class RestaurantService {
         return repository.findById(id).map(existing -> {
             existing.setName(updated.getName());
             existing.setLocation(updated.getLocation());
-            existing.setRating(updated.getRating());
+//            existing.setRating(updated.getRating());
             existing.setOpen(isWithinOperatingHours(updated.getOpeningTime(), updated.getClosingTime()));
             existing.setOpeningTime(updated.getOpeningTime());
             existing.setClosingTime(updated.getClosingTime());
@@ -95,9 +96,9 @@ public class RestaurantService {
         return repository.findByIsOpenTrue();
     }
 
-    public List<Restaurant> getTopRatedRestaurants() {
-        return repository.findAllByOrderByRatingDesc();
-    }
+//    public List<Restaurant> getTopRatedRestaurants() {
+//        return repository.findAllByOrderByRatingDesc();
+//    }
     
 //    public Restaurant getRestaurantById(String id) {
 //        return repository.findById(id).get();

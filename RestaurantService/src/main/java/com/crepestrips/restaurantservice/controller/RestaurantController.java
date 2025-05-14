@@ -6,6 +6,7 @@ import com.crepestrips.restaurantservice.config.RestaurantProducer;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
 import com.crepestrips.restaurantservice.model.Category;
+import com.crepestrips.restaurantservice.model.RestaurantCreation;
 import com.crepestrips.restaurantservice.repository.CategoryRepository;
 import com.crepestrips.restaurantservice.repository.RestaurantRepository;
 import com.crepestrips.restaurantservice.strategy.FilterFactory;
@@ -72,8 +73,8 @@ public class RestaurantController {
     }
 
     @PostMapping
-    public ResponseEntity<Restaurant> createRestaurant(@RequestBody Restaurant restaurant) {
-        Restaurant createdRestaurant = service.create(restaurant);
+    public ResponseEntity<Restaurant> createRestaurant(@RequestBody RestaurantCreation restaurantCreation) {
+        Restaurant createdRestaurant = service.create(restaurantCreation);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRestaurant);
     }
 
@@ -94,10 +95,10 @@ public class RestaurantController {
         return ResponseEntity.ok(service.getOpenRestaurants());
     }
 
-    @GetMapping("/top-rated")
-    public ResponseEntity<List<Restaurant>> getTopRatedRestaurants() {
-        return ResponseEntity.ok(service.getTopRatedRestaurants());
-    }
+//    @GetMapping("/top-rated")
+//    public ResponseEntity<List<Restaurant>> getTopRatedRestaurants() {
+//        return ResponseEntity.ok(service.getTopRatedRestaurants());
+//    }
 
     @PutMapping("/{restaurantId}/addFoodItem/{foodItemId}")
     public ResponseEntity<String> addFoodItemToRestaurant(@PathVariable String restaurantId, @PathVariable String foodItemId) {

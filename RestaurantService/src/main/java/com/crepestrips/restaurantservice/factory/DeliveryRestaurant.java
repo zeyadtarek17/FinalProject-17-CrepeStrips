@@ -13,7 +13,7 @@ public class DeliveryRestaurant extends Restaurant {
     public void setDeliveryZone(String deliveryZone) { this.deliveryZone = deliveryZone; }
 
     public DeliveryRestaurant(Restaurant restaurant, String deliveryZone) {
-        super(restaurant.getName(), restaurant.getLocation(), restaurant.getRating(), restaurant.isOpen(), restaurant.getOpeningTime(), restaurant.getClosingTime(), restaurant.getCategory());
+        super(restaurant.getName(), restaurant.getLocation(), restaurant.isOpen(), restaurant.getOpeningTime(), restaurant.getClosingTime(), restaurant.getCategory());
         this.deliveryZone = deliveryZone;
     }
 }

@@ -13,7 +13,7 @@ public class TakeawayRestaurant extends Restaurant {
     public void setSelfService(boolean selfService) { this.selfService = selfService; }
 
     public TakeawayRestaurant(Restaurant restaurant, boolean selfService) {
-        super(restaurant.getName(), restaurant.getLocation(), restaurant.getRating(), restaurant.isOpen(), restaurant.getOpeningTime(), restaurant.getClosingTime(), restaurant.getCategory());
+        super(restaurant.getName(), restaurant.getLocation(), restaurant.isOpen(), restaurant.getOpeningTime(), restaurant.getClosingTime(), restaurant.getCategory());
         this.selfService = selfService; 
     }
 }
