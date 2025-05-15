@@ -1,35 +1,29 @@
-package com.crepestrips.userservice.model;
-
-import jakarta.persistence.*;
+package com.crepestrips.adminservice.dto;
 
 import java.util.Date;
 import java.util.UUID;
 
-@Entity
-public class Report {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private UUID id;
-
+public class ReportDTO {
+    private UUID reportId;
+    private UUID userId;
     private String content;
-    private String type; // "fooditem" or "restaurant"
-    private UUID targetId; // ID of the reported restaurant or fooditem
-
-
-    @Temporal(TemporalType.TIMESTAMP)
+    private String type; // "restaurant" or "fooditem"
+    private UUID targetId;
     private Date createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
     public UUID getId() {
-        return id;
+        return reportId;
+    }
+    public void setId(UUID id) {
+        this.reportId = id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
     }
 
     public String getContent() {
@@ -48,16 +42,10 @@ public class Report {
         this.type = type;
     }
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
     public UUID getTargetId() {
         return targetId;
     }
+
     public void setTargetId(UUID targetId) {
         this.targetId = targetId;
     }
