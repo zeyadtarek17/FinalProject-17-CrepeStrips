@@ -8,6 +8,6 @@ public interface IFoodItem {
     String getDescription();
     double getRating();
     int getAvailableStock();
-    String getCategory();
+    FoodCategory getCategory();
     String getRestaurantId();
 }

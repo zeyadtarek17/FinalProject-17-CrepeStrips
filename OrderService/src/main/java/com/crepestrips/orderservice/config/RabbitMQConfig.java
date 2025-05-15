@@ -20,6 +20,12 @@ public class RabbitMQConfig {
     public static final String USER_TO_ORDER_QUEUE = "user.to.order.queue";
     public static final String USER_TO_ORDER_ROUTING_KEY = "user.to.order";
 
+    public static final String ORDER_HISTORY_EXCHANGE = "restaurant.order.exchange";
+    public static final String ORDER_HISTORY_REQUEST_QUEUE = "restaurant.order.request.queue";
+    public static final String ORDER_HISTORY_RESPONSE_QUEUE = "restaurant.order.response.queue";
+    public static final String ORDER_HISTORY_REQUEST_KEY = "restaurant.order.request";
+    public static final String ORDER_HISTORY_RESPONSE_KEY = "restaurant.order.response";
+
     @Bean
     public Queue userToOrderQueue() {
         return new Queue(USER_TO_ORDER_QUEUE);
@@ -65,6 +71,37 @@ public class RabbitMQConfig {
                 .bind(orderUpdatedQueue())
                 .to(orderExchange())
                 .with(ORDER_UPDATED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue orderHistoryRequestQueue() {
+        return new Queue(ORDER_HISTORY_REQUEST_QUEUE);
+    }
+
+    @Bean
+    public Queue orderHistoryResponseQueue() {
+        return new Queue(ORDER_HISTORY_RESPONSE_QUEUE);
+    }
+
+    @Bean
+    public TopicExchange orderHistoryExchange() {
+        return new TopicExchange(ORDER_HISTORY_EXCHANGE);
+    }
+
+    @Bean
+    public Binding orderHistoryRequestBinding() {
+        return BindingBuilder
+                .bind(orderHistoryRequestQueue())
+                .to(orderHistoryExchange())
+                .with(ORDER_HISTORY_REQUEST_KEY);
+    }
+
+    @Bean
+    public Binding orderHistoryResponseBinding() {
+        return BindingBuilder
+                .bind(orderHistoryResponseQueue())
+                .to(orderHistoryExchange())
+                .with(ORDER_HISTORY_RESPONSE_KEY);
     }
 
     // Message converter

@@ -1,7 +1,6 @@
 package com.crepestrips.fooditemservice.model;
 
-import com.crepestrips.fooditemservice.observer.Observer;
-import com.crepestrips.fooditemservice.observer.Subject;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -9,25 +8,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "food_items")
-public class FoodItem implements IFoodItem, Subject {
+public class FoodItem implements IFoodItem {
 
     @Id
     private String id;
-    private List<Observer> observers;
     private String name;
     private String description;
     private double price;
     private double discount;       
     private double rating;         
     private int availableStock;
-    private String category;
+    private FoodCategory category;
     private String restaurantId;   
+    private String status;
 
     public FoodItem() {
-        observers = new ArrayList<>();
+
     }
 
-    public FoodItem(String name, String description, double price, double discount, double rating, int availableStock, String category, String restaurantId) {
+    public FoodItem(String name, String description, double price, double discount, double rating, int availableStock, FoodCategory category, String restaurantId, String status) {
         this.name = name;
         this.description = description;
         this.price = price;
@@ -36,11 +35,10 @@ public class FoodItem implements IFoodItem, Subject {
         this.availableStock = availableStock;
         this.category = category;
         this.restaurantId = restaurantId;
-        observers = new ArrayList<>();
-
+        this.status = status;
     }
 
-    public FoodItem(String id, String name, String description, double price, double discount, double rating, int availableStock, String category, String restaurantId) {
+    public FoodItem(String id, String name, String description, double price, double discount, double rating, int availableStock, FoodCategory category, String restaurantId) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -50,7 +48,7 @@ public class FoodItem implements IFoodItem, Subject {
         this.availableStock = availableStock;
         this.category = category;
         this.restaurantId = restaurantId;
-        observers = new ArrayList<>();
+
 
     }
 
@@ -108,14 +106,14 @@ public class FoodItem implements IFoodItem, Subject {
 
     public void setAvailableStock(int availableStock) {
         this.availableStock = availableStock;
-        notifyObservers();
+
     }
 
-    public String getCategory() {
+    public FoodCategory getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(FoodCategory category) {
         this.category = category;
     }
 
@@ -127,20 +125,12 @@ public class FoodItem implements IFoodItem, Subject {
         this.restaurantId = restaurantId;
     }
 
-    @Override
-    public void registerObserver(Observer observer) {
-        observers.add(observer);
+    public String getStatus() {
+        return status;
+    }
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    @Override
-    public void removeObserver(Observer observer) {
-        observers.remove(observer);
-    }
 
-    @Override
-    public void notifyObservers() {
-        for (Observer observer : observers) {
-            observer.update();
-        }
-    }
 }

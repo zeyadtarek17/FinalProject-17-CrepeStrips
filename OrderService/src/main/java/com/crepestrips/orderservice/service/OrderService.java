@@ -3,7 +3,10 @@ package com.crepestrips.orderservice.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import com.crepestrips.orderservice.dto.RestaurantOrderHistoryRequest;
+import com.crepestrips.orderservice.dto.RestaurantOrderHistoryResponse;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -40,15 +43,19 @@ public class OrderService {
     }
 
     @RabbitListener(queues = RabbitMQConfig.USER_TO_ORDER_QUEUE)
-    public UUID createOrder(UUID userId, UUID restaurantId, List<FoodItemResponse> foodItemIds) {
-        boolean success = foodItemServiceClient.decrementFoodItemStock(foodItemIds);
+    public UUID createOrder(UUID userId, String restaurantId, List<FoodItemResponse> foodItems) {
+        List<String> foodItemsIds = foodItems.stream()
+                .map(FoodItemResponse::getId)
+                .collect(Collectors.toList());
+
+        // send to endpoint to decrement the food item stock (sync)
+        boolean success = foodItemServiceClient.decrementStock(foodItemsIds).getBody();
         if (!success) {
             throw new RuntimeException("Stock is being updated");
         }
-        Order order = new Order(userId, restaurantId, foodItemIds);
+        Order order = new Order(userId, restaurantId, foodItems);
         order.calculateTotalAmount();
         orderRepository.save(order);
-        // send to endpoint to decrement the food item stock (sync)
         return order.getId();
     }
 
@@ -132,5 +139,18 @@ public class OrderService {
     // To-do add item to order
 
     // To-do remove item from order
+
+    // added by team1
+    @RabbitListener(queues = RabbitMQConfig.ORDER_HISTORY_REQUEST_QUEUE)
+    public void handleOrderHistoryRequest(RestaurantOrderHistoryRequest request) {
+        UUID restaurantUUID = UUID.fromString(request.getRestaurantId());
+        Optional<List<Order>> orders = orderRepository.findByRestaurantId(restaurantUUID);
+
+        RestaurantOrderHistoryResponse response = new RestaurantOrderHistoryResponse();
+        response.setRestaurantId(request.getRestaurantId());
+        response.setOrders(orders.orElse(List.of()));
+
+        rabbitMQPublisher.publishOrderHistoryResponse(response);
+    }
 
 }

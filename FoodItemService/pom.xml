@@ -64,17 +64,6 @@
 			<artifactId>spring-rabbit-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>com.crepestrips</groupId>-->
-<!--			<artifactId>restaurant-service</artifactId>-->
-<!--			<version>0.0.1-SNAPSHOT</version>-->
-<!--			<scope>compile</scope>-->
-<!--		</dependency>-->
-		<dependency>
-			<groupId>com.rabbitmq</groupId>
-			<artifactId>amqp-client</artifactId>
-			<version>5.20.0</version>
-		</dependency>
 	</dependencies>
 
 	<build>

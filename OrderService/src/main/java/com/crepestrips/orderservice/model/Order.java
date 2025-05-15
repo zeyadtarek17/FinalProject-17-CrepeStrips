@@ -22,7 +22,7 @@ public class Order {
     @Id
     private UUID id;
     private UUID userId;
-    private UUID restaurantId;
+    private String restaurantId;
     private LocalDateTime orderTime;
 
     @Enumerated(EnumType.STRING)
@@ -35,7 +35,7 @@ public class Order {
 
     private double totalAmount;
 
-    public Order(UUID userId, UUID restaurantId, List<FoodItemResponse> orderItems) {
+    public Order(UUID userId, String restaurantId, List<FoodItemResponse> orderItems) {
         this.id = UUID.randomUUID(); // Generate ID on creation
         this.userId = userId;
         this.restaurantId = restaurantId;
@@ -71,4 +71,11 @@ public class Order {
 
     }
 
+    public UUID getId() {
+        return id;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
 }
