@@ -119,7 +119,7 @@ public class UserController {
     public ResponseEntity<Report> reportIssue(@RequestParam UUID userId,
                                               @RequestParam String type,
                                               @RequestParam String content,
-                                              @RequestParam UUID targetId) {
+                                              @RequestParam String targetId) {
         Report savedReport = userService.reportIssue(userId, type, content, targetId);
         return ResponseEntity.ok(savedReport);
     }

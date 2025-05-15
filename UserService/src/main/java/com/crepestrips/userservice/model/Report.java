@@ -14,7 +14,7 @@ public class Report {
 
     private String content;
     private String type; // "fooditem" or "restaurant"
-    private UUID targetId; // ID of the reported restaurant or fooditem
+    private String targetId; // ID of the reported restaurant or fooditem
 
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -55,10 +55,11 @@ public class Report {
     public void setUser(User user) {
         this.user = user;
     }
-    public UUID getTargetId() {
+
+    public String getTargetId() {
         return targetId;
     }
-    public void setTargetId(UUID targetId) {
+    public void setTargetId(String targetId) {
         this.targetId = targetId;
     }
 

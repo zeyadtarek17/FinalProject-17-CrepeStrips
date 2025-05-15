@@ -45,7 +45,7 @@ public class UserService implements UserDetailsService {
         this.cartRepository = cartRepository;
     }
 
-    public Report reportIssue(UUID userId, String type, String content, UUID targetId) {
+    public Report reportIssue(UUID userId, String type, String content, String targetId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

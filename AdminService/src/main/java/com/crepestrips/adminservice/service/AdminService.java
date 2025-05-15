@@ -1,8 +1,13 @@
 package com.crepestrips.adminservice.service;
 
+import com.crepestrips.adminservice.RabbitMQ.RabbitMQConfig;
+import com.crepestrips.adminservice.dto.ReportDTO;
 import com.crepestrips.adminservice.model.Admin;
 import com.crepestrips.adminservice.repository.AdminRepository;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
@@ -17,6 +22,7 @@ public class AdminService implements UserDetailsService {
     @Autowired
     private AdminRepository adminRepo;
     private final PasswordEncoder passwordEncoder;
+    private JavaMailSender mailSender;
 
     @Autowired
     public AdminService(AdminRepository adminRepo,PasswordEncoder passwordEncoder) {
@@ -30,6 +36,7 @@ public class AdminService implements UserDetailsService {
         }
         else {
             admin.setPassword(passwordEncoder.encode(admin.getPassword()));
+            admin.setEmail(admin.getUsername() + "@gmail.com");
             return adminRepo.save(admin);
         }
     }
@@ -63,6 +70,48 @@ public class AdminService implements UserDetailsService {
                 List.of(new SimpleGrantedAuthority("ROLE_ADMIN")) // Or map user roles/authorities here
         );
     }
+
+    //Create a method to get all reports from user service by consuming
+    @RabbitListener(queues = RabbitMQConfig.USER_TO_ADMIN_QUEUE)
+    public void getAllReports(ReportDTO dto) {
+
+        //get all admins emails
+        List<Admin> admins = adminRepo.findAll();
+        String[] adminEmails = admins.stream()
+                .map(Admin::getEmail)
+                .toArray(String[]::new);
+        //send email to all admins
+        String subject = "New Report Received";
+        String body = "A new report has been received from" +  "User ID: " + dto.getUserId() + "\n"+
+                "Report Type: " + dto.getType() + "\n" +
+                "Report Content: " + dto.getContent() + "\n" +
+                "Target ID: " + dto.getTargetId() + "\n" +
+                "Created At: " + dto.getCreatedAt();
+        sendMail(subject, body, adminEmails);
+
+    }
+
+    //    public void receiveReport(ReportDTO dto) {
+    //        if ("restaurant".equalsIgnoreCase(dto.getType())) {
+    //            System.out.println("📣 Admin notified of a reported restaurant!");
+    //            System.out.println("📝 Content: " + dto.getContent());
+    //            System.out.println("🧾 User ID: " + dto.getUserId());
+    //            System.out.println("🏢 Target Restaurant ID: " + dto.getTargetId());
+    //            System.out.println("📅 Created At: " + dto.getCreatedAt());
+    //        }
+    //    }
+    //}]
+
+
+    private void sendMail(String subject, String body, String... to) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setSubject(subject);
+        message.setText(body);
+        message.setTo(to); // Accepts an array of recipients
+        mailSender.send(message);
+    }
+
+
 
 
     public List<Admin> getAllAdmins() {
