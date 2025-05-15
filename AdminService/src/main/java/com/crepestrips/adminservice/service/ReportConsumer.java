@@ -1,6 +1,6 @@
 package com.crepestrips.adminservice.service;
 
-import com.crepestrips.adminservice.config.RabbitMQConfig;
+import com.crepestrips.adminservice.RabbitMQ.RabbitMQConfig;
 import com.crepestrips.adminservice.dto.ReportDTO;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
