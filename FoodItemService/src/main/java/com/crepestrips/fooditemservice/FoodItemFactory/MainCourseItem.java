@@ -1,10 +1,14 @@
 
 package com.crepestrips.fooditemservice.FoodItemFactory;
 
+import org.springframework.data.annotation.TypeAlias;
+
 import com.crepestrips.fooditemservice.model.FoodItem;
 
+@TypeAlias("main_course")
 public class MainCourseItem extends FoodItem {
-    private String descriptionMaincourse;
+    private boolean hasSideDish;
+    private String descriptionSideDish;
     public MainCourseItem() {
         super();
     }
@@ -13,15 +17,21 @@ public class MainCourseItem extends FoodItem {
                 item.getPrice(),
                 item.getDiscount(), item.getRating(),
                 item.getAvailableStock(), item.getCategory(), item.getRestaurantId(),item.getStatus());
-                this.descriptionMaincourse="250 grams of steak served with 200 grams of rice";
     }
 
 
-    public String getDescriptionMaincourse() {
-        return descriptionMaincourse;
+    
+    public boolean isHasSideDish() {
+        return hasSideDish;
     }
-
-    public void setDescriptionMaincourse(String description) {
-        this.descriptionMaincourse = description;
+    public void setHasSideDish(boolean hasSideDish) {
+        this.hasSideDish = hasSideDish;
     }
+    public String getDescriptionSideDish() {
+        return descriptionSideDish;
+    }
+    public void setDescriptionSideDish(String descriptionSideDish) {
+        this.descriptionSideDish = descriptionSideDish;
+    }
+    
 }
