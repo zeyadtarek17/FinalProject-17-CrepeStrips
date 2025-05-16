@@ -12,7 +12,6 @@ import java.util.UUID;
 @Table(name = "users")
 public class User {
 
-
     @Id
     @GeneratedValue
     private UUID id;
@@ -48,11 +47,11 @@ public class User {
     // private Cart cart;
 
     // public Cart getCart() {
-    //     return cart;
+    // return cart;
     // }
 
     // public void setCart(Cart cart) {
-    //     this.cart = cart;
+    // this.cart = cart;
     // }
 
     // Builder pattern
@@ -65,7 +64,8 @@ public class User {
         this.id = builder.id;
     }
 
-    public User() {}
+    public User() {
+    }
 
     public static class Builder {
         private String username;
@@ -170,11 +170,21 @@ public class User {
         this.lastName = lastName;
     }
 
+    public List<Report> getReports() {
+        return reports;
+    }
+
+    public void setReports(List<Report> reports) {
+        this.reports = reports;
+    }
+
     // Equals & HashCode
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         User user = (User) o;
         if (id != null && user.id != null) {
             return Objects.equals(id, user.id);

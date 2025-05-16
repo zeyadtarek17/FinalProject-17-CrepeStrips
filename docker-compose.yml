@@ -48,34 +48,34 @@ services:
 #      SPRING_RABBITMQ_PORT:    5672
 #      SPRING_RABBITMQ_USERNAME: guest
 #      SPRING_RABBITMQ_PASSWORD: guest
-  # adminservice:
-  #   build: ./AdminService
-  #   container_name: adminservice
-  #   ports:
-  #     - "8080:8080"
-  #   depends_on:
-  #     - mongodb
-  #     - rabbitmq
-  #   environment:
-  #     SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/admindb
-  #     SPRING_RABBITMQ_HOST: rabbitmq
-  #     SPRING_RABBITMQ_PORT: 5672
-  #     SPRING_RABBITMQ_USERNAME: guest
-  #     SPRING_RABBITMQ_PASSWORD: guest
-  # userservice:
-  #   build: ./UserService
-  #   container_name: userservice
-  #   ports:
-  #     - "8081:8081"
-  #   depends_on:
-  #     - postgres
-  #     - redis_cache
-  #   environment:
-  #     SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5433/userservice
-  #     SPRING_DATASOURCE_USERNAME: postgres
-  #     SPRING_DATASOURCE_PASSWORD: root
-  #     SPRING_DATA_REDIS_HOST: redisCache
-  #     SPRING_DATA_REDIS_PORT: 6379
+  adminservice:
+    build: ./AdminService
+    container_name: adminservice
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+      - rabbitmq
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/admindb
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+  userservice:
+    build: ./UserService
+    container_name: userservice
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - redis_cache
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5433/userservice
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATA_REDIS_HOST: redisCache
+      SPRING_DATA_REDIS_PORT: 6379
   postgres:
     image: postgres:15
     environment:
