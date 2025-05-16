@@ -19,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.crepestrips.adminservice.service.AdminService;
 import org.springframework.context.annotation.Lazy;
 
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -33,39 +34,54 @@ public class SecurityConfig {
         this.adminDetailsService = adminDetailsService;
     }
 
+
+    /*
+     * Main security configuration
+     * Defines endpoint access rules and JWT filter setup
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Disable CSRF (not needed for stateless JWT)
                 .csrf(csrf -> csrf.disable())
+
+                // Configure endpoint authorization
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-                        .requestMatchers(
-                                "/api/admin/login",
-                                "/api/admin/login",
-                                "/api/admin/create",
-                                "/api/admin/getAdmins",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**"
-                        ).permitAll()
+                                // Public endpoints
+                                .requestMatchers("/api/admin/login", "/api/admin/**","api/admin/logout","api/admin/getAdmins").permitAll()
 
-                        // Admin endpoints require authentication
-                        .requestMatchers("/api/admin/**").authenticated()
+                                // Role-based endpoints
+//                 .requestMatchers("/api/user/**").hasAuthority("ROLE_USER")
 
-                        // All other requests denied
-                        .anyRequest().denyAll()
+                                // All other endpoints require authentication
+                                .anyRequest().authenticated()
                 )
+
+                // Stateless session (required for JWT)
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // Set custom authentication provider
                 .authenticationProvider(authenticationProvider())
+
+                // Add JWT filter before Spring Security's default filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
+    /*
+     * Password encoder bean (uses BCrypt hashing)
+     * Critical for secure password storage
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /*
+     * Authentication provider configuration
+     * Links UserDetailsService and PasswordEncoder
+     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -74,6 +90,10 @@ public class SecurityConfig {
         return provider;
     }
 
+    /*
+     * Authentication manager bean
+     * Required for programmatic authentication (e.g., in /generateToken)
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

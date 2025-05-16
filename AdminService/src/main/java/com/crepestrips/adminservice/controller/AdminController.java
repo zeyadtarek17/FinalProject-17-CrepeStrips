@@ -1,10 +1,16 @@
 package com.crepestrips.adminservice.controller;
 
+import com.crepestrips.adminservice.client.FoodItemServiceClient;
+import com.crepestrips.adminservice.client.RestaurantServiceClient;
+import com.crepestrips.adminservice.command.AdminCommand;
+import com.crepestrips.adminservice.command.AdminInvoker;
+import com.crepestrips.adminservice.command.BanRestaurantCommand;
+import com.crepestrips.adminservice.command.SuspendFoodItemCommand;
+import com.crepestrips.adminservice.dto.*;
 import com.crepestrips.adminservice.model.Admin;
 import com.crepestrips.adminservice.security.JwtService;
 import com.crepestrips.adminservice.service.AdminService;
-import com.crepestrips.adminservice.dto.LoginRequest;
-import com.crepestrips.adminservice.dto.LoginResponse;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,12 +31,19 @@ public class AdminController {
     private final AdminService adminService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtUtil;
+    private final AdminInvoker invoker;
+    private final FoodItemServiceClient foodItemServiceClient;
+    private final RestaurantServiceClient restaurantServiceClient;
+
 
     @Autowired
-    public AdminController(AdminService adminService, AuthenticationManager authenticationManager, JwtService jwtUtil) {
+    public AdminController(AdminService adminService, AuthenticationManager authenticationManager, JwtService jwtUtil, AdminInvoker invoker, FoodItemServiceClient foodItemServiceClient, RestaurantServiceClient restaurantServiceClient) {
         this.adminService = adminService;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.invoker = invoker;
+        this.foodItemServiceClient = foodItemServiceClient;
+        this.restaurantServiceClient = restaurantServiceClient;
     }
     @PostMapping("/create")
     public ResponseEntity<?> createAdmin(@RequestBody Admin admin) {
@@ -86,6 +99,24 @@ public class AdminController {
         SecurityContextHolder.clearContext();
         return "Admin " + username + " logged out successfully.";
     }
+    @PostMapping("/suspend-food")
+    public ResponseEntity<CommandResponse> suspendFoodItem(@RequestBody SuspendFoodRequest request) {
+
+        AdminCommand command = new SuspendFoodItemCommand(foodItemServiceClient, request.getFoodItemId());
+        invoker.executeCommand(command);
+        return ResponseEntity.ok(new CommandResponse("SUCCESS", request.getFoodItemId(), "SUSPEND_FOOD"));
+
+    }
+
+    @PostMapping("/ban-restaurant")
+    public ResponseEntity<CommandResponse> banRestaurant(@RequestBody BanRestaurantRequest request) {
+
+        AdminCommand command = new BanRestaurantCommand(restaurantServiceClient, request.getRestaurantId());
+        invoker.executeCommand(command);
+        return ResponseEntity.ok(new CommandResponse("SUCCESS", "Restaurant banned", "BAN_RESTAURANT"));
+
+    }
+
 
 
 }
