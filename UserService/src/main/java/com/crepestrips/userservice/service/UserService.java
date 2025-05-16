@@ -86,6 +86,7 @@ public class UserService implements UserDetailsService {
                 .password(passwordEncoder.encode(user.getPassword()))
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .id(UUID.randomUUID())
                 .build();
 
         return userRepository.save(builtUser);

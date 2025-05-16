@@ -97,8 +97,8 @@ public class User {
             return this;
         }
 
-        public Builder id() {
-            this.id = UUID.randomUUID();
+        public Builder id(UUID id) {
+            this.id = id;
             return this;
         }
 
