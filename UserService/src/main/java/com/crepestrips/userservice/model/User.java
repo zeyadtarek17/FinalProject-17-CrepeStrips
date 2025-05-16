@@ -2,8 +2,6 @@ package com.crepestrips.userservice.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -13,7 +11,7 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @NotBlank(message = "Username is required")
@@ -39,9 +37,8 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Report> reports = new ArrayList<>();
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Report> reports;
 
     // @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     // private Cart cart;
@@ -61,7 +58,6 @@ public class User {
         this.password = builder.password;
         this.firstName = builder.firstName;
         this.lastName = builder.lastName;
-        this.id = builder.id;
     }
 
     public User() {
@@ -100,10 +96,6 @@ public class User {
             return this;
         }
 
-        public Builder id(UUID id) {
-            this.id = id;
-            return this;
-        }
 
         public User build() {
             if (username == null || email == null || password == null) {
@@ -115,7 +107,6 @@ public class User {
             user.password = this.password;
             user.firstName = this.firstName;
             user.lastName = this.lastName;
-            user.id = this.id;
             return user;
         }
     }

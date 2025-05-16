@@ -5,13 +5,11 @@ import com.crepestrips.userservice.model.Report;
 import com.crepestrips.userservice.model.User;
 import com.crepestrips.userservice.security.JwtService;
 import com.crepestrips.userservice.service.UserService;
-import com.crepestrips.userservice.UserServiceSingleton;
 import com.crepestrips.userservice.client.FoodItemClient;
 import com.crepestrips.userservice.dto.AuthRequest;
 import com.crepestrips.userservice.dto.AuthResponse;
 import com.crepestrips.userservice.dto.ChangePasswordRequest;
 import com.crepestrips.userservice.dto.FoodItemResponse;
-import com.crepestrips.userservice.dto.UserMessage;
 
 import jakarta.validation.Valid;
 
