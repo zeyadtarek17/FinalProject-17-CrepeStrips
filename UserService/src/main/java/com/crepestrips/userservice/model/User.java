@@ -2,6 +2,8 @@ package com.crepestrips.userservice.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -38,8 +40,9 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Report> reports;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Report> reports = new ArrayList<>();
+
 
     // @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     // private Cart cart;
