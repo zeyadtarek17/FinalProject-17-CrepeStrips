@@ -11,9 +11,9 @@ public interface FoodItemServiceClient {
     @GetMapping("fooditems/{id}")
     FoodItemDTO getFoodItem(@PathVariable String id);
 
-    @PostMapping("/fooditems/{id}/suspend")
+    @PutMapping("/fooditems/{id}/suspend")
     void suspendFoodItem(@PathVariable String id);
 
-    @PostMapping("/fooditems/{id}/activate")
+    @PutMapping("/fooditems/{id}/unsuspend")
     void activateFoodItem(@PathVariable String id);
 }

@@ -5,14 +5,14 @@ import com.crepestrips.adminservice.client.dto.RestaurantDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "restaurant-service", url = "http://localhost:8082")
+@FeignClient(name = "restaurant-service", url = "http://localhost:8083")
 public interface RestaurantServiceClient {
-    @GetMapping("/api/restaurants/{id}")
+    @GetMapping("/restaurants/{id}")
     RestaurantDTO getRestaurant(@PathVariable Long id);
 
-    @PostMapping("/api/restaurants/{id}/ban")
+    @PostMapping("/restaurants/{id}/ban")
     void banRestaurant(@PathVariable Long id);
 
-    @PostMapping("/api/restaurants/{id}/activate")
+    @PostMapping("/restaurants/{id}/unban")
     void activateRestaurant(@PathVariable Long id);
 }

@@ -104,7 +104,7 @@ public class AdminController {
 
         AdminCommand command = new SuspendFoodItemCommand(foodItemServiceClient, request.getFoodItemId());
         invoker.executeCommand(command);
-        return ResponseEntity.ok(new CommandResponse("SUCCESS", "Food item suspended", "SUSPEND_FOOD"));
+        return ResponseEntity.ok(new CommandResponse("SUCCESS", request.getFoodItemId(), "SUSPEND_FOOD"));
 
     }
 
@@ -116,6 +116,7 @@ public class AdminController {
         return ResponseEntity.ok(new CommandResponse("SUCCESS", "Restaurant banned", "BAN_RESTAURANT"));
 
     }
+
 
 
 }

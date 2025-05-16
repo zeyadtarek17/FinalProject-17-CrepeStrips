@@ -7,6 +7,7 @@ import com.crepestrips.restaurantservice.dto.RestaurantOrderHistoryResponse;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
 import com.crepestrips.restaurantservice.model.Category;
 import com.crepestrips.restaurantservice.model.Restaurant;
+import com.crepestrips.restaurantservice.model.RestaurantCreation;
 import com.crepestrips.restaurantservice.repository.CategoryRepository;
 import com.crepestrips.restaurantservice.repository.RestaurantRepository;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -36,29 +37,17 @@ public class RestaurantService {
         this.foodItemClient = foodItemClient;
     }
 
-    public Restaurant create(Restaurant restaurant) {
-//        Restaurant restaurant = new Restaurant();
-//        Category category = restaurant.getCategory();
-//        if (category != null) {
-//            category = categoryRepository.save(category);
-//        }
-//        restaurant.setCategory(category);
-//        restaurant.setName(dto.getName());
-//        restaurant.setLocation(dto.getLocation());
-//        restaurant.setOpeningTime(dto.getOpeningTime());
-//        restaurant.setClosingTime(dto.getClosingTime());
-////        restaurant.setHasSeating(dto.isHasSeating());
-////        restaurant.setSupportsDelivery(dto.isSupportsDelivery());
-////        restaurant.setRating(dto.getRating());
-//        restaurant.setCategory(dto.getCategory());
-//        restaurant.setCategoryID(dto.getCategoryId());
-//        restaurant = restaurantFactory.createRestaurant(restaurant, dto.getType().name());
-//        return restaurant;
+    public Restaurant create(RestaurantCreation restaurantCreation) {
+        Restaurant restaurant = restaurantCreation.getRestaurant();
         if (restaurant.getCategory() != null && restaurant.getCategory().getId() == null) {
-            Category savedCategory = categoryRepository.save(restaurant.getCategory());
-            restaurant.setCategory(savedCategory);  // Set the saved category with its ID
-        }
-        return repository.save(restaurant);
+        Category savedCategory = categoryRepository.save(restaurant.getCategory());
+        restaurant.setCategory(savedCategory);
+    }
+
+    String typeName = restaurant.getType() != null ? restaurant.getType().name() : "DEFAULT";
+    Restaurant newRestaurant = restaurantFactory.createRestaurant(restaurant,restaurantCreation.getExtras());
+
+    return repository.save(newRestaurant);
     }
 
     public List<Restaurant> getAll() {
@@ -74,7 +63,7 @@ public class RestaurantService {
         return repository.findById(id).map(existing -> {
             existing.setName(updated.getName());
             existing.setLocation(updated.getLocation());
-            existing.setRating(updated.getRating());
+//            existing.setRating(updated.getRating());
             existing.setOpen(isWithinOperatingHours(updated.getOpeningTime(), updated.getClosingTime()));
             existing.setOpeningTime(updated.getOpeningTime());
             existing.setClosingTime(updated.getClosingTime());
@@ -107,9 +96,9 @@ public class RestaurantService {
         return repository.findByIsOpenTrue();
     }
 
-    public List<Restaurant> getTopRatedRestaurants() {
-        return repository.findAllByOrderByRatingDesc();
-    }
+//    public List<Restaurant> getTopRatedRestaurants() {
+//        return repository.findAllByOrderByRatingDesc();
+//    }
     
 //    public Restaurant getRestaurantById(String id) {
 //        return repository.findById(id).get();
@@ -167,13 +156,15 @@ public class RestaurantService {
     public List<Restaurant> getAllRestaurants() {
         return repository.findAll();
     }
-    public void banRestaurant(String restaurantId) {
+
+    public boolean banRestaurant(String restaurantId) {
         Restaurant restaurant = repository.findById(restaurantId).orElse(null);
         if (restaurant != null) {
            restaurant.setBanned(true);
            repository.save(restaurant);
-
+           return true;
         }
+        return false;
     }
     public boolean addFoodItemIdToRestaurant(String restaurantId, String foodItemId) {
         Optional<Restaurant> optionalRestaurant = repository.findById(restaurantId);
@@ -191,6 +182,14 @@ public class RestaurantService {
         }
 
         return true;
+    }
+
+    public boolean unbanRestaurant(String id) {
+        return repository.findById(id).map(restaurant -> {
+            restaurant.setBanned(false);
+            repository.save(restaurant);
+            return true;
+        }).orElse(false);
     }
 
 

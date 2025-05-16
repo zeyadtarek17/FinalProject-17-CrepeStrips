@@ -1,6 +1,7 @@
 package com.crepestrips.restaurantservice.model;
 
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
+import com.crepestrips.restaurantservice.factory.IRestaurant;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 @Document(collection = "restaurants")
-public class Restaurant{
+public class Restaurant implements IRestaurant{
 
     @Id
     private String id;
@@ -19,7 +20,7 @@ public class Restaurant{
     private LocalTime openingTime;
     private LocalTime closingTime;
     private String location;
-    private double rating;
+//    private double rating;
     private boolean isOpen;
     private boolean hasSeating;
     private boolean supportsDelivery;
@@ -33,18 +34,18 @@ public class Restaurant{
 
 
 
-    public Restaurant(String name, String location, double rating) {
+    public Restaurant(String name, String location) {
         this.name = name;
         this.location = location;
-        this.rating = rating;
+//        this.rating = rating;
         isBanned = false;
     }
 
-    public Restaurant(String id, String name, String location, double rating, boolean isOpen) {
+    public Restaurant(String id, String name, String location, boolean isOpen) {
         this.id = id;
         this.name = name;
         this.location = location;
-        this.rating = rating;
+//        this.rating = rating;
         this.isOpen = isOpen;
         isBanned = false;
     }
@@ -54,10 +55,10 @@ public class Restaurant{
 
     }
 
-    public Restaurant(String name, String location, double rating, boolean isOpen, LocalTime openingTime, LocalTime closingTime, Category category) {
+    public Restaurant(String name, String location, boolean isOpen, LocalTime openingTime, LocalTime closingTime, Category category) {
         this.name = name;
         this.location = location;
-        this.rating = rating;
+//        this.rating = rating;
         this.isOpen = isOpen;
         this.openingTime = openingTime;
         this.closingTime = closingTime;
@@ -77,9 +78,9 @@ public class Restaurant{
 
     public void setLocation(String location) { this.location = location; }
 
-    public double getRating() { return rating; }
+//    public double getRating() { return rating; }
 
-    public void setRating(double rating) { this.rating = rating; }
+//    public void setRating(double rating) { this.rating = rating; }
 
     public boolean isOpen() {
         if (openingTime == null || closingTime == null) {
