@@ -111,10 +111,22 @@ public class UserController {
     }
 
     @PostMapping("/report")
-    public ResponseEntity<Report> reportIssue(@RequestBody ReportDTO reportDTO) {
-        Report savedReport = userService.reportIssue(reportDTO.getUserId(), reportDTO.getType(), reportDTO.getContent(), reportDTO.getTargetId());
-        return ResponseEntity.ok(savedReport);
+    public ResponseEntity<ReportDTO> reportIssue(@RequestBody ReportDTO reportDTO) {
+        Report savedReport = userService.reportIssue(
+                reportDTO.getUserId(), reportDTO.getType(), reportDTO.getContent(), reportDTO.getTargetId());
+
+        ReportDTO response = new ReportDTO(
+                savedReport.getId(),
+                savedReport.getUser().getId(),
+                savedReport.getContent(),
+                savedReport.getType(),
+                savedReport.getTargetId(),
+                savedReport.getCreatedAt()
+        );
+
+        return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
