@@ -41,16 +41,16 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Report> reports;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Cart cart;
+    // @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private Cart cart;
 
-    public Cart getCart() {
-        return cart;
-    }
+    // public Cart getCart() {
+    //     return cart;
+    // }
 
-    public void setCart(Cart cart) {
-        this.cart = cart;
-    }
+    // public void setCart(Cart cart) {
+    //     this.cart = cart;
+    // }
 
     // Builder pattern
     private User(Builder builder) {
@@ -59,6 +59,7 @@ public class User {
         this.password = builder.password;
         this.firstName = builder.firstName;
         this.lastName = builder.lastName;
+        this.id = builder.id;
     }
 
     public User() {}
@@ -69,6 +70,7 @@ public class User {
         private String password;
         private String firstName;
         private String lastName;
+        private UUID id;
 
         public Builder username(String username) {
             this.username = username;
@@ -95,6 +97,11 @@ public class User {
             return this;
         }
 
+        public Builder id() {
+            this.id = UUID.randomUUID();
+            return this;
+        }
+
         public User build() {
             if (username == null || email == null || password == null) {
                 throw new IllegalStateException("Username, email, and password are required to build a User.");
@@ -105,6 +112,7 @@ public class User {
             user.password = this.password;
             user.firstName = this.firstName;
             user.lastName = this.lastName;
+            user.id = this.id;
             return user;
         }
     }
