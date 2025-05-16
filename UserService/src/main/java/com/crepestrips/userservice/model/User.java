@@ -10,6 +10,7 @@ import java.util.UUID;
 @Table(name = "users")
 public class User {
 
+
     @Id
     @GeneratedValue
     private UUID id;
@@ -40,16 +41,16 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Report> reports;
 
-//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Cart cart;
-//
-//    public Cart getCart() {
-//        return cart;
-//    }
-//
-//    public void setCart(Cart cart) {
-//        this.cart = cart;
-//    }
+    // @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private Cart cart;
+
+    // public Cart getCart() {
+    //     return cart;
+    // }
+
+    // public void setCart(Cart cart) {
+    //     this.cart = cart;
+    // }
 
     // Builder pattern
     private User(Builder builder) {
@@ -58,7 +59,7 @@ public class User {
         this.password = builder.password;
         this.firstName = builder.firstName;
         this.lastName = builder.lastName;
-        this.id= builder.id;
+        this.id = builder.id;
     }
 
     public User() {}
@@ -86,11 +87,6 @@ public class User {
             return this;
         }
 
-        public Builder id() {
-            this.id = UUID.randomUUID();
-            return this;
-        }
-
         public Builder firstName(String firstName) {
             this.firstName = firstName;
             return this;
@@ -98,6 +94,11 @@ public class User {
 
         public Builder lastName(String lastName) {
             this.lastName = lastName;
+            return this;
+        }
+
+        public Builder id(UUID id) {
+            this.id = id;
             return this;
         }
 
@@ -111,6 +112,7 @@ public class User {
             user.password = this.password;
             user.firstName = this.firstName;
             user.lastName = this.lastName;
+            user.id = this.id;
             return user;
         }
     }

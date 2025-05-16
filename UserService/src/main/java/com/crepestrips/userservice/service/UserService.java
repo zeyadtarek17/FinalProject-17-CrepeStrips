@@ -38,7 +38,7 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     public UserService(UserRepository userRepository, ReportRepository reportRepository,
-            PasswordEncoder passwordEncoder, CartRepository cartRepository) {
+                       PasswordEncoder passwordEncoder, CartRepository cartRepository) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
         this.passwordEncoder = passwordEncoder;
@@ -86,6 +86,7 @@ public class UserService implements UserDetailsService {
                 .password(passwordEncoder.encode(user.getPassword()))
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .id(UUID.randomUUID())
                 .build();
 
         return userRepository.save(builtUser);
@@ -160,7 +161,7 @@ public class UserService implements UserDetailsService {
     }
 
     //cart
-    
+
     @Cacheable(value = "Carts", key = "#userId")
     public Optional<Cart> getCartByUserId(UUID userId) {
         return cartRepository.findByUserId(userId);
