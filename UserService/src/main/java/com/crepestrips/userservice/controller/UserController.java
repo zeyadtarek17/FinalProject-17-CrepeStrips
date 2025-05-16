@@ -94,7 +94,7 @@ public class UserController {
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
 
             if (authentication.isAuthenticated()) {
-                return new AuthResponse(jwtUtil.generateToken(authRequest.getUsername(), authRequest.getId()));
+                return new AuthResponse(jwtUtil.generateToken(authRequest.getUsername()));
             } else {
                 throw new UsernameNotFoundException("Invalid user request!");
             }

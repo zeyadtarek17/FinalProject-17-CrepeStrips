@@ -11,7 +11,7 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @NotBlank(message = "Username is required")
@@ -58,7 +58,6 @@ public class User {
         this.password = builder.password;
         this.firstName = builder.firstName;
         this.lastName = builder.lastName;
-        this.id = builder.id;
     }
 
     public User() {
@@ -97,10 +96,6 @@ public class User {
             return this;
         }
 
-        public Builder id(UUID id) {
-            this.id = id;
-            return this;
-        }
 
         public User build() {
             if (username == null || email == null || password == null) {
@@ -112,7 +107,6 @@ public class User {
             user.password = this.password;
             user.firstName = this.firstName;
             user.lastName = this.lastName;
-            user.id = this.id;
             return user;
         }
     }
