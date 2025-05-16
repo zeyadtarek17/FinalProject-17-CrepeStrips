@@ -58,6 +58,9 @@ public class UserService implements UserDetailsService {
 
         Report saved = reportRepository.save(report);
 
+        user.getReports().add(saved);
+        userRepository.save(user);
+
         ReportDTO dto = new ReportDTO();
         dto.setId(saved.getId());
         dto.setUserId(user.getId());
