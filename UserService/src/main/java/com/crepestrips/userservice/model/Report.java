@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
+@Table(name = "reports")
 public class Report {
 
     @Id
@@ -21,7 +22,7 @@ public class Report {
     private Date createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
     public UUID getId() {
