@@ -45,7 +45,7 @@ public class FoodItemConsumer {
                     if (id != null && dto != null) {
                         System.out.println("Update :"+id);
                         FoodItem item = objectMapper.convertValue(dto, FoodItem.class);
-                        foodItemService.update(id, item);
+                        //foodItemService.update(id, item);
                         System.out.println("✅ Updated: " + id);
                     }
                 }

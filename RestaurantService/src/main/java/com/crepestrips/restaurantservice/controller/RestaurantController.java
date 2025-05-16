@@ -1,10 +1,12 @@
 package com.crepestrips.restaurantservice.controller;
 
+import com.crepestrips.restaurantservice.client.FoodItemClient;
 import com.crepestrips.restaurantservice.config.FoodItemMessage;
 import com.crepestrips.restaurantservice.config.RestaurantProducer;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
 import com.crepestrips.restaurantservice.model.Category;
+import com.crepestrips.restaurantservice.model.RestaurantCreation;
 import com.crepestrips.restaurantservice.repository.CategoryRepository;
 import com.crepestrips.restaurantservice.repository.RestaurantRepository;
 import com.crepestrips.restaurantservice.strategy.FilterFactory;
@@ -38,9 +40,12 @@ public class RestaurantController {
     private CategoryRepository categoryRepository;
 
     private final RestaurantProducer restaurantProducer;
+    private final FoodItemClient foodItemClient;
 
-    public RestaurantController(RestaurantProducer restaurantProducer) {
+
+    public RestaurantController(RestaurantProducer restaurantProducer, FoodItemClient foodItemClient) {
         this.restaurantProducer = restaurantProducer;
+        this.foodItemClient = foodItemClient;
     }
 
     @GetMapping
@@ -68,8 +73,8 @@ public class RestaurantController {
     }
 
     @PostMapping
-    public ResponseEntity<Restaurant> createRestaurant(@RequestBody Restaurant restaurant) {
-        Restaurant createdRestaurant = service.create(restaurant);
+    public ResponseEntity<Restaurant> createRestaurant(@RequestBody RestaurantCreation restaurantCreation) {
+        Restaurant createdRestaurant = service.create(restaurantCreation);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRestaurant);
     }
 
@@ -90,10 +95,10 @@ public class RestaurantController {
         return ResponseEntity.ok(service.getOpenRestaurants());
     }
 
-    @GetMapping("/top-rated")
-    public ResponseEntity<List<Restaurant>> getTopRatedRestaurants() {
-        return ResponseEntity.ok(service.getTopRatedRestaurants());
-    }
+//    @GetMapping("/top-rated")
+//    public ResponseEntity<List<Restaurant>> getTopRatedRestaurants() {
+//        return ResponseEntity.ok(service.getTopRatedRestaurants());
+//    }
 
     @PutMapping("/{restaurantId}/addFoodItem/{foodItemId}")
     public ResponseEntity<String> addFoodItemToRestaurant(@PathVariable String restaurantId, @PathVariable String foodItemId) {
@@ -167,5 +172,58 @@ public class RestaurantController {
         return ResponseEntity.ok("Delete message sent!");
     }
 
+    @PostMapping("/{restaurantId}/order-history-request")
+    public ResponseEntity<String> fetchOrderHistory(@PathVariable String restaurantId) {
+        restaurantProducer.sendOrderHistoryRequest(restaurantId);
+        return ResponseEntity.ok("Order history request sent via RabbitMQ.");
+    }
+    @PostMapping("/{restaurantId}/fooditems")
+    public ResponseEntity<FoodItemDTO> createFoodItem( @PathVariable String restaurantId, @RequestBody FoodItemDTO dto) {
+
+        FoodItemDTO created = foodItemClient.createFoodItem(dto);
+        service.addFoodItemToRestaurant(restaurantId, created.getId());
+        return ResponseEntity.ok(created);
+    }
+    @PutMapping("/{restaurantId}/fooditems/{foodItemId}")
+    public ResponseEntity<FoodItemDTO> updateFoodItemSync(
+            @PathVariable String restaurantId,
+            @PathVariable String foodItemId,
+            @RequestBody FoodItemDTO dto) {
+
+        FoodItemDTO updated = foodItemClient.updateFoodItem(foodItemId, dto);
+
+
+        service.updateFoodItemInRestaurant(restaurantId, foodItemId, updated.getId());
+
+        return ResponseEntity.ok(updated);
+    }
+    @DeleteMapping("/{restaurantId}/fooditems/{foodItemId}")
+    public ResponseEntity<String> deleteFoodItemSync(
+            @PathVariable String restaurantId,
+            @PathVariable String foodItemId) {
+
+        foodItemClient.deleteFoodItem(foodItemId);
+        service.removeFoodItemFromRestaurant(restaurantId, foodItemId);
+
+        return ResponseEntity.ok("Food item deleted successfully and unlinked from restaurant.");
+    }
+
+    @PutMapping("/{id}/ban")
+    public ResponseEntity<String> banRestaurant(@PathVariable String id) {
+        boolean success = service.banRestaurant(id);
+        if (success) {
+            return ResponseEntity.ok("Restaurant has been banned.");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{id}/unban")
+    public ResponseEntity<String> unbanRestaurant(@PathVariable String id) {
+        boolean success = service.unbanRestaurant(id);
+        return success
+                ? ResponseEntity.ok("Restaurant has been unbanned.")
+                : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Restaurant not found.");
+    }
 
 }

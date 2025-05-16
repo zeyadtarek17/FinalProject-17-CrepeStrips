@@ -99,23 +99,26 @@ public class AdminController {
         SecurityContextHolder.clearContext();
         return "Admin " + username + " logged out successfully.";
     }
-    @PostMapping("/suspend-food")
-    public ResponseEntity<CommandResponse> suspendFoodItem(@RequestBody SuspendFoodRequest request) {
+    @PostMapping("/fooditems/{id}/suspend")
+    public ResponseEntity<String> suspendFoodItem(@PathVariable String id) {
 
-        AdminCommand command = new SuspendFoodItemCommand(foodItemServiceClient, request.getFoodItemId());
-        invoker.executeCommand(command);
-        return ResponseEntity.ok(new CommandResponse("SUCCESS", "Food item suspended", "SUSPEND_FOOD"));
+        AdminCommand command = new SuspendFoodItemCommand(foodItemServiceClient, id);
+        invoker.setCommand(command);
+        invoker.executeCommand();
 
+        return ResponseEntity.ok("Suspend command executed for food item " + id);
     }
 
-    @PostMapping("/ban-restaurant")
-    public ResponseEntity<CommandResponse> banRestaurant(@RequestBody BanRestaurantRequest request) {
+    @PostMapping("/restaurants/{id}/ban")
+    public ResponseEntity<String> banRestaurant(@PathVariable String id) {
 
-        AdminCommand command = new BanRestaurantCommand(restaurantServiceClient, request.getRestaurantId());
-        invoker.executeCommand(command);
-        return ResponseEntity.ok(new CommandResponse("SUCCESS", "Restaurant banned", "BAN_RESTAURANT"));
+        AdminCommand command = new BanRestaurantCommand(restaurantServiceClient, id);
+        invoker.setCommand(command);
+        invoker.executeCommand();
 
+        return ResponseEntity.ok("Ban command executed for restaurant " + id);
     }
+
 
 
 }

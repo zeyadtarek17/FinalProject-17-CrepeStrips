@@ -9,4 +9,10 @@ public class SuspendFoodRequest {
     @NotNull
     private String foodItemId;
     private String reason;
+
+    public @NotNull String getFoodItemId() {
+        return foodItemId;
+    }
+
+
 }
