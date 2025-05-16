@@ -12,7 +12,7 @@ public class MainCourseItem extends FoodItem {
         super(item.getName(), item.getDescription(),
                 item.getPrice(),
                 item.getDiscount(), item.getRating(),
-                item.getAvailableStock(), item.getCategory(), item.getRestaurantId());
+                item.getAvailableStock(), item.getCategory(), item.getRestaurantId(),item.getStatus());
                 this.description="250 grams of steak served with 200 grams of rice";
     }
 
