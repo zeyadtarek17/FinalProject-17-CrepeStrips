@@ -12,6 +12,10 @@ public class DineInRestaurant extends Restaurant {
     public int getTableCount() { return tableCount; }
     public void setTableCount(int tableCount) { this.tableCount = tableCount; }
 
+    public DineInRestaurant(){
+        super();
+    }
+
      public DineInRestaurant(Restaurant restaurant, int tableCount) {
     
         super(restaurant.getName(), restaurant.getLocation(), restaurant.isOpen(), restaurant.getOpeningTime(), restaurant.getClosingTime(), restaurant.getCategory());

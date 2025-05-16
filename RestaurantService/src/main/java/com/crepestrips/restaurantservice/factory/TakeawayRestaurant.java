@@ -12,6 +12,10 @@ public class TakeawayRestaurant extends Restaurant {
     public boolean isSelfService() { return selfService; }
     public void setSelfService(boolean selfService) { this.selfService = selfService; }
 
+    public TakeawayRestaurant(){
+        super();
+    }
+
     public TakeawayRestaurant(Restaurant restaurant, boolean selfService) {
         super(restaurant.getName(), restaurant.getLocation(), restaurant.isOpen(), restaurant.getOpeningTime(), restaurant.getClosingTime(), restaurant.getCategory());
         this.selfService = selfService; 

@@ -208,4 +208,22 @@ public class RestaurantController {
         return ResponseEntity.ok("Food item deleted successfully and unlinked from restaurant.");
     }
 
+    @PutMapping("/{id}/ban")
+    public ResponseEntity<String> banRestaurant(@PathVariable String id) {
+        boolean success = service.banRestaurant(id);
+        if (success) {
+            return ResponseEntity.ok("Restaurant has been banned.");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{id}/unban")
+    public ResponseEntity<String> unbanRestaurant(@PathVariable String id) {
+        boolean success = service.unbanRestaurant(id);
+        return success
+                ? ResponseEntity.ok("Restaurant has been unbanned.")
+                : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Restaurant not found.");
+    }
+
 }

@@ -156,13 +156,15 @@ public class RestaurantService {
     public List<Restaurant> getAllRestaurants() {
         return repository.findAll();
     }
-    public void banRestaurant(String restaurantId) {
+
+    public boolean banRestaurant(String restaurantId) {
         Restaurant restaurant = repository.findById(restaurantId).orElse(null);
         if (restaurant != null) {
            restaurant.setBanned(true);
            repository.save(restaurant);
-
+           return true;
         }
+        return false;
     }
     public boolean addFoodItemIdToRestaurant(String restaurantId, String foodItemId) {
         Optional<Restaurant> optionalRestaurant = repository.findById(restaurantId);
@@ -180,6 +182,14 @@ public class RestaurantService {
         }
 
         return true;
+    }
+
+    public boolean unbanRestaurant(String id) {
+        return repository.findById(id).map(restaurant -> {
+            restaurant.setBanned(false);
+            repository.save(restaurant);
+            return true;
+        }).orElse(false);
     }
 
 
