@@ -1,6 +1,9 @@
 package com.crepestrips.restaurantservice.client;
 
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
+
+import java.util.List;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,4 +17,6 @@ public interface FoodItemClient {
 
     @DeleteMapping("/fooditems/{id}")
     void deleteFoodItem(@PathVariable String id);
+    @GetMapping("/fooditems/getAllFoodItems/{restaurantId}")
+    List<FoodItemDTO> getFoodItemsByRestaurantId(@PathVariable("restaurantId") String restaurantId);
 }
