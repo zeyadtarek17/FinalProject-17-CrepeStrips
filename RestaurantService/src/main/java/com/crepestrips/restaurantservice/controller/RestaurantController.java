@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/restaurants")
@@ -32,8 +33,8 @@ public class RestaurantController {
     private RestaurantService service;
     @Autowired
     private RestaurantFilterContext context;
-    @Autowired
-    private RestaurantFactory restaurantFactory;
+//    @Autowired
+//    private RestaurantFactory restaurantFactory;
     @Autowired
     private RestaurantRepository restaurantRepository;
     @Autowired
@@ -73,17 +74,31 @@ public class RestaurantController {
     }
 
     @PostMapping
-    public ResponseEntity<Restaurant> createRestaurant(@RequestBody RestaurantCreation restaurantCreation) {
-        Restaurant createdRestaurant = service.create(restaurantCreation);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdRestaurant);
+    public ResponseEntity<Restaurant> createRestaurant(@RequestBody Map<String, Object> requestData) {
+        Restaurant created = service.create(requestData);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Restaurant> update(@PathVariable String id, @RequestBody Restaurant restaurant) {
-        return service.update(id, restaurant)
+    public ResponseEntity<Restaurant> updateRestaurant(@PathVariable String id, @RequestBody Map<String, Object> requestData) {
+        return service.update(id, requestData)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+
+//    @PostMapping
+//    public ResponseEntity<Restaurant> createRestaurant(@RequestBody Map<String, Object> requestData) {
+//        Restaurant created = service.create(requestData);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+//    }
+
+//    @PutMapping("/{id}")
+//    public ResponseEntity<Restaurant> updateRestaurant(@PathVariable String id, @RequestBody Map<String, Object> requestData) {
+//        return service.update(id, requestData)
+//                .map(ResponseEntity::ok)
+//                .orElse(ResponseEntity.notFound().build());
+//    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {

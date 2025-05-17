@@ -8,14 +8,17 @@ import com.crepestrips.restaurantservice.factory.RestaurantFactory;
 import com.crepestrips.restaurantservice.model.Category;
 import com.crepestrips.restaurantservice.model.Restaurant;
 import com.crepestrips.restaurantservice.model.RestaurantCreation;
+import com.crepestrips.restaurantservice.model.RestaurantType;
 import com.crepestrips.restaurantservice.repository.CategoryRepository;
 import com.crepestrips.restaurantservice.repository.RestaurantRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -28,8 +31,11 @@ public class RestaurantService {
     @Autowired
     private CategoryRepository categoryRepository;
 
+//    @Autowired
+//    private RestaurantFactory restaurantFactory;
+
     @Autowired
-    private RestaurantFactory restaurantFactory;
+    private ObjectMapper objectMapper;
 
     private final FoodItemClient foodItemClient;
 
@@ -37,17 +43,10 @@ public class RestaurantService {
         this.foodItemClient = foodItemClient;
     }
 
-    public Restaurant create(RestaurantCreation restaurantCreation) {
-        Restaurant restaurant = restaurantCreation.getRestaurant();
-        if (restaurant.getCategory() != null && restaurant.getCategory().getId() == null) {
-        Category savedCategory = categoryRepository.save(restaurant.getCategory());
-        restaurant.setCategory(savedCategory);
-    }
-
-    String typeName = restaurant.getType() != null ? restaurant.getType().name() : "DEFAULT";
-    Restaurant newRestaurant = restaurantFactory.createRestaurant(restaurant,restaurantCreation.getExtras());
-
-    return repository.save(newRestaurant);
+    public Restaurant create(Map<String, Object> data) {
+        RestaurantType type = objectMapper.convertValue(data.get("type"), RestaurantType.class);
+        Restaurant specialized = RestaurantFactory.createRestaurant(type, data, objectMapper);
+        return repository.save(specialized);
     }
 
     public List<Restaurant> getAll() {
@@ -59,19 +58,14 @@ public class RestaurantService {
     }
 
 
-    public Optional<Restaurant> update(String id, Restaurant updated) {
+    public Optional<Restaurant> update(String id, Map<String, Object> updates) {
         return repository.findById(id).map(existing -> {
-            existing.setName(updated.getName());
-            existing.setLocation(updated.getLocation());
-//            existing.setRating(updated.getRating());
-            existing.setOpen(isWithinOperatingHours(updated.getOpeningTime(), updated.getClosingTime()));
-            existing.setOpeningTime(updated.getOpeningTime());
-            existing.setClosingTime(updated.getClosingTime());
-            existing.setFoodItemIds(updated.getFoodItemIds());
-            existing.setFoodItem(updated.getFoodItem());
-            existing.setType(updated.getType());
-            existing.setCategory(updated.getCategory());
-            return repository.save(existing);
+            Map<String, Object> merged = objectMapper.convertValue(existing, Map.class);
+            merged.putAll(updates);
+            RestaurantType type = objectMapper.convertValue(merged.get("type"), RestaurantType.class);
+            Restaurant updated = RestaurantFactory.createRestaurant(type, merged, objectMapper);
+            updated.setId(id);
+            return repository.save(updated);
         });
     }
 
