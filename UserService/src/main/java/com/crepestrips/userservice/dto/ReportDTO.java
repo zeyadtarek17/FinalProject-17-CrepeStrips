@@ -11,6 +11,24 @@ public class ReportDTO {
     private String targetId;
     private Date createdAt;
 
+    public ReportDTO() {
+    }
+    public ReportDTO(UUID reportId, UUID userId, String content, String type, String targetId, Date createdAt) {
+        this.reportId = reportId;
+        this.userId = userId;
+        this.content = content;
+        this.type = type;
+        this.targetId = targetId;
+        this.createdAt = createdAt;
+    }
+    public ReportDTO(UUID userId, String content, String type, String targetId) {
+        this.userId = userId;
+        this.content = content;
+        this.type = type;
+        this.targetId = targetId;
+        this.createdAt = new Date();
+    }
+
     public UUID getId() {
         return reportId;
     }
