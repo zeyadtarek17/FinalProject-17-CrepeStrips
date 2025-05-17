@@ -15,6 +15,7 @@ public class Cart {
 
     private UUID userId;
 
+    @ElementCollection
     private List<String> items;
 
     // Getters and setters

@@ -1,17 +1,12 @@
 package com.crepestrips.userservice.controller;
 
+import com.crepestrips.userservice.dto.*;
 import com.crepestrips.userservice.model.Cart;
 import com.crepestrips.userservice.model.Report;
 import com.crepestrips.userservice.model.User;
 import com.crepestrips.userservice.security.JwtService;
 import com.crepestrips.userservice.service.UserService;
-import com.crepestrips.userservice.UserServiceSingleton;
 import com.crepestrips.userservice.client.FoodItemClient;
-import com.crepestrips.userservice.dto.AuthRequest;
-import com.crepestrips.userservice.dto.AuthResponse;
-import com.crepestrips.userservice.dto.ChangePasswordRequest;
-import com.crepestrips.userservice.dto.FoodItemResponse;
-import com.crepestrips.userservice.dto.UserMessage;
 
 import jakarta.validation.Valid;
 
@@ -116,13 +111,22 @@ public class UserController {
     }
 
     @PostMapping("/report")
-    public ResponseEntity<Report> reportIssue(@RequestParam UUID userId,
-                                              @RequestParam String type,
-                                              @RequestParam String content,
-                                              @RequestParam String targetId) {
-        Report savedReport = userService.reportIssue(userId, type, content, targetId);
-        return ResponseEntity.ok(savedReport);
+    public ResponseEntity<ReportDTO> reportIssue(@RequestBody ReportDTO reportDTO) {
+        Report savedReport = userService.reportIssue(
+                reportDTO.getUserId(), reportDTO.getType(), reportDTO.getContent(), reportDTO.getTargetId());
+
+        ReportDTO response = new ReportDTO(
+                savedReport.getId(),
+                savedReport.getUser().getId(),
+                savedReport.getContent(),
+                savedReport.getType(),
+                savedReport.getTargetId(),
+                savedReport.getCreatedAt()
+        );
+
+        return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
