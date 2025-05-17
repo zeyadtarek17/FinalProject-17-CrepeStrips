@@ -16,6 +16,7 @@ import com.crepestrips.restaurantservice.service.RestaurantService;
 import com.crepestrips.restaurantservice.strategy.RestaurantFilterContext;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -187,10 +188,10 @@ public class RestaurantController {
         return ResponseEntity.ok("Delete message sent!");
     }
 
-    @PostMapping("/{restaurantId}/order-history-request")
-    public ResponseEntity<String> fetchOrderHistory(@PathVariable String restaurantId) {
-        restaurantProducer.sendOrderHistoryRequest(restaurantId);
-        return ResponseEntity.ok("Order history request sent via RabbitMQ.");
+    @GetMapping("/{restaurantId}/order-history")
+    public ResponseEntity<List<Order>> getOrderHistory(@PathVariable String restaurantId) {
+        List<Order> orders = service.getOrderHistoryForRestaurant(restaurantId);
+        return ResponseEntity.ok(orders);
     }
     @PostMapping("/{restaurantId}/fooditems")
     public ResponseEntity<FoodItemDTO> createFoodItem( @PathVariable String restaurantId, @RequestBody FoodItemDTO dto) {

@@ -2,8 +2,9 @@ package com.crepestrips.restaurantservice.service;
 
 
 import com.crepestrips.restaurantservice.client.FoodItemClient;
+import com.crepestrips.restaurantservice.client.OrderServiceClient;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
-import com.crepestrips.restaurantservice.dto.RestaurantOrderHistoryResponse;
+//import com.crepestrips.restaurantservice.dto.RestaurantOrderHistoryResponse;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
 import com.crepestrips.restaurantservice.model.Category;
 import com.crepestrips.restaurantservice.model.Restaurant;
@@ -14,6 +15,7 @@ import com.crepestrips.restaurantservice.repository.RestaurantRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
@@ -33,6 +35,9 @@ public class RestaurantService {
 
 //    @Autowired
 //    private RestaurantFactory restaurantFactory;
+
+    @Autowired
+    private OrderServiceClient orderServiceClient;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -184,6 +189,11 @@ public class RestaurantService {
             repository.save(restaurant);
             return true;
         }).orElse(false);
+    }
+
+
+    public List<Order> getOrderHistoryForRestaurant(String restaurantId) {
+        return orderServiceClient.getOrdersByRestaurantId(restaurantId);
     }
 
 
