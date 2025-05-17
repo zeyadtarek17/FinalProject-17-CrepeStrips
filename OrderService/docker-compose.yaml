@@ -1,17 +1,36 @@
 version: '3.8'
 
 services:
-  postgres:
+  # --- PostgreSQL Database for Order Service ---
+  postgres: # Renaming to 'order-db' or similar might be clearer if you add more DBs later
     image: postgres:latest
-    container_name: order-service-postgres
+    container_name: order-service-postgres # This is fine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: orderdb
     ports:
-      - "5432:5432"
+      - "5432:5432" # Host port 5432 maps to container port 5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - order-network
+
+  # --- RabbitMQ Message Broker ---
+  rabbitmq:
+    image: rabbitmq:3-management # Use the image with the management plugin
+    container_name: rabbitmq_broker
+    ports:
+      - "5672:5672"  # Standard AMQP port for applications to connect
+      - "15672:15672" # Port for the RabbitMQ Management UI (web browser)
+    environment:
+      # You can set default user/password if needed, otherwise it uses guest/guest
+      # For local dev, guest/guest is often fine. For other environments, change these.
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/ # Persist RabbitMQ data (optional for dev, good for consistency)
     restart: unless-stopped
     networks:
       - order-network
@@ -22,3 +41,4 @@ networks:
 
 volumes:
   postgres_data:
+  rabbitmq_data: # Define the named volume for RabbitMQ

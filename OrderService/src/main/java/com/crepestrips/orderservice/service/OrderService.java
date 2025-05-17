@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.crepestrips.orderservice.client.FoodItemServiceClient;
+import com.crepestrips.orderservice.client.UserServiceClient;
 import com.crepestrips.orderservice.client.FoodItemServiceClient;
 import com.crepestrips.orderservice.config.RabbitMQConfig;
 import com.crepestrips.orderservice.dto.FoodItemResponse;
@@ -20,6 +21,7 @@ import com.crepestrips.orderservice.dto.UserMessage;
 import com.crepestrips.orderservice.model.Order;
 import com.crepestrips.orderservice.model.OrderPriority;
 import com.crepestrips.orderservice.model.OrderStatus;
+import com.crepestrips.orderservice.repository.OrderItemRepository;
 import com.crepestrips.orderservice.repository.OrderRepository;
 
 import jakarta.transaction.Transactional;
@@ -30,34 +32,59 @@ public class OrderService {
     private OrderRepository orderRepository;
 
     @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private UserServiceClient userServiceClient;
+
+    @Autowired
     private RabbitMQPublisher rabbitMQPublisher;
 
     @Autowired
     private FoodItemServiceClient foodItemServiceClient;
 
-    public OrderService(OrderRepository orderRepository,
-            RabbitMQPublisher rabbitMQPublisher, FoodItemServiceClient foodItemServiceClient) {
+    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
+            RabbitMQPublisher rabbitMQPublisher, FoodItemServiceClient foodItemServiceClient,
+            UserServiceClient userServiceClient) {
         this.orderRepository = orderRepository;
         this.rabbitMQPublisher = rabbitMQPublisher;
         this.foodItemServiceClient = foodItemServiceClient;
+        this.userServiceClient = userServiceClient;
+
     }
 
-    @RabbitListener(queues = RabbitMQConfig.USER_TO_ORDER_QUEUE)
-    public UUID createOrder(UUID userId, String restaurantId, List<FoodItemResponse> foodItems) {
-        List<String> foodItemsIds = foodItems.stream()
-                .map(FoodItemResponse::getId)
-                .collect(Collectors.toList());
-
-        // send to endpoint to decrement the food item stock (sync)
-        boolean success = foodItemServiceClient.decrementStock(foodItemsIds).getBody();
-        if (!success) {
-            throw new RuntimeException("Stock is being updated");
+    @Transactional
+    public ResponseEntity<Order> createOrder(UUID userId, UUID restaurantId) {
+        Order order = new Order(userId, restaurantId, null);
+        ResponseEntity<?> response = userServiceClient.getUserCart(userId);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            ResponseEntity<?> cartResponse = userServiceClient.getUserCart(userId);
+            // to do when i have cart data is that i first need to create an order item for
+            // each item in the cart and then add them to the order
         }
-        Order order = new Order(userId, restaurantId, foodItems);
-        order.calculateTotalAmount();
-        orderRepository.save(order);
-        return order.getId();
+        order = orderRepository.save(order);
+        rabbitMQPublisher.publishOrderCreated(order);
+        return ResponseEntity.ok(order);
     }
+
+    // @RabbitListener(queues = RabbitMQConfig.USER_TO_ORDER_QUEUE)
+    // public UUID createOrder(UUID userId, String restaurantId,
+    // List<FoodItemResponse> foodItems) {
+    // List<String> foodItemsIds = foodItems.stream()
+    // .map(FoodItemResponse::getId)
+    // .collect(Collectors.toList());
+
+    // // send to endpoint to decrement the food item stock (sync)
+    // boolean success =
+    // foodItemServiceClient.decrementStock(foodItemsIds).getBody();
+    // if (!success) {
+    // throw new RuntimeException("Stock is being updated");
+    // }
+    // // Order order = new Order(userId, restaurantId, foodItems);
+    // // order.calculateTotalAmount();
+    // orderRepository.save(order);
+    // return order.getId();
+    // }
 
     public ResponseEntity<?> getOrderById(UUID id) {
         Optional<Order> order = orderRepository.findById(id);
