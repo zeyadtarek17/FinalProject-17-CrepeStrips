@@ -3,6 +3,7 @@ package com.crepestrips.restaurantservice.model;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
 import com.crepestrips.restaurantservice.factory.IRestaurant;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 @Document(collection = "restaurants")
+@TypeAlias("base")
 public class Restaurant implements IRestaurant{
 
     @Id
