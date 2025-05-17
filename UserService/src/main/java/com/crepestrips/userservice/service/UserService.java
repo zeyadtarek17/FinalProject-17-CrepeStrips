@@ -1,48 +1,41 @@
 package com.crepestrips.userservice.service;
 
-import com.crepestrips.userservice.model.User;
+import com.crepestrips.userservice.dto.ReportDTO;
 import com.crepestrips.userservice.model.Cart;
 import com.crepestrips.userservice.model.Report;
-import com.crepestrips.userservice.repository.UserRepository;
+import com.crepestrips.userservice.model.User;
 import com.crepestrips.userservice.repository.CartRepository;
 import com.crepestrips.userservice.repository.ReportRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
+import com.crepestrips.userservice.repository.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import com.crepestrips.userservice.dto.ReportDTO;
+import java.util.*;
 
-@Service
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
     private final PasswordEncoder passwordEncoder;
     private final CartRepository cartRepository;
+    private final ReportProducer reportProducer;
 
-    @Autowired
-    private ReportProducer reportProducer;
-
-    @Autowired
-    public UserService(UserRepository userRepository, ReportRepository reportRepository,
-                       PasswordEncoder passwordEncoder, CartRepository cartRepository) {
+    public UserService(UserRepository userRepository,
+                       ReportRepository reportRepository,
+                       PasswordEncoder passwordEncoder,
+                       CartRepository cartRepository,
+                       ReportProducer reportProducer) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
         this.passwordEncoder = passwordEncoder;
         this.cartRepository = cartRepository;
+        this.reportProducer = reportProducer;
     }
 
     public Report reportIssue(UUID userId, String type, String content, String targetId) {
@@ -121,14 +114,6 @@ public class UserService implements UserDetailsService {
         return "Password updated.";
     }
 
-    /*public Report reportIssue(UUID userId, Report report) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        report.setUser(user);
-        return reportRepository.save(report);
-    }*/
-
     @Cacheable(value = "Users", key = "#id")
     public User getUserById(UUID id) {
         return userRepository.findById(id)
@@ -153,16 +138,14 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username) // adjust method
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                List.of(new SimpleGrantedAuthority("ROLE_USER")) // Or map user roles/authorities here
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
     }
-
-    //cart
 
     @Cacheable(value = "Carts", key = "#userId")
     public Optional<Cart> getCartByUserId(UUID userId) {
@@ -179,7 +162,6 @@ public class UserService implements UserDetailsService {
         if (userId == null) {
             throw new IllegalArgumentException("UserId must not be null.");
         }
-        // Additional logic can be added here if needed, such as logging
         System.out.println("Cart evicted from cache for userId: " + userId);
     }
 }

@@ -1,5 +1,6 @@
 package com.crepestrips.userservice.controller;
 
+import com.crepestrips.userservice.UserServiceSingleton;
 import com.crepestrips.userservice.dto.*;
 import com.crepestrips.userservice.model.Cart;
 import com.crepestrips.userservice.model.Report;
@@ -30,16 +31,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/user")
 public class UserController {
 
-    private final UserService userService;
+    private final UserService userService = UserServiceSingleton.getInstance();
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtUtil;
     private final UserProducer producer;
     private final FoodItemClient foodItemClient;
 
     @Autowired
-    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtUtil,
+    public UserController(AuthenticationManager authenticationManager, JwtService jwtUtil,
             UserProducer producer, FoodItemClient foodItemClient) {
-        this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.producer = producer;

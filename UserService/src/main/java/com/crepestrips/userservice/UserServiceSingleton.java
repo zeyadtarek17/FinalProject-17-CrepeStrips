@@ -10,6 +10,7 @@ public class UserServiceSingleton {
 
     public static synchronized UserService getInstance(UserService injectedService) {
         if (instance == null) {
+            System.out.println("🔁 UserService singleton initialized!");
             instance = injectedService;
         }
         return instance;
