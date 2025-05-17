@@ -2,6 +2,8 @@ package com.crepestrips.userservice.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -10,9 +12,8 @@ import java.util.UUID;
 @Table(name = "users")
 public class User {
 
-
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @NotBlank(message = "Username is required")
@@ -39,18 +40,20 @@ public class User {
     private String lastName;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Report> reports;
+    private List<Report> reports = new ArrayList<>();
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Cart cart;
+    private boolean isLoggedIn = false;
 
-    public Cart getCart() {
-        return cart;
-    }
+    // @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private Cart cart;
 
-    public void setCart(Cart cart) {
-        this.cart = cart;
-    }
+    // public Cart getCart() {
+    // return cart;
+    // }
+
+    // public void setCart(Cart cart) {
+    // this.cart = cart;
+    // }
 
     // Builder pattern
     private User(Builder builder) {
@@ -61,7 +64,8 @@ public class User {
         this.lastName = builder.lastName;
     }
 
-    public User() {}
+    public User() {
+    }
 
     public static class Builder {
         private String username;
@@ -94,6 +98,7 @@ public class User {
             this.lastName = lastName;
             return this;
         }
+
 
         public User build() {
             if (username == null || email == null || password == null) {
@@ -159,11 +164,29 @@ public class User {
         this.lastName = lastName;
     }
 
+    public List<Report> getReports() {
+        return reports;
+    }
+
+    public void setReports(List<Report> reports) {
+        this.reports = reports;
+    }
+
+    public boolean isLoggedIn() {
+        return isLoggedIn;
+    }
+
+    public void setLoggedIn(boolean loggedIn) {
+        isLoggedIn = loggedIn;
+    }
+
     // Equals & HashCode
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         User user = (User) o;
         if (id != null && user.id != null) {
             return Objects.equals(id, user.id);

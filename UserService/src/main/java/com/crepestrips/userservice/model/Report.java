@@ -1,27 +1,30 @@
 package com.crepestrips.userservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
+@Table(name = "reports")
 public class Report {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     private String content;
     private String type; // "fooditem" or "restaurant"
-    private UUID targetId; // ID of the reported restaurant or fooditem
+    private String targetId; // ID of the reported restaurant or fooditem
 
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JsonIgnore
     private User user;
 
     public UUID getId() {
@@ -55,10 +58,11 @@ public class Report {
     public void setUser(User user) {
         this.user = user;
     }
-    public UUID getTargetId() {
+
+    public String getTargetId() {
         return targetId;
     }
-    public void setTargetId(UUID targetId) {
+    public void setTargetId(String targetId) {
         this.targetId = targetId;
     }
 

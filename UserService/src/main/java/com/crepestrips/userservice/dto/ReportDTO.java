@@ -8,8 +8,26 @@ public class ReportDTO {
     private UUID userId;
     private String content;
     private String type;
-    private UUID targetId;
+    private String targetId;
     private Date createdAt;
+
+    public ReportDTO() {
+    }
+    public ReportDTO(UUID reportId, UUID userId, String content, String type, String targetId, Date createdAt) {
+        this.reportId = reportId;
+        this.userId = userId;
+        this.content = content;
+        this.type = type;
+        this.targetId = targetId;
+        this.createdAt = createdAt;
+    }
+    public ReportDTO(UUID userId, String content, String type, String targetId) {
+        this.userId = userId;
+        this.content = content;
+        this.type = type;
+        this.targetId = targetId;
+        this.createdAt = new Date();
+    }
 
     public UUID getId() {
         return reportId;
@@ -35,11 +53,10 @@ public class ReportDTO {
     public void setType(String type) {
         this.type = type;
     }
-    public UUID getTargetId() {
+    public String getTargetId() {
         return targetId;
     }
-
-    public void setTargetId(UUID targetId) {
+    public void setTargetId(String targetId) {
         this.targetId = targetId;
     }
     public Date getCreatedAt() {

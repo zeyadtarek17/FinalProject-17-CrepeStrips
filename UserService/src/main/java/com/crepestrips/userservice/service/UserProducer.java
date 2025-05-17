@@ -19,7 +19,7 @@ public class UserProducer {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void createOrder(UUID userId, UUID restaurantId, List<FoodItemResponse> foodItems, UUID orderId) {
+    public void createOrder(UUID userId, String restaurantId, List<FoodItemResponse> foodItems, UUID orderId) {
         UserMessage message = new UserMessage(userId, restaurantId, foodItems, orderId);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE,
