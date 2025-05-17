@@ -7,6 +7,12 @@ import lombok.Data;
 @Data
 public class SuspendFoodRequest {
     @NotNull
-    private Long foodItemId;
+    private String foodItemId;
     private String reason;
+
+    public @NotNull String getFoodItemId() {
+        return foodItemId;
+    }
+
+
 }

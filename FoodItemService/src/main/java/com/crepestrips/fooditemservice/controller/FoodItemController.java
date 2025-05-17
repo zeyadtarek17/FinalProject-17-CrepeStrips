@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/fooditems")
@@ -29,13 +30,13 @@ public class FoodItemController {
     }
 
     @PostMapping
-    public ResponseEntity<FoodItem> create(@RequestBody FoodItem item) {
-        return ResponseEntity.ok(service.create(item));
+    public ResponseEntity<FoodItem> create(@RequestBody Map<String, Object> rawData) {
+        return ResponseEntity.ok(service.create(rawData));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<FoodItem> update(@PathVariable String id, @RequestBody FoodItem item) {
-        return service.update(id, item)
+    public ResponseEntity<FoodItem> update(@PathVariable String id, @RequestBody Map<String, Object> updates) {
+        return service.update(id, updates)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -67,7 +68,19 @@ public class FoodItemController {
         List<FoodItem> items = service.getItemsById(ids);
         return ResponseEntity.ok(items);
     }
+    @PutMapping("/{id}/suspend")
+    public ResponseEntity<FoodItem> suspend(@PathVariable String id) {
+        return service.suspend(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
+    @PutMapping("/{id}/unsuspend")
+    public ResponseEntity<FoodItem> unsuspend(@PathVariable String id) {
+        return service.unsuspend(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
     @PostMapping("/decrement")
     public ResponseEntity<Boolean> decrementStock(@RequestBody List<String> ids) {
         return ResponseEntity.ok(service.decrementStock(ids));
