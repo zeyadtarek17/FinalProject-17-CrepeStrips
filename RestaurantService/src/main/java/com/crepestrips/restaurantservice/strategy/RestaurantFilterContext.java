@@ -17,6 +17,8 @@ public class RestaurantFilterContext {
     public List<Restaurant> applyFilter(String filterType, List<Restaurant> restaurants, String criteria) {
         FilterStrategy strategy = strategies.get(filterType);
         if (strategy == null) throw new IllegalArgumentException("Invalid filter type");
+        System.out.println("Applying filter: " + filterType);
+        System.out.println(strategy.filter(restaurants, criteria));
         return strategy.filter(restaurants, criteria);
     }
 }

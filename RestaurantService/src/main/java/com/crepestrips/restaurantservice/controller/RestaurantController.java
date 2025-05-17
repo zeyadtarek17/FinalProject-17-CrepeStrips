@@ -177,6 +177,10 @@ public class RestaurantController {
         try {
             List<Restaurant> allRestaurants = service.getAllRestaurants();
             List<Restaurant> filtered = context.applyFilter(filterType, allRestaurants, criteria);
+            System.out.println("Filtered restaurants: " + filtered);
+            if (filtered.isEmpty()) {
+                return ResponseEntity.ok(new DefaultResult("No restaurants found for the given criteria", true, null));
+            }
             return ResponseEntity.ok(new DefaultResult("Filtered restaurants retrieved", false, filtered));
         } catch (Exception e) {
             return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
