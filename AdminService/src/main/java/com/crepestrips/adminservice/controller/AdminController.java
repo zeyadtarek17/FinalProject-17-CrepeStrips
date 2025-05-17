@@ -2,10 +2,7 @@ package com.crepestrips.adminservice.controller;
 
 import com.crepestrips.adminservice.client.FoodItemServiceClient;
 import com.crepestrips.adminservice.client.RestaurantServiceClient;
-import com.crepestrips.adminservice.command.AdminCommand;
-import com.crepestrips.adminservice.command.AdminInvoker;
-import com.crepestrips.adminservice.command.BanRestaurantCommand;
-import com.crepestrips.adminservice.command.SuspendFoodItemCommand;
+import com.crepestrips.adminservice.command.*;
 import com.crepestrips.adminservice.dto.*;
 import com.crepestrips.adminservice.model.Admin;
 import com.crepestrips.adminservice.security.JwtService;
@@ -133,6 +130,35 @@ public class AdminController {
             invoker.setCommand(command);
             invoker.executeCommand();
             return ResponseEntity.ok(new DefaultResult("fooditemSuspended logged in successfully", false, null));
+
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
+
+    }
+    @PostMapping("/fooditems/{id}/unsuspend")
+    public ResponseEntity<DefaultResult> unsuspendFoodItem(@PathVariable String id) {
+
+        try {
+            AdminCommand command = new UnsuspendFoodItemCommand(foodItemServiceClient, id);
+            invoker.setCommand(command);
+            invoker.executeCommand();
+            return ResponseEntity.ok(new DefaultResult("fooditem Unsuspended logged in successfully", false, null));
+
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
+    }
+
+    @PostMapping("/restaurants/{id}/unban")
+    public ResponseEntity<DefaultResult> unbanRestaurant(@PathVariable String id) {
+        try {
+            AdminCommand command = new UnbanRestaurantCommand(restaurantServiceClient, id);
+            invoker.setCommand(command);
+            invoker.executeCommand();
+            return ResponseEntity.ok(new DefaultResult("restaurant banned ", false, null));
 
 
         } catch (Exception e) {
