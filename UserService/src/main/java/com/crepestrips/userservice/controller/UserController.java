@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/user")
 public class UserController {
 
-    private final UserService userService = UserServiceSingleton.getInstance();
+    private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtUtil;
     private final UserProducer producer;
@@ -39,11 +39,12 @@ public class UserController {
 
     @Autowired
     public UserController(AuthenticationManager authenticationManager, JwtService jwtUtil,
-            UserProducer producer, FoodItemClient foodItemClient) {
+            UserProducer producer, FoodItemClient foodItemClient, UserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.producer = producer;
         this.foodItemClient = foodItemClient;
+        this.userService = userService;
     }
 
     @PostMapping("/order/add")
@@ -94,6 +95,7 @@ public class UserController {
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
 
             if (authentication.isAuthenticated()) {
+                userService.login(authRequest.getUsername());
                 AuthResponse response = new AuthResponse(jwtUtil.generateToken(authRequest.getUsername()));
                 return ResponseEntity.ok(new DefaultResult("User logged in successfully", false, response));
             } else {
@@ -104,11 +106,18 @@ public class UserController {
         }
     }
 
-    @PostMapping("/logout")
-    public String logout(@RequestParam String username) {
+    @GetMapping("/logout/{userId}")
+    public ResponseEntity<DefaultResult> logout(@PathVariable UUID userId) {
         // Logout logic (e.g., invalidate session, clear context, etc.)
-        SecurityContextHolder.clearContext();
-        return "User " + username + " logged out successfully.";
+        // SecurityContextHolder.clearContext();
+        // return "User " + username + " logged out successfully.";
+        try {
+            userService.logout(userId);
+            return ResponseEntity.ok(new DefaultResult("User logged out successfully", false, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @PutMapping("/password")
