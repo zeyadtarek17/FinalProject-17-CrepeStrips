@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/restaurants")
@@ -207,18 +208,29 @@ public class RestaurantController {
     @PostMapping("/{restaurantId}/fooditems")
     public ResponseEntity<DefaultResult> createFoodItem(@PathVariable String restaurantId, @RequestBody FoodItemDTO dto) {
         try {
+            // Validate that restaurant exists
+            Optional<Restaurant> restaurantOptional = service.getById(restaurantId);
+            if (restaurantOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new DefaultResult("Restaurant not found", true, null));
+            }
+
+            // Proceed with creation
             DefaultResult result = foodItemClient.createFoodItem(dto);
             if (result.isError() || result.getResult() == null) {
                 return ResponseEntity.ok(new DefaultResult("Failed to create food item", true, null));
             }
+
             ObjectMapper mapper = new ObjectMapper();
             FoodItemDTO created = mapper.convertValue(result.getResult(), FoodItemDTO.class);
             service.addFoodItemToRestaurant(restaurantId, created.getId());
             return ResponseEntity.ok(new DefaultResult("Food item created and added to restaurant", false, created));
+
         } catch (Exception e) {
             return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
     }
+
     @PutMapping("/{restaurantId}/fooditems/{foodItemId}")
     public ResponseEntity<DefaultResult> updateFoodItemSync(@PathVariable String restaurantId, @PathVariable String foodItemId, @RequestBody FoodItemDTO dto) {
         try {
@@ -226,7 +238,9 @@ public class RestaurantController {
             if (result.isError()) {
                 return ResponseEntity.ok(new DefaultResult("Failed to update food item", true, null));
             }
-            FoodItemDTO updated = (FoodItemDTO) result.getResult();
+            ObjectMapper mapper = new ObjectMapper();
+            FoodItemDTO updated = mapper.convertValue(result.getResult(), FoodItemDTO.class);
+
             service.updateFoodItemInRestaurant(restaurantId, foodItemId, updated.getId());
             return ResponseEntity.ok(new DefaultResult("Food item updated in restaurant", false, updated));
         } catch (Exception e) {
