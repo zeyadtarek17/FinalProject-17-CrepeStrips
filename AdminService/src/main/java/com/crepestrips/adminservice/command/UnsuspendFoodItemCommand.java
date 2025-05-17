@@ -5,12 +5,12 @@ import com.crepestrips.adminservice.client.dto.FoodItemDTO;
 // Make sure to import FeignException if you catch it specifically
 import feign.FeignException; // Add this import
 
-public class SuspendFoodItemCommand implements AdminCommand {
+public class UnsuspendFoodItemCommand implements AdminCommand {
 
     private final FoodItemServiceClient client;
     private final String foodItemId;
 
-    public SuspendFoodItemCommand(FoodItemServiceClient client, String foodItemId) {
+    public UnsuspendFoodItemCommand(FoodItemServiceClient client, String foodItemId) {
         this.client = client;
         this.foodItemId = foodItemId;
     }
@@ -30,9 +30,9 @@ public class SuspendFoodItemCommand implements AdminCommand {
 
             System.out.println("DEBUG: client.getFoodItem returned. Item ID: " + item.getId() + ", Active: " + item.isActive()); // Assuming FoodItemDTO has getId() and isActive()
 
-            if (item.isActive()) {
+            if (!item.isActive()) {
                 System.out.println("DEBUG: Item " + foodItemId + " is active. Attempting to call client.suspendFoodItem(" + foodItemId + ")");
-                client.suspendFoodItem(foodItemId);
+                client.activateFoodItem(foodItemId);
                 System.out.println("Food item " + foodItemId + " suspended."); // Your target message
                 System.out.println("DEBUG: Successfully called client.suspendFoodItem(" + foodItemId + ")");
             } else {

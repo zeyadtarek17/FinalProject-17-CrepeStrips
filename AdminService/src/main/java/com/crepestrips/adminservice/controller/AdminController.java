@@ -2,10 +2,7 @@ package com.crepestrips.adminservice.controller;
 
 import com.crepestrips.adminservice.client.FoodItemServiceClient;
 import com.crepestrips.adminservice.client.RestaurantServiceClient;
-import com.crepestrips.adminservice.command.AdminCommand;
-import com.crepestrips.adminservice.command.AdminInvoker;
-import com.crepestrips.adminservice.command.BanRestaurantCommand;
-import com.crepestrips.adminservice.command.SuspendFoodItemCommand;
+import com.crepestrips.adminservice.command.*;
 import com.crepestrips.adminservice.dto.*;
 import com.crepestrips.adminservice.model.Admin;
 import com.crepestrips.adminservice.security.JwtService;
@@ -22,7 +19,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -46,37 +45,47 @@ public class AdminController {
         this.restaurantServiceClient = restaurantServiceClient;
     }
     @PostMapping("/create")
-    public ResponseEntity<?> createAdmin(@RequestBody Admin admin) {
+    public ResponseEntity<DefaultResult> createAdmin(@RequestBody Admin admin) {
         try {
             Admin createdAdmin = adminService.createAdmin(admin);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdAdmin);
+            return ResponseEntity.ok(new DefaultResult("Admin registered successfully", false, createdAdmin));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
     }
     @GetMapping("/getAdmins")
-    public List<Admin> getAdmins() {
-        return adminService.getAllAdmins();
+    public ResponseEntity<DefaultResult> getAdmins() {
+        try {
+            List<Admin> admins = adminService.getAllAdmins();
+            return ResponseEntity.ok(new DefaultResult("Admins found", false, admins));
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @GetMapping("/id/{id}")
-    public Admin getAdminById(@PathVariable String id) {
-        return adminService.getAdminById(id);
+    public ResponseEntity<DefaultResult> getAdminById(@PathVariable String id) {
+        try {
+            Admin admin = adminService.getAdminById(id);
+            return ResponseEntity.ok(new DefaultResult("Admin found", false, admin));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteAdmin(@PathVariable String id) {
+    public ResponseEntity<DefaultResult> deleteAdmin(@PathVariable String id) {
         try {
-            adminService.deleteAdminById(id);
-            return ResponseEntity.ok("Admin deleted successfully");
-        }
-        catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+           adminService.deleteAdminById(id);
+            return ResponseEntity.ok(new DefaultResult("User deleted successfully", false, null));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody LoginRequest authRequest) {
+    public ResponseEntity<DefaultResult> login(@RequestBody LoginRequest authRequest) {
         try {
 
             // Create authentication token with provided username and password
@@ -84,36 +93,86 @@ public class AdminController {
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
 
             if (authentication.isAuthenticated()) {
-                return new LoginResponse(jwtUtil.generateToken(authRequest.getUsername()));
+                adminService.login(authRequest.getUsername());
+                LoginResponse response = new LoginResponse(jwtUtil.generateToken(authRequest.getUsername()));
+                return ResponseEntity.ok(new DefaultResult("Admin logged in successfully", false, response));
             } else {
-                throw new UsernameNotFoundException("Invalid admin request!");
+                return ResponseEntity.ok(new DefaultResult("Invalid username or password", true, null));
             }
         } catch (Exception e) {
-            throw new RuntimeException("Invalid username or password", e);
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
     }
 
-    @PostMapping("/logout")
-    public String logout(@RequestParam String username) {
+    @GetMapping("/logout/{userId}")
+    public ResponseEntity<DefaultResult> logout(@PathVariable String userId) {
         // Logout logic (e.g., invalidate session, clear context, etc.)
-        SecurityContextHolder.clearContext();
-        return "Admin " + username + " logged out successfully.";
+        // SecurityContextHolder.clearContext();
+        // return "User " + username + " logged out successfully.";
+        try {
+            adminService.logout(userId);
+            return ResponseEntity.ok(new DefaultResult("User logged out successfully", false, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
-    @PostMapping("/suspend-food")
-    public ResponseEntity<CommandResponse> suspendFoodItem(@RequestBody SuspendFoodRequest request) {
+    @PostMapping("/fooditems/{id}/suspend")
+    public ResponseEntity<DefaultResult> suspendFoodItem(@PathVariable String id) {
 
-        AdminCommand command = new SuspendFoodItemCommand(foodItemServiceClient, request.getFoodItemId());
-        invoker.executeCommand(command);
-        return ResponseEntity.ok(new CommandResponse("SUCCESS", request.getFoodItemId(), "SUSPEND_FOOD"));
+        try {
+            AdminCommand command = new SuspendFoodItemCommand(foodItemServiceClient, id);
+            invoker.setCommand(command);
+            invoker.executeCommand();
+            return ResponseEntity.ok(new DefaultResult("fooditemSuspended logged in successfully", false, null));
 
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
-    @PostMapping("/ban-restaurant")
-    public ResponseEntity<CommandResponse> banRestaurant(@RequestBody BanRestaurantRequest request) {
+    @PostMapping("/restaurants/{id}/ban")
+    public ResponseEntity<DefaultResult> banRestaurant(@PathVariable String id) {
+        try {
+            AdminCommand command = new BanRestaurantCommand(restaurantServiceClient, id);
+            invoker.setCommand(command);
+            invoker.executeCommand();
+            return ResponseEntity.ok(new DefaultResult("fooditemSuspended logged in successfully", false, null));
 
-        AdminCommand command = new BanRestaurantCommand(restaurantServiceClient, request.getRestaurantId());
-        invoker.executeCommand(command);
-        return ResponseEntity.ok(new CommandResponse("SUCCESS", "Restaurant banned", "BAN_RESTAURANT"));
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
+
+    }
+    @PostMapping("/fooditems/{id}/unsuspend")
+    public ResponseEntity<DefaultResult> unsuspendFoodItem(@PathVariable String id) {
+
+        try {
+            AdminCommand command = new UnsuspendFoodItemCommand(foodItemServiceClient, id);
+            invoker.setCommand(command);
+            invoker.executeCommand();
+            return ResponseEntity.ok(new DefaultResult("fooditem Unsuspended logged in successfully", false, null));
+
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
+    }
+
+    @PostMapping("/restaurants/{id}/unban")
+    public ResponseEntity<DefaultResult> unbanRestaurant(@PathVariable String id) {
+        try {
+            AdminCommand command = new UnbanRestaurantCommand(restaurantServiceClient, id);
+            invoker.setCommand(command);
+            invoker.executeCommand();
+            return ResponseEntity.ok(new DefaultResult("restaurant banned ", false, null));
+
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
 
     }
 

@@ -106,7 +106,6 @@ public class FoodItemService {
         return repository.findByRestaurantId(restaurantId);
     }
 
-
     public List<FoodItem> getItemsById(List<String> ids) {
         return repository.findAllById(ids);
     }

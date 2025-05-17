@@ -16,6 +16,7 @@ public class Admin {
     private String password;
 
     private String email;
+    private boolean isLoggedIn = false;
 
 
     // Constructors
@@ -42,5 +43,7 @@ public class Admin {
     public String getEmail() { return email; }
 
     public void setEmail(String email) { this.email = email; }
+    public boolean isLoggedIn() { return isLoggedIn; }
+    public void setLoggedIn(boolean loggedIn) { this.isLoggedIn = loggedIn; }
 
 }

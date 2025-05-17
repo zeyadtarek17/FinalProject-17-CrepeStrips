@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
+import java.util.UUID;
 
 
 @Service
@@ -22,13 +23,15 @@ public class AdminService implements UserDetailsService {
     @Autowired
     private AdminRepository adminRepo;
     private final PasswordEncoder passwordEncoder;
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
 
     @Autowired
-    public AdminService(AdminRepository adminRepo,PasswordEncoder passwordEncoder) {
+    public AdminService(AdminRepository adminRepo, PasswordEncoder passwordEncoder, JavaMailSender mailSender) {
         this.adminRepo = adminRepo;
         this.passwordEncoder = passwordEncoder;
+        this.mailSender = mailSender;
     }
+
     public Admin createAdmin(Admin admin) {
 
         if (adminRepo.findByUsername(admin.getUsername()) != null) {
@@ -41,22 +44,18 @@ public class AdminService implements UserDetailsService {
         }
     }
 
-    public String login(String username, String password) {
-        Admin admin = adminRepo.findByUsername(username);
-
-        if (admin == null) {
-            throw new UsernameNotFoundException("Invalid username or password");
-        }
-
-        if (!passwordEncoder.matches(password, admin.getPassword())) {
-            throw new RuntimeException("Invalid username or password");
-        }
-
-        return "Login successful";
+    public void login(String username) {
+        Admin user = adminRepo.findByUsername(username);
+        user.setLoggedIn(true);
+        adminRepo.save(user);
     }
 
-    public String logout(String username) {
-        return "Admin " + username + " logged out successfully.";
+    public void logout(String userId) {
+        // get user by id
+        Admin user = adminRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setLoggedIn(false);
+        adminRepo.save(user);
     }
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -70,26 +69,66 @@ public class AdminService implements UserDetailsService {
                 List.of(new SimpleGrantedAuthority("ROLE_ADMIN")) // Or map user roles/authorities here
         );
     }
-
-    //Create a method to get all reports from user service by consuming
-    @RabbitListener(queues = RabbitMQConfig.USER_TO_ADMIN_QUEUE)
+    @RabbitListener(queues = RabbitMQConfig.USER_TO_ADMIN_QUEUE, containerFactory = "rabbitListenerContainerFactory")
     public void getAllReports(ReportDTO dto) {
-
-        //get all admins emails
+        if (dto == null) {
+            System.err.println("Received null ReportDTO");
+            return;
+        }
+        if (adminRepo == null) {
+            System.err.println("adminRepo is null!");
+            return;
+        }
         List<Admin> admins = adminRepo.findAll();
+        if (admins == null || admins.isEmpty()) {
+            System.err.println("No admins found");
+            return;
+        }
         String[] adminEmails = admins.stream()
                 .map(Admin::getEmail)
+                .filter(email -> email != null && !email.isEmpty())
                 .toArray(String[]::new);
-        //send email to all admins
+
+        if (adminEmails.length == 0) {
+            System.err.println("No admin emails available");
+            return;
+        }
+
         String subject = "New Report Received";
-        String body = "A new report has been received from" +  "User ID: " + dto.getUserId() + "\n"+
+        String body = "A new report has been received from User ID: " + dto.getUserId() + "\n" +
                 "Report Type: " + dto.getType() + "\n" +
                 "Report Content: " + dto.getContent() + "\n" +
                 "Target ID: " + dto.getTargetId() + "\n" +
                 "Created At: " + dto.getCreatedAt();
-        sendMail(subject, body, adminEmails);
 
+        try {
+            sendMail(subject, body, adminEmails);
+        } catch (Exception e) {
+            System.err.println("Failed to send email: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
+
+    //Create a method to get all reports from user service by consuming
+//    @RabbitListener(queues = RabbitMQConfig.USER_TO_ADMIN_QUEUE)
+//    @RabbitListener(queues = RabbitMQConfig.USER_TO_ADMIN_QUEUE, containerFactory = "rabbitListenerContainerFactory")
+//    public void getAllReports(ReportDTO dto) {
+//
+//        //get all admins emails
+//        List<Admin> admins = adminRepo.findAll();
+//        String[] adminEmails = admins.stream()
+//                .map(Admin::getEmail)
+//                .toArray(String[]::new);
+//        //send email to all admins
+//        String subject = "New Report Received";
+//        String body = "A new report has been received from" +  "User ID: " + dto.getUserId() + "\n"+
+//                "Report Type: " + dto.getType() + "\n" +
+//                "Report Content: " + dto.getContent() + "\n" +
+//                "Target ID: " + dto.getTargetId() + "\n" +
+//                "Created At: " + dto.getCreatedAt();
+//        sendMail(subject, body, adminEmails);
+//
+//    }
 
     //    public void receiveReport(ReportDTO dto) {
     //        if ("restaurant".equalsIgnoreCase(dto.getType())) {
@@ -125,7 +164,9 @@ public class AdminService implements UserDetailsService {
     public void deleteAdminById(String id) {
         adminRepo.deleteById(id);
     }
-
+    public Admin getAdminByUsername(String username) {
+        return adminRepo.findByUsername(username);
+    }
 
 }
 

@@ -42,6 +42,8 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Report> reports = new ArrayList<>();
 
+    private boolean isLoggedIn = false;
+
     // @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     // private Cart cart;
 
@@ -71,7 +73,6 @@ public class User {
         private String password;
         private String firstName;
         private String lastName;
-        private UUID id;
 
         public Builder username(String username) {
             this.username = username;
@@ -169,6 +170,14 @@ public class User {
 
     public void setReports(List<Report> reports) {
         this.reports = reports;
+    }
+
+    public boolean isLoggedIn() {
+        return isLoggedIn;
+    }
+
+    public void setLoggedIn(boolean loggedIn) {
+        isLoggedIn = loggedIn;
     }
 
     // Equals & HashCode

@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(name = "restaurant-service", url = "http://localhost:8083")
 public interface RestaurantServiceClient {
     @GetMapping("/restaurants/{id}")
-    RestaurantDTO getRestaurant(@PathVariable Long id);
+    RestaurantDTO getRestaurant(@PathVariable String id);
 
-    @PostMapping("/restaurants/{id}/ban")
-    void banRestaurant(@PathVariable Long id);
+    @PutMapping("/restaurants/{id}/ban")
+    void banRestaurant(@PathVariable String id);
 
-    @PostMapping("/restaurants/{id}/unban")
-    void activateRestaurant(@PathVariable Long id);
+    @PutMapping("/restaurants/{id}/unban")
+    void activateRestaurant(@PathVariable String id);
 }
