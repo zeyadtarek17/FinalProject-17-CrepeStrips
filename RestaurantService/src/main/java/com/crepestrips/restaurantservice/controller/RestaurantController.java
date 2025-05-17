@@ -80,17 +80,30 @@ public class RestaurantController {
         }
     }
     @PostMapping
-    public ResponseEntity<Restaurant> createRestaurant(@RequestBody Map<String, Object> requestData) {
+public ResponseEntity<DefaultResult> createRestaurant(@RequestBody Map<String, Object> requestData) {
+    try {
         Restaurant created = service.create(requestData);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new DefaultResult("Restaurant created successfully", false, created));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new DefaultResult(e.getMessage(), true, null));
     }
+}
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Restaurant> updateRestaurant(@PathVariable String id, @RequestBody Map<String, Object> requestData) {
+@PutMapping("/{id}")
+public ResponseEntity<DefaultResult> updateRestaurant(@PathVariable String id, @RequestBody Map<String, Object> requestData) {
+    try {
         return service.update(id, requestData)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(updated -> ResponseEntity.ok(new DefaultResult("Restaurant updated successfully", false, updated)))
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new DefaultResult("Restaurant not found", true, null)));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new DefaultResult(e.getMessage(), true, null));
     }
+}
+
 
 
 //    @PostMapping
