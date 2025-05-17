@@ -15,7 +15,8 @@ public class Cart {
 
     private UUID userId;
 
-    private List<UUID> items;
+    @ElementCollection
+    private List<String> items;
 
     // Getters and setters
     public UUID getId() {
@@ -34,11 +35,11 @@ public class Cart {
         this.userId = userId;
     }
 
-    public List<UUID> getItems() {
+    public List<String> getItems() {
         return items;
     }
 
-    public void setItems(List<UUID> items) {
+    public void setItems(List<String> items) {
         this.items = items;
     }
 }

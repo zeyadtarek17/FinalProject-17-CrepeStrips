@@ -1,16 +1,12 @@
 package com.crepestrips.userservice.controller;
 
+import com.crepestrips.userservice.dto.*;
 import com.crepestrips.userservice.model.Cart;
 import com.crepestrips.userservice.model.Report;
 import com.crepestrips.userservice.model.User;
 import com.crepestrips.userservice.security.JwtService;
 import com.crepestrips.userservice.service.UserService;
-import com.crepestrips.userservice.UserServiceSingleton;
-import com.crepestrips.userservice.dto.AuthRequest;
-import com.crepestrips.userservice.dto.AuthResponse;
-import com.crepestrips.userservice.dto.ChangePasswordRequest;
-import com.crepestrips.userservice.dto.FoodItemResponse;
-import com.crepestrips.userservice.dto.UserMessage;
+import com.crepestrips.userservice.client.FoodItemClient;
 
 import jakarta.validation.Valid;
 
@@ -38,39 +34,44 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtUtil;
     private final UserProducer producer;
-
+    private final FoodItemClient foodItemClient;
 
     @Autowired
-    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtUtil, UserProducer producer) {
+    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtUtil,
+            UserProducer producer, FoodItemClient foodItemClient) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.producer = producer;
-        UserServiceSingleton.getInstance(userService);
+        this.foodItemClient = foodItemClient;
     }
 
     @PostMapping("/order/add")
     public ResponseEntity<String> createOrder(@RequestBody UUID userId) {
-        //get the cart by userId
+        // get the cart by userId
         Optional<Cart> cart = userService.getCartByUserId(userId);
         if (cart.isEmpty()) {
             return ResponseEntity.badRequest().body("Cart not found for user ID: " + userId);
         }
-        //get the list of item ids from the cart
-        List<UUID> itemIds = cart.get().getItems();
-        //call the endpoint that retrieves list of fooditems (sync)
-
+        // get the list of item ids from the cart
+        List<String> itemIds = cart.get().getItems();
+        // call the endpoint that retrieves list of fooditems (sync) api
         List<FoodItemResponse> items = null;
-        //extract the restaurant id from the first item
+        try {
+            items = foodItemClient.getItemsById(itemIds).getBody();
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error retrieving food items: " + e.getMessage());
+        }
+        // extract the restaurant id from the first item
         if (itemIds.isEmpty()) {
             return ResponseEntity.badRequest().body("No items found in the cart for user ID: " + userId);
         }
-        UUID restaurantId = items.get(0).getRestaurantId();
-        //generate orderid to be tracked
+        String restaurantId = items.get(0).getRestaurantId();
+        // generate orderid to be tracked
         UUID orderId = UUID.randomUUID();
-        //send the message to the order service
+        // send the message to the order service
         producer.createOrder(userId, restaurantId, items, orderId);
-        //now these data to order service(async using rabbitmq)
+        // now these data to order service(async using rabbitmq)
         return ResponseEntity.ok("Order being created with ID: " + orderId);
     }
 
@@ -88,7 +89,7 @@ public class UserController {
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
 
             if (authentication.isAuthenticated()) {
-                return new AuthResponse(jwtUtil.generateToken(authRequest.getUsername(), authRequest.getId()));
+                return new AuthResponse(jwtUtil.generateToken(authRequest.getUsername()));
             } else {
                 throw new UsernameNotFoundException("Invalid user request!");
             }
@@ -109,10 +110,23 @@ public class UserController {
         return userService.changePassword(request.getUserName(), request.getOldPassword(), request.getNewPassword());
     }
 
-    @PostMapping("/{userId}/report")
-    public Report reportIssue(@PathVariable UUID userId, @RequestBody Report report) {
-        return userService.reportIssue(userId, report);
+    @PostMapping("/report")
+    public ResponseEntity<ReportDTO> reportIssue(@RequestBody ReportDTO reportDTO) {
+        Report savedReport = userService.reportIssue(
+                reportDTO.getUserId(), reportDTO.getType(), reportDTO.getContent(), reportDTO.getTargetId());
+
+        ReportDTO response = new ReportDTO(
+                savedReport.getId(),
+                savedReport.getUser().getId(),
+                savedReport.getContent(),
+                savedReport.getType(),
+                savedReport.getTargetId(),
+                savedReport.getCreatedAt()
+        );
+
+        return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")

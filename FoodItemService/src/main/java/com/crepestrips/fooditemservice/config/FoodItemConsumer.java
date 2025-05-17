@@ -39,14 +39,14 @@ public class FoodItemConsumer {
                 case "CREATE" -> {
                     FoodItem item = objectMapper.convertValue(dto, FoodItem.class);
                     foodItemService.create(item);
-                    System.out.println("✅ Created: " + item.getName());
+                    System.out.println("Created: " + item.getName());
                 }
                 case "UPDATE" -> {
                     if (id != null && dto != null) {
                         System.out.println("Update :"+id);
                         FoodItem item = objectMapper.convertValue(dto, FoodItem.class);
                         //foodItemService.update(id, item);
-                        System.out.println("✅ Updated: " + id);
+                        System.out.println("Updated: " + id);
                     }
                 }
                 case "DELETE" -> {
@@ -54,14 +54,14 @@ public class FoodItemConsumer {
                     System.out.println("Delete :"+id);
                     if (id != null) {
                         foodItemService.delete(id);
-                        System.out.println("✅ Deleted: " + id);
+                        System.out.println("Deleted: " + id);
                     }
                 }
-                default -> System.err.println("⚠️ Unknown action: " + action);
+                default -> System.err.println("Unknown action: " + action);
             }
 
         } catch (Exception e) {
-            System.err.println("❌ Error handling message: " + e.getMessage());
+            System.err.println("Error handling message: " + e.getMessage());
         }
     }
 }

@@ -69,12 +69,25 @@ public class FoodItemController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+    @PostMapping("/all")
+    public ResponseEntity<List<FoodItem>> getItemsById(@RequestBody List<String> ids) {
+        List<FoodItem> items = service.getItemsById(ids);
+        return ResponseEntity.ok(items);
+    }
 
     @PutMapping("/{id}/unsuspend")
     public ResponseEntity<FoodItem> unsuspend(@PathVariable String id) {
         return service.unsuspend(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+    @GetMapping("/restaurant/{restaurantId}")
+    public ResponseEntity<List<FoodItem>> getByRestaurant(@PathVariable String restaurantId) {
+        return ResponseEntity.ok(service.getFoodItemsByRestaurantId(restaurantId));
+    }
+    @PostMapping("/decrement")
+    public ResponseEntity<Boolean> decrementStock(@RequestBody List<String> ids) {
+        return ResponseEntity.ok(service.decrementStock(ids));
     }
 
 }

@@ -9,6 +9,7 @@ import com.crepestrips.userservice.repository.ReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,6 +23,8 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import com.crepestrips.userservice.dto.ReportDTO;
+
 @Service
 public class UserService implements UserDetailsService {
 
@@ -31,12 +34,44 @@ public class UserService implements UserDetailsService {
     private final CartRepository cartRepository;
 
     @Autowired
+    private ReportProducer reportProducer;
+
+    @Autowired
     public UserService(UserRepository userRepository, ReportRepository reportRepository,
-            PasswordEncoder passwordEncoder, CartRepository cartRepository) {
+                       PasswordEncoder passwordEncoder, CartRepository cartRepository) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
         this.passwordEncoder = passwordEncoder;
         this.cartRepository = cartRepository;
+    }
+
+    public Report reportIssue(UUID userId, String type, String content, String targetId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Report report = new Report();
+        report.setUser(user);
+        report.setType(type);
+        report.setContent(content);
+        report.setTargetId(targetId);
+        report.setCreatedAt(new Date());
+
+        Report saved = reportRepository.save(report);
+
+        user.getReports().add(saved);
+        userRepository.save(user);
+
+        ReportDTO dto = new ReportDTO();
+        dto.setId(saved.getId());
+        dto.setUserId(user.getId());
+        dto.setType(saved.getType());
+        dto.setContent(saved.getContent());
+        dto.setTargetId(saved.getTargetId());
+        dto.setCreatedAt(saved.getCreatedAt());
+
+        reportProducer.sendReport(dto);
+
+        return saved;
     }
 
     public User registerUser(User user) {
@@ -86,13 +121,13 @@ public class UserService implements UserDetailsService {
         return "Password updated.";
     }
 
-    public Report reportIssue(UUID userId, Report report) {
+    /*public Report reportIssue(UUID userId, Report report) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         report.setUser(user);
         return reportRepository.save(report);
-    }
+    }*/
 
     @Cacheable(value = "Users", key = "#id")
     public User getUserById(UUID id) {
@@ -128,7 +163,7 @@ public class UserService implements UserDetailsService {
     }
 
     //cart
-    
+
     @Cacheable(value = "Carts", key = "#userId")
     public Optional<Cart> getCartByUserId(UUID userId) {
         return cartRepository.findByUserId(userId);

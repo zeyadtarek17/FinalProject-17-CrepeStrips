@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class FoodItemService {
@@ -99,6 +101,46 @@ public class FoodItemService {
             item.setStatus("UNSUSPENDED");
             return repository.save(item);
         });
+    }
+    public List<FoodItem> getFoodItemsByRestaurantId(String restaurantId) {
+        return repository.findByRestaurantId(restaurantId);
+    }
+
+
+    public List<FoodItem> getItemsById(List<String> ids) {
+        return repository.findAllById(ids);
+    }
+
+    public boolean decrementStock(List<String> ids) {
+        // Step 1: Count how many times each ID appears
+        Map<String, Long> itemCountMap = ids.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        // Step 2: Fetch all items from DB
+        List<FoodItem> items = repository.findAllById(itemCountMap.keySet());
+
+        // Step 3: Map food items by ID for quick lookup
+        Map<String, FoodItem> itemMap = items.stream()
+                .collect(Collectors.toMap(FoodItem::getId, Function.identity()));
+
+        // Step 4: Check if each item has enough stock
+        for (Map.Entry<String, Long> entry : itemCountMap.entrySet()) {
+            FoodItem item = itemMap.get(entry.getKey());
+            if (item == null || item.getAvailableStock() < entry.getValue()) {
+                return false; // Not found or not enough stock
+            }
+        }
+
+        // Step 5: All items have enough stock, now decrement
+        for (Map.Entry<String, Long> entry : itemCountMap.entrySet()) {
+            FoodItem item = itemMap.get(entry.getKey());
+            item.setAvailableStock(item.getAvailableStock() - entry.getValue().intValue());
+        }
+
+        // Step 6: Save updated items
+        repository.saveAll(itemMap.values());
+
+        return true;
     }
 
 }
