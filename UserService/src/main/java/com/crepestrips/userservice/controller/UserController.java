@@ -94,6 +94,7 @@ public class UserController {
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
 
             if (authentication.isAuthenticated()) {
+                userService.login(authRequest.getUsername());
                 AuthResponse response = new AuthResponse(jwtUtil.generateToken(authRequest.getUsername()));
                 return ResponseEntity.ok(new DefaultResult("User logged in successfully", false, response));
             } else {
@@ -104,11 +105,18 @@ public class UserController {
         }
     }
 
-    @PostMapping("/logout")
-    public String logout(@RequestParam String username) {
+    @GetMapping("/logout/{userId}")
+    public ResponseEntity<DefaultResult> logout(@PathVariable UUID userId) {
         // Logout logic (e.g., invalidate session, clear context, etc.)
-        SecurityContextHolder.clearContext();
-        return "User " + username + " logged out successfully.";
+        // SecurityContextHolder.clearContext();
+        // return "User " + username + " logged out successfully.";
+        try {
+            userService.logout(userId);
+            return ResponseEntity.ok(new DefaultResult("User logged out successfully", false, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @PutMapping("/password")
