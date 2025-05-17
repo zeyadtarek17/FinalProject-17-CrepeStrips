@@ -81,7 +81,7 @@ public class FoodItemController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-    @GetMapping("/restaurant/{restaurantId}")
+    @GetMapping("/getAllFoodItems/{restaurantId}")
     public ResponseEntity<List<FoodItem>> getByRestaurant(@PathVariable String restaurantId) {
         return ResponseEntity.ok(service.getFoodItemsByRestaurantId(restaurantId));
     }
