@@ -14,13 +14,12 @@ public class AdminReportHandler implements ReportObserver {
         this.reportSubject = reportSubject;
     }
 
-    @PostConstruct
     public void init() {
         reportSubject.addObserver(this);
     }
 
     @Override
     public void update(ReportDTO report) {
-        System.out.println("Admin Report Update" + report.getContent());
+        System.out.println("Admin received report: " + report.getContent());
     }
 }
