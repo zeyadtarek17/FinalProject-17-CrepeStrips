@@ -203,7 +203,11 @@ public class RestaurantController {
     @PostMapping("/{restaurantId}/fooditems")
     public ResponseEntity<DefaultResult> createFoodItem(@PathVariable String restaurantId, @RequestBody FoodItemDTO dto) {
         try {
-            FoodItemDTO created = foodItemClient.createFoodItem(dto);
+            DefaultResult result = foodItemClient.createFoodItem(dto);
+            if (result.isError()) {
+                return ResponseEntity.ok(new DefaultResult("Failed to create food item", true, null));
+            }
+            FoodItemDTO created = (FoodItemDTO) result.getResult();
             service.addFoodItemToRestaurant(restaurantId, created.getId());
             return ResponseEntity.ok(new DefaultResult("Food item created and added to restaurant", false, created));
         } catch (Exception e) {
@@ -213,7 +217,11 @@ public class RestaurantController {
     @PutMapping("/{restaurantId}/fooditems/{foodItemId}")
     public ResponseEntity<DefaultResult> updateFoodItemSync(@PathVariable String restaurantId, @PathVariable String foodItemId, @RequestBody FoodItemDTO dto) {
         try {
-            FoodItemDTO updated = foodItemClient.updateFoodItem(foodItemId, dto);
+            DefaultResult result = foodItemClient.updateFoodItem(foodItemId, dto);
+            if (result.isError()) {
+                return ResponseEntity.ok(new DefaultResult("Failed to update food item", true, null));
+            }
+            FoodItemDTO updated = (FoodItemDTO) result.getResult();
             service.updateFoodItemInRestaurant(restaurantId, foodItemId, updated.getId());
             return ResponseEntity.ok(new DefaultResult("Food item updated in restaurant", false, updated));
         } catch (Exception e) {
