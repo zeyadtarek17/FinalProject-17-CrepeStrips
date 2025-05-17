@@ -1,14 +1,16 @@
 package com.crepestrips.fooditemservice.controller;
 
-import com.crepestrips.fooditemservice.dto.FoodItemDTO;
+import com.crepestrips.fooditemservice.dto.DefaultResult;
 import com.crepestrips.fooditemservice.model.FoodItem;
 import com.crepestrips.fooditemservice.service.FoodItemService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/fooditems")
@@ -18,76 +20,102 @@ public class FoodItemController {
     private FoodItemService service;
 
     @GetMapping
-    public ResponseEntity<List<FoodItem>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<DefaultResult> getAll() {
+        List<FoodItem> items = service.getAll();
+        return ResponseEntity.ok(new DefaultResult("All food items retrieved", false, items));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<FoodItem> getById(@PathVariable String id) {
-        return service.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<DefaultResult> getById(@PathVariable String id) {
+        Optional<FoodItem> item = service.getById(id);
+        if (item.isPresent()) {
+            return ResponseEntity.ok(new DefaultResult("Food item found", false, item.get()));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new DefaultResult("Food item not found", true, null));
     }
 
     @PostMapping
-    public ResponseEntity<FoodItem> create(@RequestBody Map<String, Object> rawData) {
-        return ResponseEntity.ok(service.create(rawData));
+    public ResponseEntity<DefaultResult> create(@RequestBody Map<String, Object> rawData) {
+        FoodItem created = service.create(rawData);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new DefaultResult("Food item created", false, created));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<FoodItem> update(@PathVariable String id, @RequestBody Map<String, Object> updates) {
-        return service.update(id, updates)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<DefaultResult> update(@PathVariable String id, @RequestBody Map<String, Object> updates) {
+        Optional<FoodItem> updated = service.update(id, updates);
+        return updated.map(item -> ResponseEntity.ok(new DefaultResult("Food item updated", false, item)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new DefaultResult("Food item not found", true, null)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        return service.delete(id) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    public ResponseEntity<DefaultResult> delete(@PathVariable String id) {
+        boolean deleted = service.delete(id);
+        if (deleted) {
+            return ResponseEntity.ok(new DefaultResult("Item with ID " + id + " was successfully deleted.", false, null));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new DefaultResult("Item with ID " + id + " not found.", true, null));
+        }
     }
 
     @PatchMapping("/{id}/discount")
-    public ResponseEntity<FoodItem> applyDiscount(@PathVariable String id, @RequestParam double discount) {
-        return service.applyDiscount(id, discount)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<DefaultResult> applyDiscount(@PathVariable String id, @RequestParam double discount) {
+        Optional<FoodItem> updated = service.applyDiscount(id, discount);
+        return updated.map(item -> ResponseEntity.ok(new DefaultResult("Discount applied", false, item)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new DefaultResult("Food item not found", true, null)));
     }
 
     @GetMapping("/available")
-    public ResponseEntity<List<FoodItem>> getAvailableItems() {
-        return ResponseEntity.ok(service.getAvailableItems());
+    public ResponseEntity<DefaultResult> getAvailableItems() {
+        return ResponseEntity.ok(new DefaultResult("Available items retrieved", false, service.getAvailableItems()));
     }
 
     @GetMapping("/top-rated")
-    public ResponseEntity<List<FoodItem>> getTopRatedItems() {
-        return ResponseEntity.ok(service.getItemsSortedByRating());
+    public ResponseEntity<DefaultResult> getTopRatedItems() {
+        return ResponseEntity.ok(new DefaultResult("Top rated items retrieved", false, service.getItemsSortedByRating()));
     }
 
     @PutMapping("/{id}/suspend")
-    public ResponseEntity<FoodItem> suspend(@PathVariable String id) {
-        return service.suspend(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-    @PostMapping("/all")
-    public ResponseEntity<List<FoodItem>> getItemsById(@RequestBody List<String> ids) {
-        List<FoodItem> items = service.getItemsById(ids);
-        return ResponseEntity.ok(items);
+    public ResponseEntity<DefaultResult> suspend(@PathVariable String id) {
+        Optional<FoodItem> suspended = service.suspend(id);
+        return suspended.map(item -> ResponseEntity.ok(new DefaultResult("Food item suspended", false, item)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new DefaultResult("Food item not found", true, null)));
     }
 
     @PutMapping("/{id}/unsuspend")
-    public ResponseEntity<FoodItem> unsuspend(@PathVariable String id) {
-        return service.unsuspend(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<DefaultResult> unsuspend(@PathVariable String id) {
+        Optional<FoodItem> unsuspended = service.unsuspend(id);
+        return unsuspended.map(item -> ResponseEntity.ok(new DefaultResult("Food item unsuspended", false, item)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new DefaultResult("Food item not found", true, null)));
     }
+
     @GetMapping("/getAllFoodItems/{restaurantId}")
-    public ResponseEntity<List<FoodItem>> getByRestaurant(@PathVariable String restaurantId) {
-        return ResponseEntity.ok(service.getFoodItemsByRestaurantId(restaurantId));
+    public ResponseEntity<DefaultResult> getByRestaurant(@PathVariable String restaurantId) {
+        List<FoodItem> items = service.getFoodItemsByRestaurantId(restaurantId);
+        return ResponseEntity.ok(new DefaultResult("Items for restaurant retrieved", false, items));
     }
+
+    @PostMapping("/all")
+    public ResponseEntity<DefaultResult> getItemsById(@RequestBody List<String> ids) {
+        List<FoodItem> items = service.getItemsById(ids);
+        return ResponseEntity.ok(new DefaultResult("Items retrieved by ID list", false, items));
+    }
+
     @PostMapping("/decrement")
-    public ResponseEntity<Boolean> decrementStock(@RequestBody List<String> ids) {
-        return ResponseEntity.ok(service.decrementStock(ids));
+    public ResponseEntity<DefaultResult> decrementStock(@RequestBody List<String> ids) {
+        boolean success = service.decrementStock(ids);
+        if (success) {
+            return ResponseEntity.ok(new DefaultResult("Stock decremented", false, null));
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new DefaultResult("Failed to decrement stock", true, null));
+        }
     }
 
 }
