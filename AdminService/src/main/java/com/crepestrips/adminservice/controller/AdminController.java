@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -92,6 +93,7 @@ public class AdminController {
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
 
             if (authentication.isAuthenticated()) {
+                adminService.login(authRequest.getUsername());
                 LoginResponse response = new LoginResponse(jwtUtil.generateToken(authRequest.getUsername()));
                 return ResponseEntity.ok(new DefaultResult("Admin logged in successfully", false, response));
             } else {
@@ -102,11 +104,18 @@ public class AdminController {
         }
     }
 
-    @PostMapping("/logout")
-    public String logout(@RequestParam String username) {
+    @GetMapping("/logout/{userId}")
+    public ResponseEntity<DefaultResult> logout(@PathVariable String userId) {
         // Logout logic (e.g., invalidate session, clear context, etc.)
-        SecurityContextHolder.clearContext();
-        return "Admin " + username + " logged out successfully.";
+        // SecurityContextHolder.clearContext();
+        // return "User " + username + " logged out successfully.";
+        try {
+            adminService.logout(userId);
+            return ResponseEntity.ok(new DefaultResult("User logged out successfully", false, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
     @PostMapping("/fooditems/{id}/suspend")
     public ResponseEntity<DefaultResult> suspendFoodItem(@PathVariable String id) {
