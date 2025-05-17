@@ -145,7 +145,6 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    // @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<DefaultResult> getUserById(@PathVariable UUID id) {
         try {
             User user = userService.getUserById(id);
@@ -178,7 +177,6 @@ public class UserController {
     }
 
     @DeleteMapping("{id}")
-    // @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<DefaultResult> deleteUser(@PathVariable UUID id) {
         try {
             String res = userService.deleteUser(id);
