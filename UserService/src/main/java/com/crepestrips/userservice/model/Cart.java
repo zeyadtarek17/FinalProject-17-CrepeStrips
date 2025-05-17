@@ -15,9 +15,8 @@ public class Cart {
 
     private UUID userId;
 
-
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItem> items;
+    @ElementCollection
+    private List<String> items;
 
     // Getters and setters
     public UUID getId() {
@@ -36,11 +35,11 @@ public class Cart {
         this.userId = userId;
     }
 
-    public List<CartItem> getItems() {
+    public List<String> getItems() {
         return items;
     }
 
-    public void setItems(List<CartItem> items) {
+    public void setItems(List<String> items) {
         this.items = items;
     }
 }

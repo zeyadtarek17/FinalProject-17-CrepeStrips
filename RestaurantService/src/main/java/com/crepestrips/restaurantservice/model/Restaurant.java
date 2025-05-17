@@ -1,7 +1,7 @@
 package com.crepestrips.restaurantservice.model;
 
-import com.crepestrips.fooditemservice.observer.Observer;
-import com.crepestrips.fooditemservice.observer.Subject;
+import com.crepestrips.restaurantservice.dto.FoodItemDTO;
+import com.crepestrips.restaurantservice.factory.IRestaurant;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -12,48 +12,58 @@ import java.util.List;
 import java.util.ArrayList;
 
 @Document(collection = "restaurants")
-public class Restaurant implements Observer {
+public class Restaurant implements IRestaurant{
 
     @Id
     private String id;
-    private Subject foodItem;
     private String name;
     private LocalTime openingTime;
     private LocalTime closingTime;
     private String location;
-    private double rating;
+//    private double rating;
     private boolean isOpen;
     private boolean hasSeating;
     private boolean supportsDelivery;
     private RestaurantType type;
-
+    private boolean isBanned;
+    private FoodItemDTO foodItem;
     @DBRef
     private Category category;
 
     private List<String> foodItemIds = new ArrayList<>();
 
-    public Restaurant(Subject foodItem) {
-        this.foodItem = foodItem;
-        foodItem.registerObserver(this);
 
-    }
 
-    public Restaurant(String name, String location, double rating) {
+    public Restaurant(String name, String location) {
         this.name = name;
         this.location = location;
-        this.rating = rating;
+//        this.rating = rating;
+        isBanned = false;
     }
 
-    public Restaurant(String id, String name, String location, double rating, boolean isOpen) {
+    public Restaurant(String id, String name, String location, boolean isOpen) {
         this.id = id;
         this.name = name;
         this.location = location;
-        this.rating = rating;
+//        this.rating = rating;
         this.isOpen = isOpen;
+        isBanned = false;
     }
 
     public Restaurant() {
+        isBanned = false;
 
+    }
+
+    public Restaurant(String name, String location, boolean isOpen, LocalTime openingTime, LocalTime closingTime, Category category) {
+        this.name = name;
+        this.location = location;
+//        this.rating = rating;
+        this.isOpen = isOpen;
+        this.openingTime = openingTime;
+        this.closingTime = closingTime;
+        this.category = category;
+        isBanned = false;
     }
 
     public String getId() { return id; }
@@ -68,11 +78,17 @@ public class Restaurant implements Observer {
 
     public void setLocation(String location) { this.location = location; }
 
-    public double getRating() { return rating; }
+//    public double getRating() { return rating; }
 
-    public void setRating(double rating) { this.rating = rating; }
+//    public void setRating(double rating) { this.rating = rating; }
 
-    public boolean isOpen() { return isOpen; }
+    public boolean isOpen() {
+        if (openingTime == null || closingTime == null) {
+            return false;
+        }
+        LocalTime now = LocalTime.now();
+        return !now.isBefore(openingTime) && !now.isAfter(closingTime);
+    }
 
     public void setOpen(boolean open) { isOpen = open; }
 
@@ -88,10 +104,7 @@ public class Restaurant implements Observer {
 
     public void setClosingTime(LocalTime closingTime) { this.closingTime = closingTime; }
 
-    @Override
-    public void update() {
-        System.out.println("[" + name + "] ALERT: '" + foodItem + "' is out of stock.");
-    }
+
 
     public String getCategoryId() {
         return category != null ? category.getId() : null;
@@ -101,11 +114,9 @@ public class Restaurant implements Observer {
         this.category = category;
     }
 
-    public Subject getFoodItem() {
-        return foodItem;
-    }
 
-    public void setFoodItem(Subject foodItem) {
+
+    public void setFoodItem(FoodItemDTO foodItem) {
         this.foodItem = foodItem;
     }
 
@@ -136,4 +147,22 @@ public class Restaurant implements Observer {
     public Category getCategory() {
         return category;
     }
+
+    public void setCategoryID(String categoryId) {
+        if (this.category == null) {
+            this.category = new Category(); // or fetch existing if needed
+        }
+        this.category.setId(categoryId);
+    }
+    public boolean isBanned() {
+        return isBanned;
+    }
+    public void setBanned(boolean banned) {
+        isBanned = banned;
+    }
+
+    public FoodItemDTO getFoodItem() {
+        return foodItem;
+    }
 }
+

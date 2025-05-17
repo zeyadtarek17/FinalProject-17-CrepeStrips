@@ -1,8 +1,16 @@
 package com.crepestrips.restaurantservice.service;
 
+
+import com.crepestrips.restaurantservice.client.FoodItemClient;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
+import com.crepestrips.restaurantservice.dto.RestaurantOrderHistoryResponse;
+import com.crepestrips.restaurantservice.factory.RestaurantFactory;
+import com.crepestrips.restaurantservice.model.Category;
 import com.crepestrips.restaurantservice.model.Restaurant;
+import com.crepestrips.restaurantservice.model.RestaurantCreation;
+import com.crepestrips.restaurantservice.repository.CategoryRepository;
 import com.crepestrips.restaurantservice.repository.RestaurantRepository;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +25,30 @@ public class RestaurantService {
     @Autowired
     private RestaurantRepository repository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
 
+    @Autowired
+    private RestaurantFactory restaurantFactory;
+
+    private final FoodItemClient foodItemClient;
+
+    public RestaurantService(FoodItemClient foodItemClient) {
+        this.foodItemClient = foodItemClient;
+    }
+
+    public Restaurant create(RestaurantCreation restaurantCreation) {
+        Restaurant restaurant = restaurantCreation.getRestaurant();
+        if (restaurant.getCategory() != null && restaurant.getCategory().getId() == null) {
+        Category savedCategory = categoryRepository.save(restaurant.getCategory());
+        restaurant.setCategory(savedCategory);
+    }
+
+    String typeName = restaurant.getType() != null ? restaurant.getType().name() : "DEFAULT";
+    Restaurant newRestaurant = restaurantFactory.createRestaurant(restaurant,restaurantCreation.getExtras());
+
+    return repository.save(newRestaurant);
+    }
 
     public List<Restaurant> getAll() {
         return repository.findAll();
@@ -27,18 +58,31 @@ public class RestaurantService {
         return repository.findById(id);
     }
 
-    public Restaurant create(Restaurant restaurant) {
-        return repository.save(restaurant);
-    }
 
     public Optional<Restaurant> update(String id, Restaurant updated) {
         return repository.findById(id).map(existing -> {
             existing.setName(updated.getName());
             existing.setLocation(updated.getLocation());
-            existing.setRating(updated.getRating());
-            existing.setOpen(updated.isOpen());
+//            existing.setRating(updated.getRating());
+            existing.setOpen(isWithinOperatingHours(updated.getOpeningTime(), updated.getClosingTime()));
+            existing.setOpeningTime(updated.getOpeningTime());
+            existing.setClosingTime(updated.getClosingTime());
+            existing.setFoodItemIds(updated.getFoodItemIds());
+            existing.setFoodItem(updated.getFoodItem());
+            existing.setType(updated.getType());
+            existing.setCategory(updated.getCategory());
             return repository.save(existing);
         });
+    }
+
+    private boolean isWithinOperatingHours(LocalTime openingTime, LocalTime closingTime) {
+        if (openingTime == null || closingTime == null) return false;
+        LocalTime now = LocalTime.now();
+
+        if (closingTime.isBefore(openingTime)) {
+            return !now.isBefore(openingTime) || !now.isAfter(closingTime);
+        }
+        return !now.isBefore(openingTime) && !now.isAfter(closingTime);
     }
 
     public boolean delete(String id) {
@@ -52,9 +96,9 @@ public class RestaurantService {
         return repository.findByIsOpenTrue();
     }
 
-    public List<Restaurant> getTopRatedRestaurants() {
-        return repository.findAllByOrderByRatingDesc();
-    }
+//    public List<Restaurant> getTopRatedRestaurants() {
+//        return repository.findAllByOrderByRatingDesc();
+//    }
     
 //    public Restaurant getRestaurantById(String id) {
 //        return repository.findById(id).get();
@@ -113,5 +157,48 @@ public class RestaurantService {
         return repository.findAll();
     }
 
+    public boolean banRestaurant(String restaurantId) {
+        Restaurant restaurant = repository.findById(restaurantId).orElse(null);
+        if (restaurant != null) {
+           restaurant.setBanned(true);
+           repository.save(restaurant);
+           return true;
+        }
+        return false;
+    }
+    public boolean addFoodItemIdToRestaurant(String restaurantId, String foodItemId) {
+        Optional<Restaurant> optionalRestaurant = repository.findById(restaurantId);
+
+        if (optionalRestaurant.isEmpty()) {
+            return false; // restaurant not found
+        }
+
+        Restaurant restaurant = optionalRestaurant.get();
+        List<String> foodItems = restaurant.getFoodItemIds();
+
+        if (!foodItems.contains(foodItemId)) {
+            foodItems.add(foodItemId);
+            repository.save(restaurant);
+        }
+
+        return true;
+    }
+
+    public boolean unbanRestaurant(String id) {
+        return repository.findById(id).map(restaurant -> {
+            restaurant.setBanned(false);
+            repository.save(restaurant);
+            return true;
+        }).orElse(false);
+    }
+
+
+//    @RabbitListener(queues = "restaurant.order.response.queue")
+//    public void handleOrderHistoryResponse(RestaurantOrderHistoryResponse response) {
+//        System.out.println("📦 Received orders for restaurant " + response.getRestaurantId());
+//        response.getOrders().forEach(order ->
+//                System.out.println("Order ID: " + order.getId() + " | Total: " + order.getTotalAmount())
+//        );
+//    }
 
 }

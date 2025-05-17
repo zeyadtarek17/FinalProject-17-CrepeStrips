@@ -1,18 +1,28 @@
 
 package com.crepestrips.fooditemservice.service;
 
+import com.crepestrips.fooditemservice.FoodItemFactory.DessertItem;
 import com.crepestrips.fooditemservice.FoodItemFactory.FoodItemFactory;
+import com.crepestrips.fooditemservice.FoodItemFactory.MainCourseItem;
+import com.crepestrips.fooditemservice.model.FoodCategory;
 import com.crepestrips.fooditemservice.model.FoodItem;
 import com.crepestrips.fooditemservice.repository.FoodItemRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class FoodItemService {
 
+    @Autowired
+    private ObjectMapper objectMapper;
     @Autowired
     private FoodItemRepository repository;
 
@@ -24,22 +34,35 @@ public class FoodItemService {
         return repository.findById(id);
     }
 
+    public FoodItem create(Map<String, Object> rawData) {
+        FoodItem base = objectMapper.convertValue(rawData, FoodItem.class);
+
+        FoodItem fullItem = FoodItemFactory.createFoodItem(base.getCategory(), rawData, objectMapper);
+
+        return repository.save(fullItem);
+    }
+
     public FoodItem create(FoodItem item) {
         FoodItem created = FoodItemFactory.createFoodItem(item);
         return repository.save(created);
     }
 
-    public Optional<FoodItem> update(String id, FoodItem updatedItem) {
+    public Optional<FoodItem> update(String id, Map<String, Object> updates) {
         return repository.findById(id).map(existing -> {
-            existing.setName(updatedItem.getName());
-            existing.setDescription(updatedItem.getDescription());
-            existing.setPrice(updatedItem.getPrice());
-            existing.setDiscount(updatedItem.getDiscount());
-            existing.setRating(updatedItem.getRating());
-            existing.setAvailableStock(updatedItem.getAvailableStock());
-            existing.setCategory(updatedItem.getCategory());
-            existing.setRestaurantId(updatedItem.getRestaurantId());
-            return repository.save(existing);
+            FoodCategory category = existing.getCategory();
+
+            Map<String, Object> merged = objectMapper.convertValue(existing, Map.class);
+            merged.putAll(updates); // updates override existing
+
+            FoodItem updatedItem = switch (category) {
+                case MAIN_COURSE -> objectMapper.convertValue(merged, MainCourseItem.class);
+                case DESSERT -> objectMapper.convertValue(merged, DessertItem.class);
+                default -> objectMapper.convertValue(merged, FoodItem.class);
+            };
+
+            updatedItem.setId(id);
+
+            return repository.save(updatedItem);
         });
     }
 
@@ -65,4 +88,58 @@ public class FoodItemService {
     public List<FoodItem> getItemsSortedByRating() {
         return repository.findByOrderByRatingDesc();
     }
+
+    public Optional<FoodItem> suspend(String id) {
+        return repository.findById(id).map(item -> {
+            item.setStatus("SUSPENDED");
+            return repository.save(item);
+        });
+    }
+
+    public Optional<FoodItem> unsuspend(String id) {
+        return repository.findById(id).map(item -> {
+            item.setStatus("UNSUSPENDED");
+            return repository.save(item);
+        });
+    }
+    public List<FoodItem> getFoodItemsByRestaurantId(String restaurantId) {
+        return repository.findByRestaurantId(restaurantId);
+    }
+
+    public List<FoodItem> getItemsById(List<String> ids) {
+        return repository.findAllById(ids);
+    }
+
+    public boolean decrementStock(List<String> ids) {
+        // Step 1: Count how many times each ID appears
+        Map<String, Long> itemCountMap = ids.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        // Step 2: Fetch all items from DB
+        List<FoodItem> items = repository.findAllById(itemCountMap.keySet());
+
+        // Step 3: Map food items by ID for quick lookup
+        Map<String, FoodItem> itemMap = items.stream()
+                .collect(Collectors.toMap(FoodItem::getId, Function.identity()));
+
+        // Step 4: Check if each item has enough stock
+        for (Map.Entry<String, Long> entry : itemCountMap.entrySet()) {
+            FoodItem item = itemMap.get(entry.getKey());
+            if (item == null || item.getAvailableStock() < entry.getValue()) {
+                return false; // Not found or not enough stock
+            }
+        }
+
+        // Step 5: All items have enough stock, now decrement
+        for (Map.Entry<String, Long> entry : itemCountMap.entrySet()) {
+            FoodItem item = itemMap.get(entry.getKey());
+            item.setAvailableStock(item.getAvailableStock() - entry.getValue().intValue());
+        }
+
+        // Step 6: Save updated items
+        repository.saveAll(itemMap.values());
+
+        return true;
+    }
+
 }

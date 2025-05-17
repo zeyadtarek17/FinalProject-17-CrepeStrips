@@ -9,4 +9,7 @@ public interface FoodItemRepository extends MongoRepository<FoodItem, String> {
     List<FoodItem> findByAvailableStockGreaterThan(int stockThreshold);
 
     List<FoodItem> findByOrderByRatingDesc();
+
+    List<FoodItem> findByRestaurantId(String restaurantId);
+
 }

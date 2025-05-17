@@ -24,10 +24,6 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestParam UUID userId, @RequestParam UUID restaurantId) {
-        return orderService.createOrder(userId, restaurantId);
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrderById(@PathVariable UUID id) {
