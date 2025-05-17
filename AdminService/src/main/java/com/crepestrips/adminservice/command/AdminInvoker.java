@@ -4,15 +4,18 @@ package com.crepestrips.adminservice.command;
 import org.springframework.stereotype.Service;
 
 import java.util.Stack;
-
 @Service
 public class AdminInvoker {
-    private final Stack<AdminCommand> commandHistory = new Stack<>();
+    private AdminCommand command;
 
-    public void executeCommand(AdminCommand command) {
-        command.execute();
-        commandHistory.push(command);
+    public void setCommand(AdminCommand command) {
+        this.command = command;
     }
 
-
+    public void executeCommand() {
+        if (command != null) {
+            command.execute();
+        }
+    }
 }
+

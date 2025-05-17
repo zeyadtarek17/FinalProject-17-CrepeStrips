@@ -76,12 +76,17 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public User register(@Valid @RequestBody User user) {
-        return userService.registerUser(user);
+    public ResponseEntity<DefaultResult> register(@Valid @RequestBody User user) {
+        try {
+            User savedUser = userService.registerUser(user);
+            return ResponseEntity.ok(new DefaultResult("User registered successfully", false, savedUser));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<DefaultResult> login(@RequestBody AuthRequest authRequest) {
         try {
 
             // Create authentication token with provided username and password
@@ -89,12 +94,13 @@ public class UserController {
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
 
             if (authentication.isAuthenticated()) {
-                return new AuthResponse(jwtUtil.generateToken(authRequest.getUsername()));
+                AuthResponse response = new AuthResponse(jwtUtil.generateToken(authRequest.getUsername()));
+                return ResponseEntity.ok(new DefaultResult("User logged in successfully", false, response));
             } else {
-                throw new UsernameNotFoundException("Invalid user request!");
+                return ResponseEntity.ok(new DefaultResult("Invalid username or password", true, null));
             }
         } catch (Exception e) {
-            throw new RuntimeException("Invalid username or password", e);
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
     }
 
@@ -106,58 +112,104 @@ public class UserController {
     }
 
     @PutMapping("/password")
-    public String changePassword(@RequestBody ChangePasswordRequest request) {
-        return userService.changePassword(request.getUserName(), request.getOldPassword(), request.getNewPassword());
+    public ResponseEntity<DefaultResult> changePassword(@RequestBody ChangePasswordRequest request) {
+        try {
+            String res = userService.changePassword(request.getUserName(), request.getOldPassword(),
+                    request.getNewPassword());
+            return ResponseEntity.ok(new DefaultResult(res, false, null));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
+
     }
 
     @PostMapping("/report")
-    public ResponseEntity<ReportDTO> reportIssue(@RequestBody ReportDTO reportDTO) {
-        Report savedReport = userService.reportIssue(
-                reportDTO.getUserId(), reportDTO.getType(), reportDTO.getContent(), reportDTO.getTargetId());
+    public ResponseEntity<DefaultResult> reportIssue(@RequestBody ReportDTO reportDTO) {
+        try {
+            Report savedReport = userService.reportIssue(
+                    reportDTO.getUserId(), reportDTO.getType(), reportDTO.getContent(), reportDTO.getTargetId());
 
-        ReportDTO response = new ReportDTO(
-                savedReport.getId(),
-                savedReport.getUser().getId(),
-                savedReport.getContent(),
-                savedReport.getType(),
-                savedReport.getTargetId(),
-                savedReport.getCreatedAt()
-        );
+            ReportDTO response = new ReportDTO(
+                    savedReport.getId(),
+                    savedReport.getUser().getId(),
+                    savedReport.getContent(),
+                    savedReport.getType(),
+                    savedReport.getTargetId(),
+                    savedReport.getCreatedAt());
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(new DefaultResult("Report created successfully", false, response));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
+
     }
 
-
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public User getUserById(@PathVariable UUID id) {
-        return userService.getUserById(id);
+    public ResponseEntity<DefaultResult> getUserById(@PathVariable UUID id) {
+        try {
+            User user = userService.getUserById(id);
+            return ResponseEntity.ok(new DefaultResult("User found", false, user));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @GetMapping("/all")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    // @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<DefaultResult> getAllUsers() {
+        try {
+            List<User> users = userService.getAllUsers();
+            return ResponseEntity.ok(new DefaultResult("Users found", false, users));
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable UUID id, @Valid @RequestBody User user) {
-        return userService.updateUser(id, user);
+    public ResponseEntity<DefaultResult> updateUser(@PathVariable UUID id, @Valid @RequestBody User user) {
+        try {
+            User res = userService.updateUser(id, user);
+            return ResponseEntity.ok(new DefaultResult("User updated successfully", false, res));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @DeleteMapping("{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public String deleteUser(@PathVariable UUID id) {
-        return userService.deleteUser(id);
+    public ResponseEntity<DefaultResult> deleteUser(@PathVariable UUID id) {
+        try {
+            String res = userService.deleteUser(id);
+            return ResponseEntity.ok(new DefaultResult("User deleted successfully", false, res));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @GetMapping("cart/{userId}")
-    public Optional<Cart> getCartByUserId(@PathVariable UUID userId) {
-        return userService.getCartByUserId(userId);
+    public ResponseEntity<DefaultResult> getCartByUserId(@PathVariable UUID userId) {
+        try {
+            Optional<Cart> cart = userService.getCartByUserId(userId);
+            if (cart.isPresent()) {
+                return ResponseEntity.ok(new DefaultResult("Cart found", false, cart.get()));
+            } else {
+                return ResponseEntity.ok(new DefaultResult("Cart not found", true, null));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
+
     }
 
     @PostMapping("/cart")
-    public Cart saveCart(@Valid @RequestBody Cart cart) {
-        return userService.saveCart(cart);
+    public ResponseEntity<DefaultResult> saveCart(@Valid @RequestBody Cart cart) {
+        try {
+            Cart res = userService.saveCart(cart);
+            return ResponseEntity.ok(new DefaultResult("Cart updated successfully", false, res));
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+
+        }
     }
 }

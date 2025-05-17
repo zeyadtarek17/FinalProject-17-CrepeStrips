@@ -19,7 +19,7 @@ import java.util.function.Function;
 @Component
 public class JwtService {
 
-    public static final String SECRET = "5367566859703373367639792F423F452848284D6251655468576D5A71347437";
+    public static final String SECRET = "X07PyBKHwHNIzirSWpQMuS1Ix6n6GLjUCQ2ZnVPnANM=";
 
     public String generateToken(String email) { // Use email as username
         Map<String, Object> claims = new HashMap<>();
@@ -31,7 +31,7 @@ public class JwtService {
                 .setClaims(claims)
                 .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

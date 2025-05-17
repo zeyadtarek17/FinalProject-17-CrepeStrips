@@ -2,12 +2,14 @@ package com.crepestrips.fooditemservice.model;
 
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "food_items")
+@TypeAlias("base")
 public class FoodItem implements IFoodItem {
 
     @Id
@@ -15,11 +17,11 @@ public class FoodItem implements IFoodItem {
     private String name;
     private String description;
     private double price;
-    private double discount;       
-    private double rating;         
+    private double discount;
+    private double rating;
     private int availableStock;
     private FoodCategory category;
-    private String restaurantId;   
+    private String restaurantId;
     private String status;
 
     public FoodItem() {
@@ -35,7 +37,7 @@ public class FoodItem implements IFoodItem {
         this.availableStock = availableStock;
         this.category = category;
         this.restaurantId = restaurantId;
-        this.status = status;
+        this.status = "UNSUSPENDED";
     }
 
     public FoodItem(String id, String name, String description, double price, double discount, double rating, int availableStock, FoodCategory category, String restaurantId) {
@@ -48,7 +50,7 @@ public class FoodItem implements IFoodItem {
         this.availableStock = availableStock;
         this.category = category;
         this.restaurantId = restaurantId;
-
+        this.status = "UNSUSPENDED";
 
     }
 
@@ -124,13 +126,14 @@ public class FoodItem implements IFoodItem {
     public void setRestaurantId(String restaurantId) {
         this.restaurantId = restaurantId;
     }
-
     public String getStatus() {
         return status;
     }
     public void setStatus(String status) {
         this.status = status;
     }
+
+
 
 
 }
