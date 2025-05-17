@@ -4,6 +4,7 @@ import com.crepestrips.fooditemservice.dto.FoodItemDTO;
 import com.crepestrips.fooditemservice.model.FoodItem;
 import com.crepestrips.fooditemservice.service.FoodItemService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,9 +43,15 @@ public class FoodItemController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        return service.delete(id) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    public ResponseEntity<String> delete(@PathVariable String id) {
+        boolean deleted = service.delete(id);
+        if (deleted) {
+            return ResponseEntity.ok("Item with ID " + id + " was successfully deleted.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item with ID " + id + " not found.");
+        }
     }
+
 
     @PatchMapping("/{id}/discount")
     public ResponseEntity<FoodItem> applyDiscount(@PathVariable String id, @RequestParam double discount) {
