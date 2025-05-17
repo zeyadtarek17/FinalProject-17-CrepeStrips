@@ -17,6 +17,7 @@ import com.crepestrips.restaurantservice.service.RestaurantService;
 import com.crepestrips.restaurantservice.strategy.RestaurantFilterContext;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/restaurants")
@@ -33,8 +35,8 @@ public class RestaurantController {
     private RestaurantService service;
     @Autowired
     private RestaurantFilterContext context;
-    @Autowired
-    private RestaurantFactory restaurantFactory;
+//    @Autowired
+//    private RestaurantFactory restaurantFactory;
     @Autowired
     private RestaurantRepository restaurantRepository;
     @Autowired
@@ -78,25 +80,31 @@ public class RestaurantController {
         }
     }
     @PostMapping
-    public ResponseEntity<DefaultResult> createRestaurant(@RequestBody RestaurantCreation restaurantCreation) {
-        try {
-            Restaurant created = service.create(restaurantCreation);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new DefaultResult("Restaurant created", false, created));
-        } catch (Exception e) {
-            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
-        }
-    }
-    @PutMapping("/{id}")
-    public ResponseEntity<DefaultResult> update(@PathVariable String id, @RequestBody Restaurant restaurant) {
-        try {
-            return service.update(id, restaurant)
-                    .map(updated -> ResponseEntity.ok(new DefaultResult("Restaurant updated", false, updated)))
-                    .orElse(ResponseEntity.ok(new DefaultResult("Restaurant not found", true, null)));
-        } catch (Exception e) {
-            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
-        }
+    public ResponseEntity<Restaurant> createRestaurant(@RequestBody Map<String, Object> requestData) {
+        Restaurant created = service.create(requestData);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Restaurant> updateRestaurant(@PathVariable String id, @RequestBody Map<String, Object> requestData) {
+        return service.update(id, requestData)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
+//    @PostMapping
+//    public ResponseEntity<Restaurant> createRestaurant(@RequestBody Map<String, Object> requestData) {
+//        Restaurant created = service.create(requestData);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+//    }
+
+//    @PutMapping("/{id}")
+//    public ResponseEntity<Restaurant> updateRestaurant(@PathVariable String id, @RequestBody Map<String, Object> requestData) {
+//        return service.update(id, requestData)
+//                .map(ResponseEntity::ok)
+//                .orElse(ResponseEntity.notFound().build());
+//    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<DefaultResult> delete(@PathVariable String id) {
@@ -191,15 +199,16 @@ public class RestaurantController {
     }
 
 
-    @PostMapping("/{restaurantId}/order-history-request")
-    public ResponseEntity<DefaultResult> fetchOrderHistory(@PathVariable String restaurantId) {
-        try {
-            restaurantProducer.sendOrderHistoryRequest(restaurantId);
-            return ResponseEntity.ok(new DefaultResult("Order history request sent", false, null));
-        } catch (Exception e) {
-            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
-        }
-    }
+    // @PostMapping("/{restaurantId}/order-history-request")
+    // public ResponseEntity<DefaultResult> fetchOrderHistory(@PathVariable String restaurantId) {
+    //     try {
+    //         restaurantProducer.sendOrderHistoryRequest(restaurantId);
+    //         return ResponseEntity.ok(new DefaultResult("Order history request sent", false, null));
+    //     } catch (Exception e) {
+    //         return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+    //     }
+    // }
+    
     @PostMapping("/{restaurantId}/fooditems")
     public ResponseEntity<DefaultResult> createFoodItem(@PathVariable String restaurantId, @RequestBody FoodItemDTO dto) {
         try {

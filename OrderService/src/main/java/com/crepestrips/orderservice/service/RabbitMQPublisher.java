@@ -1,7 +1,7 @@
 package com.crepestrips.orderservice.service;
 
 import com.crepestrips.orderservice.config.RabbitMQConfig;
-import com.crepestrips.orderservice.dto.RestaurantOrderHistoryResponse;
+//import com.crepestrips.orderservice.dto.RestaurantOrderHistoryResponse;
 import com.crepestrips.orderservice.model.Order;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,11 +33,11 @@ public class RabbitMQPublisher {
         );
     }
 
-    public void publishOrderHistoryResponse(RestaurantOrderHistoryResponse response) {
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.ORDER_HISTORY_EXCHANGE,
-                RabbitMQConfig.ORDER_HISTORY_RESPONSE_KEY,
-                response
-        );
-    }
+//    public void publishOrderHistoryResponse(RestaurantOrderHistoryResponse response) {
+//        rabbitTemplate.convertAndSend(
+//                RabbitMQConfig.ORDER_HISTORY_EXCHANGE,
+//                RabbitMQConfig.ORDER_HISTORY_RESPONSE_KEY,
+//                response
+//        );
+//    }
 }
