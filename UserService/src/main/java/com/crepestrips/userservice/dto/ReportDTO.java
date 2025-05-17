@@ -1,74 +1,53 @@
-package com.crepestrips.userservice.model;
-
-import jakarta.persistence.*;
+package com.crepestrips.userservice.dto;
 
 import java.util.Date;
 import java.util.UUID;
 
-@Entity
-@Table(name = "reports")
-public class Report {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
-
+public class ReportDTO {
+    private UUID reportId;
+    private UUID userId;
     private String content;
-    private String type; // "fooditem" or "restaurant"
-    private String targetId; // ID of the reported restaurant or fooditem
-
-
-    @Temporal(TemporalType.TIMESTAMP)
+    private String type;
+    private String targetId;
     private Date createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private User user;
-
     public UUID getId() {
-        return id;
+        return reportId;
     }
-
     public void setId(UUID id) {
-        this.id = id;
+        this.reportId = id;
     }
-
+    public UUID getUserId() {
+        return userId;
+    }
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
     public String getContent() {
         return content;
     }
-
     public void setContent(String content) {
         this.content = content;
     }
-
     public String getType() {
         return type;
     }
-
     public void setType(String type) {
         this.type = type;
     }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     public String getTargetId() {
         return targetId;
     }
     public void setTargetId(String targetId) {
         this.targetId = targetId;
     }
-
     public Date getCreatedAt() {
         return createdAt;
     }
-
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
+
 }
+
+

@@ -8,10 +8,20 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.amqp.core.Queue;
+
 @Configuration
 public class RabbitMQConfig {
     public static final String EXCHANGE = "order.exchange";
     public static final String ROUTING_KEY = "user.to.order";
+
+    public static final String USER_TO_ADMIN_QUEUE = "user_to_admin_report_queue";
+
+    @Bean
+    public
+    Queue userToAdminQueue() {
+        return new Queue(USER_TO_ADMIN_QUEUE, false);
+    }
 
     @Bean
     public TopicExchange exchange() {

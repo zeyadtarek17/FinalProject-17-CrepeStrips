@@ -14,6 +14,12 @@ public class RabbitMQConfig {
     public static final String QUEUE_NAME = "adminServiceQueue";
     public static final String EXCHANGE_NAME = "adminServiceExchange";
     public static final String ROUTING_KEY = "adminServiceRoutingKey";
+    public static final String USER_TO_ADMIN_QUEUE = "user_to_admin_report_queue";
+
+    @Bean
+    public Queue userToAdminQueue() {
+        return new Queue(USER_TO_ADMIN_QUEUE, false);
+    }
 
     // Declare a Queue
     @Bean
