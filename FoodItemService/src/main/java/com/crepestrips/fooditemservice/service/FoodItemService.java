@@ -89,6 +89,23 @@ public class FoodItemService {
         return repository.findByOrderByRatingDesc();
     }
 
+    public Optional<FoodItem> suspend(String id) {
+        return repository.findById(id).map(item -> {
+            item.setStatus("SUSPENDED");
+            return repository.save(item);
+        });
+    }
+
+    public Optional<FoodItem> unsuspend(String id) {
+        return repository.findById(id).map(item -> {
+            item.setStatus("UNSUSPENDED");
+            return repository.save(item);
+        });
+    }
+    public List<FoodItem> getFoodItemsByRestaurantId(String restaurantId) {
+        return repository.findByRestaurantId(restaurantId);
+    }
+
     public List<FoodItem> getItemsById(List<String> ids) {
         return repository.findAllById(ids);
     }
@@ -123,21 +140,6 @@ public class FoodItemService {
         repository.saveAll(itemMap.values());
 
         return true;
-    }
-
-
-    public Optional<FoodItem> suspend(String id) {
-        return repository.findById(id).map(item -> {
-            item.setStatus("SUSPENDED");
-            return repository.save(item);
-        });
-    }
-
-    public Optional<FoodItem> unsuspend(String id) {
-        return repository.findById(id).map(item -> {
-            item.setStatus("UNSUSPENDED");
-            return repository.save(item);
-        });
     }
 
 }
