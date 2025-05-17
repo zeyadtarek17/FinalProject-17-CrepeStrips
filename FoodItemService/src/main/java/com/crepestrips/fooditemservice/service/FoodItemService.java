@@ -100,5 +100,8 @@ public class FoodItemService {
             return repository.save(item);
         });
     }
+    public List<FoodItem> getFoodItemsByRestaurantId(String restaurantId) {
+        return repository.findByRestaurantId(restaurantId);
+    }
 
 }
