@@ -15,6 +15,7 @@ import com.crepestrips.restaurantservice.strategy.FilterStrategy;
 import com.crepestrips.restaurantservice.model.Restaurant;
 import com.crepestrips.restaurantservice.service.RestaurantService;
 import com.crepestrips.restaurantservice.strategy.RestaurantFilterContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,9 @@ public class RestaurantController {
     private RestaurantRepository restaurantRepository;
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private final RestaurantProducer restaurantProducer;
     private final FoodItemClient foodItemClient;
@@ -204,10 +208,11 @@ public class RestaurantController {
     public ResponseEntity<DefaultResult> createFoodItem(@PathVariable String restaurantId, @RequestBody FoodItemDTO dto) {
         try {
             DefaultResult result = foodItemClient.createFoodItem(dto);
-            if (result.isError()) {
+            if (result.isError() || result.getResult() == null) {
                 return ResponseEntity.ok(new DefaultResult("Failed to create food item", true, null));
             }
-            FoodItemDTO created = (FoodItemDTO) result.getResult();
+            ObjectMapper mapper = new ObjectMapper();
+            FoodItemDTO created = mapper.convertValue(result.getResult(), FoodItemDTO.class);
             service.addFoodItemToRestaurant(restaurantId, created.getId());
             return ResponseEntity.ok(new DefaultResult("Food item created and added to restaurant", false, created));
         } catch (Exception e) {
@@ -241,27 +246,32 @@ public class RestaurantController {
 
 
     @PutMapping("/{id}/ban")
-    public ResponseEntity<DefaultResult> banRestaurant(@PathVariable String id) {
+    public ResponseEntity<String> banRestaurant(@PathVariable String id) {
         try {
             boolean success = service.banRestaurant(id);
-            return success
-                    ? ResponseEntity.ok(new DefaultResult("Restaurant banned", false, null))
-                    : ResponseEntity.ok(new DefaultResult("Restaurant not found", true, null));
+            if (success) {
+                return ResponseEntity.ok("Restaurant has been banned.");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Restaurant not found.");
+            }
         } catch (Exception e) {
-            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred: " + e.getMessage());
         }
     }
 
     @PutMapping("/{id}/unban")
-    public ResponseEntity<DefaultResult> unbanRestaurant(@PathVariable String id) {
+    public ResponseEntity<String> unbanRestaurant(@PathVariable String id) {
         try {
             boolean success = service.unbanRestaurant(id);
-            return success
-                    ? ResponseEntity.ok(new DefaultResult("Restaurant unbanned", false, null))
-                    : ResponseEntity.ok(new DefaultResult("Restaurant not found", true, null));
+            if (success) {
+                return ResponseEntity.ok("Restaurant has been unbanned.");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Restaurant not found.");
+            }
         } catch (Exception e) {
-            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred: " + e.getMessage());
         }
     }
+
 
 }

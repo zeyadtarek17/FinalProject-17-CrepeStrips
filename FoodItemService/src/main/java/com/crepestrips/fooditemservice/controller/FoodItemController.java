@@ -54,7 +54,8 @@ public class FoodItemController {
     public ResponseEntity<DefaultResult> delete(@PathVariable String id) {
         boolean deleted = service.delete(id);
         if (deleted) {
-            return ResponseEntity.ok(new DefaultResult("Item with ID " + id + " was successfully deleted.", false, null));
+            return ResponseEntity
+                    .ok(new DefaultResult("Item with ID " + id + " was successfully deleted.", false, null));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new DefaultResult("Item with ID " + id + " not found.", true, null));
@@ -76,23 +77,32 @@ public class FoodItemController {
 
     @GetMapping("/top-rated")
     public ResponseEntity<DefaultResult> getTopRatedItems() {
-        return ResponseEntity.ok(new DefaultResult("Top rated items retrieved", false, service.getItemsSortedByRating()));
+        return ResponseEntity
+                .ok(new DefaultResult("Top rated items retrieved", false, service.getItemsSortedByRating()));
     }
 
     @PutMapping("/{id}/suspend")
-    public ResponseEntity<DefaultResult> suspend(@PathVariable String id) {
-        Optional<FoodItem> suspended = service.suspend(id);
-        return suspended.map(item -> ResponseEntity.ok(new DefaultResult("Food item suspended", false, item)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new DefaultResult("Food item not found", true, null)));
+    public ResponseEntity<FoodItem> suspend(@PathVariable String id) {
+        try {
+            return service.suspend(id)
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        } catch (Exception e) {
+            e.printStackTrace(); // Optional: log the error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PutMapping("/{id}/unsuspend")
-    public ResponseEntity<DefaultResult> unsuspend(@PathVariable String id) {
-        Optional<FoodItem> unsuspended = service.unsuspend(id);
-        return unsuspended.map(item -> ResponseEntity.ok(new DefaultResult("Food item unsuspended", false, item)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new DefaultResult("Food item not found", true, null)));
+    public ResponseEntity<FoodItem> unsuspend(@PathVariable String id) {
+        try {
+            return service.unsuspend(id)
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        } catch (Exception e) {
+            e.printStackTrace(); // Optional: log the error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/getAllFoodItems/{restaurantId}")
