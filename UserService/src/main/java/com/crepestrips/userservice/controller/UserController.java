@@ -15,16 +15,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import com.crepestrips.userservice.service.UserProducer;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
@@ -37,13 +33,13 @@ public class UserController {
     private final FoodItemClient foodItemClient;
 
     @Autowired
-    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtUtil,
-            UserProducer producer, FoodItemClient foodItemClient) {
-        this.userService = userService;
+    public UserController(AuthenticationManager authenticationManager, JwtService jwtUtil,
+            UserProducer producer, FoodItemClient foodItemClient, UserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.producer = producer;
         this.foodItemClient = foodItemClient;
+        this.userService = userService;
     }
 
     @PostMapping("/order/add")
