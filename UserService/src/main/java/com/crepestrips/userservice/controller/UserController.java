@@ -1,6 +1,7 @@
 package com.crepestrips.userservice.controller;
 
 import com.crepestrips.userservice.dto.*;
+import com.crepestrips.userservice.dto.CartDto;
 import com.crepestrips.userservice.model.Cart;
 import com.crepestrips.userservice.model.Report;
 import com.crepestrips.userservice.model.User;
@@ -42,33 +43,41 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/order/add")
-    public ResponseEntity<String> createOrder(@RequestBody UUID userId) {
-        // get the cart by userId
-        Optional<Cart> cart = userService.getCartByUserId(userId);
-        if (cart.isEmpty()) {
-            return ResponseEntity.badRequest().body("Cart not found for user ID: " + userId);
+    @PostMapping("/{userId}/checkout")
+    public ResponseEntity<String> checkoutAndRequestOrder(@PathVariable UUID userId) {
+        // 1. Get the cart for the given userId
+        Optional<Cart> cartOptional = userService.getCartByUserId(userId);
+
+        if (cartOptional.isEmpty()) {
+            return ResponseEntity.ok().body("Cart not found for user ID: " + userId);
         }
-        // get the list of item ids from the cart
-        List<String> itemIds = cart.get().getItems();
-        // call the endpoint that retrieves list of fooditems (sync) api
-        List<FoodItemResponse> items = null;
+
+        Cart cart = cartOptional.get();
+        if (cart.getItems() == null || cart.getItems().isEmpty()) {
+            return ResponseEntity.ok().body("Cart is empty for user ID: " + userId);
+        }
+
+        // 2. Prepare the CartDto that OrderService expects.
+        CartDto cartDtoForEvent = new CartDto(
+                cart.getId(), // The cart's own ID
+                cart.getUserId(), // The user's ID (should match the path variable userId)
+                cart.getItems() // The list of food item ID strings
+        );
+
+        // Defensive check: Ensure cart's userId matches path variable userId
+        if (!cart.getUserId().equals(userId)) {
+            // This case should ideally not happen if getCartByUserId is correct,
+            return ResponseEntity.status(403).body("Cart does not belong to the specified user.");
+        }
+
+        // 3. Call the UserProducer to publish the event
         try {
-            items = foodItemClient.getItemsById(itemIds).getBody();
+            producer.requestOrderPlacement(cartDtoForEvent);
+            return ResponseEntity.accepted().body("Order placement request received for user " + userId + " and cart "
+                    + cart.getId() + ". It is being processed.");
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error retrieving food items: " + e.getMessage());
+            return ResponseEntity.ok().body("Failed to initiate order placement: " + e.getMessage());
         }
-        // extract the restaurant id from the first item
-        if (itemIds.isEmpty()) {
-            return ResponseEntity.badRequest().body("No items found in the cart for user ID: " + userId);
-        }
-        String restaurantId = items.get(0).getRestaurantId();
-        // generate orderid to be tracked
-        UUID orderId = UUID.randomUUID();
-        // send the message to the order service
-        producer.createOrder(userId, restaurantId, items, orderId);
-        // now these data to order service(async using rabbitmq)
-        return ResponseEntity.ok("Order being created with ID: " + orderId);
     }
 
     @PostMapping("/register")
