@@ -6,25 +6,21 @@ import com.crepestrips.userservice.model.Report;
 import com.crepestrips.userservice.model.User;
 import com.crepestrips.userservice.security.JwtService;
 import com.crepestrips.userservice.service.UserService;
-import com.crepestrips.userservice.client.FoodItemClient;
 
 import jakarta.validation.Valid;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import com.crepestrips.userservice.service.UserProducer;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
@@ -34,45 +30,80 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtUtil;
     private final UserProducer producer;
-    private final FoodItemClient foodItemClient;
 
     @Autowired
-    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtUtil,
-            UserProducer producer, FoodItemClient foodItemClient) {
-        this.userService = userService;
+    public UserController(AuthenticationManager authenticationManager, JwtService jwtUtil,
+            UserProducer producer, UserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.producer = producer;
-        this.foodItemClient = foodItemClient;
+        this.userService = userService;
     }
 
-    @PostMapping("/order/add")
-    public ResponseEntity<String> createOrder(@RequestBody UUID userId) {
-        // get the cart by userId
-        Optional<Cart> cart = userService.getCartByUserId(userId);
-        if (cart.isEmpty()) {
-            return ResponseEntity.badRequest().body("Cart not found for user ID: " + userId);
-        }
-        // get the list of item ids from the cart
-        List<String> itemIds = cart.get().getItems();
-        // call the endpoint that retrieves list of fooditems (sync) api
-        List<FoodItemResponse> items = null;
+    @PostMapping("/{userId}/checkout")
+    public ResponseEntity<DefaultResult> checkoutAndRequestOrder(@PathVariable UUID userId) {
         try {
-            items = foodItemClient.getItemsById(itemIds).getBody();
+            // 1. Get the cart for the given userId
+            Optional<Object> cartOptional = Optional.ofNullable(userService.getCartByUserId(userId).orElse(null));
+            
+            if (cartOptional.isEmpty()) {
+                return ResponseEntity.ok(new DefaultResult("Cart not found for user ID: " + userId, true, null));
+            }
+
+            // Handle the case where it might be a LinkedHashMap
+            Cart cart;
+            Object cartObj = cartOptional.get();
+            
+            if (cartObj instanceof LinkedHashMap) {
+                @SuppressWarnings("unchecked")
+                LinkedHashMap<String, Object> cartMap = (LinkedHashMap<String, Object>) cartObj;
+                cart = new Cart();
+                
+                // Extract ID - handle both String and UUID
+                Object idObj = cartMap.get("id");
+                if (idObj != null) {
+                    cart.setId(idObj instanceof UUID ? (UUID) idObj : UUID.fromString(idObj.toString()));
+                }
+                
+                // Extract userId - handle both String and UUID
+                Object userIdObj = cartMap.get("userId");
+                if (userIdObj != null) {
+                    cart.setUserId(userIdObj instanceof UUID ? (UUID) userIdObj : UUID.fromString(userIdObj.toString()));
+                }
+                
+                // Extract items list
+                @SuppressWarnings("unchecked")
+                List<String> items = (List<String>) cartMap.get("items");
+                cart.setItems(items);
+            } else {
+                cart = (Cart) cartObj;
+            }
+            
+            if (cart.getItems() == null || cart.getItems().isEmpty()) {
+                return ResponseEntity.ok(new DefaultResult("Cart is empty for user ID: " + userId, true, null));
+            }
+
+            // 2. Prepare the CartDto that OrderService expects.
+            CartDto cartDtoForEvent = new CartDto(
+                    cart.getId(), // The cart's own ID
+                    cart.getUserId(), // The user's ID (should match the path variable userId)
+                    cart.getItems() // The list of food item ID strings
+            );
+
+            // Defensive check: Ensure cart's userId matches path variable userId
+            if (!cart.getUserId().equals(userId)) {
+                return ResponseEntity.ok(new DefaultResult("Cart does not belong to the specified user.", true, null));
+            }
+
+            // 3. Call the UserProducer to publish the event
+            producer.requestOrderPlacement(cartDtoForEvent);
+            return ResponseEntity.ok(new DefaultResult("Order placement request received for user " + userId + 
+                    " and cart " + cart.getId() + ". It is being processed.", false, cartDtoForEvent));
+                    
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error retrieving food items: " + e.getMessage());
+            e.printStackTrace(); // Add this for debugging
+            return ResponseEntity.ok(new DefaultResult("Failed to initiate order placement: " + e.getMessage(), true, null));
         }
-        // extract the restaurant id from the first item
-        if (itemIds.isEmpty()) {
-            return ResponseEntity.badRequest().body("No items found in the cart for user ID: " + userId);
-        }
-        String restaurantId = items.get(0).getRestaurantId();
-        // generate orderid to be tracked
-        UUID orderId = UUID.randomUUID();
-        // send the message to the order service
-        producer.createOrder(userId, restaurantId, items, orderId);
-        // now these data to order service(async using rabbitmq)
-        return ResponseEntity.ok("Order being created with ID: " + orderId);
     }
 
     @PostMapping("/register")
@@ -94,6 +125,7 @@ public class UserController {
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
 
             if (authentication.isAuthenticated()) {
+                userService.login(authRequest.getUsername());
                 AuthResponse response = new AuthResponse(jwtUtil.generateToken(authRequest.getUsername()));
                 return ResponseEntity.ok(new DefaultResult("User logged in successfully", false, response));
             } else {
@@ -104,11 +136,18 @@ public class UserController {
         }
     }
 
-    @PostMapping("/logout")
-    public String logout(@RequestParam String username) {
+    @GetMapping("/logout/{userId}")
+    public ResponseEntity<DefaultResult> logout(@PathVariable UUID userId) {
         // Logout logic (e.g., invalidate session, clear context, etc.)
-        SecurityContextHolder.clearContext();
-        return "User " + username + " logged out successfully.";
+        // SecurityContextHolder.clearContext();
+        // return "User " + username + " logged out successfully.";
+        try {
+            userService.logout(userId);
+            return ResponseEntity.ok(new DefaultResult("User logged out successfully", false, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @PutMapping("/password")
@@ -167,7 +206,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DefaultResult> updateUser(@PathVariable UUID id, @Valid @RequestBody User user) {
+    public ResponseEntity<DefaultResult> updateUser(@PathVariable UUID id, @Valid @RequestBody UpdateUser user) {
         try {
             User res = userService.updateUser(id, user);
             return ResponseEntity.ok(new DefaultResult("User updated successfully", false, res));

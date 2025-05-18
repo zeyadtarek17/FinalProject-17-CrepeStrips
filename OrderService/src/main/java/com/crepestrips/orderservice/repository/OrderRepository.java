@@ -13,7 +13,7 @@ import com.crepestrips.orderservice.model.OrderStatus;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, UUID> {
-    Optional<List<Order>> findByRestaurantId(UUID restaurantId);
+    Optional<List<Order>> findByRestaurantId(String restaurantId);
 
     Optional<List<Order>> findByUserId(UUID userId);
 
@@ -23,9 +23,9 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     Optional<List<Order>> findByUserIdAndStatus(UUID userId, OrderStatus status);
 
-    Optional<List<Order>> findByRestaurantIdAndStatus(UUID restaurantId, OrderStatus status);
+    Optional<List<Order>> findByRestaurantIdAndStatus(String restaurantId, OrderStatus status);
 
     Optional<List<Order>> findByUserIdAndPriority(UUID userId, OrderPriority priority);
 
-    Optional<List<Order>> findByRestaurantIdAndPriority(UUID restaurantId, OrderPriority priority);
+    Optional<List<Order>> findByRestaurantIdAndPriority(String restaurantId, OrderPriority priority);
 }

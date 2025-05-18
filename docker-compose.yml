@@ -19,68 +19,69 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
 
-#  fooditemservice:
-#    build: ./FoodItemService
-#    container_name: fooditemservice
-#    ports:
-#      - "8082:8082"
-#    depends_on:
-#      - mongodb
-#      - rabbitmq
-#    environment:
-#      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/fooditemdb
-#      SPRING_RABBITMQ_HOST:    rabbitmq
-#      SPRING_RABBITMQ_PORT:    5672
-#      SPRING_RABBITMQ_USERNAME: guest
-#      SPRING_RABBITMQ_PASSWORD: guest
+  fooditemservice:
+    build: ./FoodItemService
+    container_name: fooditemservice
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mongodb
+      - rabbitmq
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/fooditemdb
+      SPRING_RABBITMQ_HOST:    rabbitmq
+      SPRING_RABBITMQ_PORT:    5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
 
-#  restaurantservice:
-#    build: ./RestaurantService
-#    container_name: restaurantservice
-#    ports:
-#      - "8083:8083"
-#    depends_on:
-#      - mongodb
-#      - rabbitmq
-#    environment:
-#      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/restaurantdb
-#      SPRING_RABBITMQ_HOST:    rabbitmq
-#      SPRING_RABBITMQ_PORT:    5672
-#      SPRING_RABBITMQ_USERNAME: guest
-#      SPRING_RABBITMQ_PASSWORD: guest
-  # adminservice:
-  #    build: ./AdminService
-  #    container_name: adminservice
-  #    ports:
-  #      - "8080:8080"
-  #    depends_on:
-  #      - mongodb
-  #      - rabbitmq
-  #    environment:
-  #      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/admindb
-  #      SPRING_RABBITMQ_HOST: rabbitmq
-  #      SPRING_RABBITMQ_PORT: 5672
-  #      SPRING_RABBITMQ_USERNAME: guest
-  #      SPRING_RABBITMQ_PASSWORD: guest
-  # userservice:
-  #    build: ./UserService
-  #    container_name: userservice
-  #    ports:
-  #      - "8081:8081"
-  #    depends_on:
-  #      - postgres
-  #      - redis_cache
-  #      - rabbitmq
-  #    environment:
-  #      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5433/userservice
-  #      SPRING_DATASOURCE_USERNAME: postgres
-  #      SPRING_DATASOURCE_PASSWORD: root
-  #      SPRING_DATA_REDIS_HOST: redisCache
-  #      SPRING_DATA_REDIS_PORT: 6379
-  #      SPRING_RABBITMQ_HOST: rabbitmq
-  #      SPRING_RABBITMQ_PORT: 5672
-  #      SPRING_RABBITMQ_USERNAME: guest
-  #      SPRING_RABBITMQ_PASSWORD: guest
+  restaurantservice:
+   build: ./RestaurantService
+   container_name: restaurantservice
+   ports:
+     - "8083:8083"
+   depends_on:
+     - mongodb
+     - rabbitmq
+   environment:
+     SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/restaurantdb
+     SPRING_RABBITMQ_HOST:    rabbitmq
+     SPRING_RABBITMQ_PORT:    5672
+     SPRING_RABBITMQ_USERNAME: guest
+     SPRING_RABBITMQ_PASSWORD: guest
+  adminservice:
+     build: ./AdminService
+     container_name: adminservice
+     ports:
+       - "8080:8080"
+     depends_on:
+       - mongodb
+       - rabbitmq
+     environment:
+       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/admindb
+       SPRING_RABBITMQ_HOST: rabbitmq
+       SPRING_RABBITMQ_PORT: 5672
+       SPRING_RABBITMQ_USERNAME: guest
+       SPRING_RABBITMQ_PASSWORD: guest
+  userservice:
+    build: ./UserService
+    container_name: userservice
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - redis_cache
+      - rabbitmq
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/userservice
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATA_REDIS_HOST: redisCache
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+
   postgres:
     image: postgres:15
     environment:
@@ -88,7 +89,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
        - pgdata:/var/lib/postgresql/data
 
@@ -106,6 +107,36 @@ services:
       - "5540:5540"
     restart: always
 
+  order-db:
+    image: postgres:15
+    container_name: order_service_postgres
+    environment:
+      POSTGRES_DB: orderdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"  # ⚠ Avoid conflict with other Postgres services
+    volumes:
+      - order_pgdata:/var/lib/postgresql/data
+
+  orderservice:
+    build: ./OrderService
+    container_name: orderservice
+    ports:
+      - "8084:8084"
+    depends_on:
+      - order-db
+      - rabbitmq
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order-db:5432/orderdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+
 volumes:
   mongo_data:
   pgdata:
+  order_pgdata:

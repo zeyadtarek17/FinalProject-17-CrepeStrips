@@ -12,9 +12,9 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
     public static final String ORDER_CREATED_QUEUE = "order.created.queue";
     public static final String ORDER_UPDATED_QUEUE = "order.updated.queue";
-    
+
     public static final String ORDER_EXCHANGE = "order.exchange";
-    
+
     public static final String ORDER_CREATED_ROUTING_KEY = "order.created";
     public static final String ORDER_UPDATED_ROUTING_KEY = "order.updated";
     public static final String USER_TO_ORDER_QUEUE = "user.to.order.queue";
@@ -25,6 +25,43 @@ public class RabbitMQConfig {
     public static final String ORDER_HISTORY_RESPONSE_QUEUE = "restaurant.order.response.queue";
     public static final String ORDER_HISTORY_REQUEST_KEY = "restaurant.order.request";
     public static final String ORDER_HISTORY_RESPONSE_KEY = "restaurant.order.response";
+
+    public static final String CART_REQUEST_QUEUE = "cart.request.queue";
+    public static final String CART_RESPONSE_QUEUE = "cart.response.queue";
+    public static final String CART_EXCHANGE = "cart.exchange";
+    public static final String CART_REQUEST_ROUTING_KEY = "cart.request";
+    public static final String CART_RESPONSE_ROUTING_KEY = "cart.response";
+
+    @Bean
+    public Queue cartRequestQueue() {
+        return new Queue(CART_REQUEST_QUEUE);
+    }
+
+    @Bean
+    public Queue cartResponseQueue() {
+        return new Queue(CART_RESPONSE_QUEUE);
+    }
+
+    @Bean
+    public TopicExchange cartExchange() {
+        return new TopicExchange(CART_EXCHANGE);
+    }
+
+    @Bean
+    public Binding cartRequestBinding() {
+        return BindingBuilder
+                .bind(cartRequestQueue())
+                .to(cartExchange())
+                .with(CART_REQUEST_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding cartResponseBinding() {
+        return BindingBuilder
+                .bind(cartResponseQueue())
+                .to(cartExchange())
+                .with(CART_RESPONSE_ROUTING_KEY);
+    }
 
     @Bean
     public Queue userToOrderQueue() {
@@ -38,7 +75,6 @@ public class RabbitMQConfig {
                 .to(orderExchange())
                 .with(USER_TO_ORDER_ROUTING_KEY);
     }
-
 
     // Create queues
     @Bean

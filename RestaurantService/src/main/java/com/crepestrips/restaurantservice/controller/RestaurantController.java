@@ -28,6 +28,7 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/restaurants")
@@ -317,6 +318,12 @@ public class RestaurantController {
         } catch (Exception e) {
             return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
+    }
+
+    @GetMapping("/{restaurantId}/order-history")
+    public ResponseEntity<List<Order>> getOrderHistory(@PathVariable String restaurantId) {
+        List<Order> orders = service.getOrderHistoryForRestaurant(restaurantId);
+        return ResponseEntity.ok(orders);
     }
 
 }
