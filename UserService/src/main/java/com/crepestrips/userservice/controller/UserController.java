@@ -1,7 +1,6 @@
 package com.crepestrips.userservice.controller;
 
 import com.crepestrips.userservice.dto.*;
-import com.crepestrips.userservice.dto.CartDto;
 import com.crepestrips.userservice.model.Cart;
 import com.crepestrips.userservice.model.Report;
 import com.crepestrips.userservice.model.User;
@@ -10,6 +9,7 @@ import com.crepestrips.userservice.service.UserService;
 
 import jakarta.validation.Valid;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,39 +41,68 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/checkout")
-    public ResponseEntity<String> checkoutAndRequestOrder(@PathVariable UUID userId) {
-        // 1. Get the cart for the given userId
-        Optional<Cart> cartOptional = userService.getCartByUserId(userId);
-
-        if (cartOptional.isEmpty()) {
-            return ResponseEntity.ok().body("Cart not found for user ID: " + userId);
-        }
-
-        Cart cart = cartOptional.get();
-        if (cart.getItems() == null || cart.getItems().isEmpty()) {
-            return ResponseEntity.ok().body("Cart is empty for user ID: " + userId);
-        }
-
-        // 2. Prepare the CartDto that OrderService expects.
-        CartDto cartDtoForEvent = new CartDto(
-                cart.getId(), // The cart's own ID
-                cart.getUserId(), // The user's ID (should match the path variable userId)
-                cart.getItems() // The list of food item ID strings
-        );
-
-        // Defensive check: Ensure cart's userId matches path variable userId
-        if (!cart.getUserId().equals(userId)) {
-            // This case should ideally not happen if getCartByUserId is correct,
-            return ResponseEntity.status(403).body("Cart does not belong to the specified user.");
-        }
-
-        // 3. Call the UserProducer to publish the event
+    public ResponseEntity<DefaultResult> checkoutAndRequestOrder(@PathVariable UUID userId) {
         try {
+            // 1. Get the cart for the given userId
+            Optional<Object> cartOptional = Optional.ofNullable(userService.getCartByUserId(userId).orElse(null));
+            
+            if (cartOptional.isEmpty()) {
+                return ResponseEntity.ok(new DefaultResult("Cart not found for user ID: " + userId, true, null));
+            }
+
+            // Handle the case where it might be a LinkedHashMap
+            Cart cart;
+            Object cartObj = cartOptional.get();
+            
+            if (cartObj instanceof LinkedHashMap) {
+                @SuppressWarnings("unchecked")
+                LinkedHashMap<String, Object> cartMap = (LinkedHashMap<String, Object>) cartObj;
+                cart = new Cart();
+                
+                // Extract ID - handle both String and UUID
+                Object idObj = cartMap.get("id");
+                if (idObj != null) {
+                    cart.setId(idObj instanceof UUID ? (UUID) idObj : UUID.fromString(idObj.toString()));
+                }
+                
+                // Extract userId - handle both String and UUID
+                Object userIdObj = cartMap.get("userId");
+                if (userIdObj != null) {
+                    cart.setUserId(userIdObj instanceof UUID ? (UUID) userIdObj : UUID.fromString(userIdObj.toString()));
+                }
+                
+                // Extract items list
+                @SuppressWarnings("unchecked")
+                List<String> items = (List<String>) cartMap.get("items");
+                cart.setItems(items);
+            } else {
+                cart = (Cart) cartObj;
+            }
+            
+            if (cart.getItems() == null || cart.getItems().isEmpty()) {
+                return ResponseEntity.ok(new DefaultResult("Cart is empty for user ID: " + userId, true, null));
+            }
+
+            // 2. Prepare the CartDto that OrderService expects.
+            CartDto cartDtoForEvent = new CartDto(
+                    cart.getId(), // The cart's own ID
+                    cart.getUserId(), // The user's ID (should match the path variable userId)
+                    cart.getItems() // The list of food item ID strings
+            );
+
+            // Defensive check: Ensure cart's userId matches path variable userId
+            if (!cart.getUserId().equals(userId)) {
+                return ResponseEntity.ok(new DefaultResult("Cart does not belong to the specified user.", true, null));
+            }
+
+            // 3. Call the UserProducer to publish the event
             producer.requestOrderPlacement(cartDtoForEvent);
-            return ResponseEntity.accepted().body("Order placement request received for user " + userId + " and cart "
-                    + cart.getId() + ". It is being processed.");
+            return ResponseEntity.ok(new DefaultResult("Order placement request received for user " + userId + 
+                    " and cart " + cart.getId() + ". It is being processed.", false, cartDtoForEvent));
+                    
         } catch (Exception e) {
-            return ResponseEntity.ok().body("Failed to initiate order placement: " + e.getMessage());
+            e.printStackTrace(); // Add this for debugging
+            return ResponseEntity.ok(new DefaultResult("Failed to initiate order placement: " + e.getMessage(), true, null));
         }
     }
 
