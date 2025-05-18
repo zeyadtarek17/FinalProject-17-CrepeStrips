@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import com.crepestrips.orderservice.dto.DefaultResult;
 import com.crepestrips.orderservice.dto.FoodItemDto;
 import com.crepestrips.orderservice.dto.FoodItemServiceResponseDto;
 
@@ -20,6 +21,6 @@ public interface FoodItemServiceClient {
 
     // decrement food item stock
     @PostMapping("/fooditems/decrement")
-    ResponseEntity<Boolean> decrementStock(@RequestBody List<String> ids);
+    ResponseEntity<DefaultResult> decrementStock(@RequestBody List<String> ids);
 
 }

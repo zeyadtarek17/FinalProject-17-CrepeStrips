@@ -1,6 +1,8 @@
 package com.crepestrips.orderservice.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -9,17 +11,22 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import com.crepestrips.orderservice.client.FoodItemServiceClient;
 import com.crepestrips.orderservice.client.UserServiceClient;
-import com.crepestrips.orderservice.command.OrderCommandInvoker;
-import com.crepestrips.orderservice.command.UpdateOrderStatusCommand;
+import com.crepestrips.orderservice.client.FoodItemServiceClient;
+import com.crepestrips.orderservice.config.RabbitMQConfig;
+// import com.crepestrips.orderservice.dto.FoodItemResponse;
+// import com.crepestrips.orderservice.dto.UserMessage;
 import com.crepestrips.orderservice.model.Order;
 import com.crepestrips.orderservice.model.OrderPriority;
 import com.crepestrips.orderservice.model.OrderStatus;
 import com.crepestrips.orderservice.repository.OrderItemRepository;
 import com.crepestrips.orderservice.repository.OrderRepository;
-import com.crepestrips.orderservice.strategy.OrderProcessingContext;
+import com.crepestrips.orderservice.strategy.CreatedStatusStrategy;
+import com.crepestrips.orderservice.strategy.DefaultStatusStrategy;
+import com.crepestrips.orderservice.strategy.DeliveredStatusStrategy;
+import com.crepestrips.orderservice.strategy.OrderStatusStrategy;
+import com.crepestrips.orderservice.strategy.PreparingStatusStrategy;
 
 import jakarta.transaction.Transactional;
 
@@ -40,11 +47,7 @@ public class OrderService {
     @Autowired
     private FoodItemServiceClient foodItemServiceClient;
 
-    @Autowired
-    private OrderCommandInvoker commandInvoker;
-
-    @Autowired
-    private OrderProcessingContext processingContext;
+    private final Map<OrderStatus, OrderStatusStrategy> statusStrategies;
 
     public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
             RabbitMQPublisher rabbitMQPublisher, FoodItemServiceClient foodItemServiceClient,
@@ -53,8 +56,45 @@ public class OrderService {
         this.rabbitMQPublisher = rabbitMQPublisher;
         this.foodItemServiceClient = foodItemServiceClient;
         this.userServiceClient = userServiceClient;
-
+        statusStrategies = new HashMap<>();
+        statusStrategies.put(OrderStatus.CREATED, new CreatedStatusStrategy());
+        statusStrategies.put(OrderStatus.PREPARING, new PreparingStatusStrategy());
+        statusStrategies.put(OrderStatus.DELIVERED, new DeliveredStatusStrategy());
     }
+
+    // @Transactional
+    // public ResponseEntity<Order> createOrder(UUID userId, S restaurantId) {
+    // Order order = new Order(userId, restaurantId, null);
+    // ResponseEntity<?> response = userServiceClient.getUserCart(userId);
+    // if (response.getStatusCode().is2xxSuccessful()) {
+    // ResponseEntity<?> cartResponse = userServiceClient.getUserCart(userId);
+    // // to do when i have cart data is that i first need to create an order item
+    // for
+    // // each item in the cart and then add them to the order
+    // }
+    // order = orderRepository.save(order);
+    // rabbitMQPublisher.publishOrderCreated(order);
+    // return ResponseEntity.ok(order);
+    // }
+
+    // @RabbitListener(queues = RabbitMQConfig.USER_TO_ORDER_QUEUE)
+    // public UUID createOrder(UUID userId, String restaurantId,
+    // List<FoodItemResponse> foodItems) {
+    // List<String> foodItemsIds = foodItems.stream()
+    // .map(FoodItemResponse::getId)
+    // .collect(Collectors.toList());
+
+    // // send to endpoint to decrement the food item stock (sync)
+    // boolean success =
+    // foodItemServiceClient.decrementStock(foodItemsIds).getBody();
+    // if (!success) {
+    // throw new RuntimeException("Stock is being updated");
+    // }
+    // Order order = new Order(userId, restaurantId, foodItems);
+    // order.calculateTotalAmount();
+    // orderRepository.save(order);
+    // return order.getId();
+    // }
 
     public ResponseEntity<?> getOrderById(UUID id) {
         Optional<Order> order = orderRepository.findById(id);
@@ -114,18 +154,27 @@ public class OrderService {
 
     @Transactional
     public ResponseEntity<Optional<Order>> updateOrderStatus(UUID id, OrderStatus status) {
-        UpdateOrderStatusCommand command = new UpdateOrderStatusCommand(orderRepository, id, status);
-        commandInvoker.executeCommand(command);
-        Order order = command.getOrder();
-        if (order != null) {
-            processingContext.processOrder(order);
-            return ResponseEntity.ok(Optional.of(order));
+        Optional<Order> order = orderRepository.findById(id);
+        if (order.isPresent()) {
+            order.get().setStatus(status);
+            orderRepository.save(order.get());
+            return ResponseEntity.ok(order);
         }
-        Optional<Order> orderReturned = Optional.ofNullable(order);
-        return ResponseEntity.ok(orderReturned);
-       
-
+        return ResponseEntity.notFound().build();
     }
+
+    public String getOrderStatusDetails(UUID orderId) {
+        Optional<Order> orderOptional = orderRepository.findById(orderId);
+        if (orderOptional.isEmpty()) {
+            return "Order with ID " + orderId + " not found.";
+        }
+
+        Order order = orderOptional.get();
+        OrderStatusStrategy strategy = statusStrategies.getOrDefault(order.getStatus(), new DefaultStatusStrategy());
+
+        return strategy.getStatusDetails(order);
+    }
+    
 
     @Transactional
     public ResponseEntity<Optional<Order>> deleteOrder(UUID id) {
@@ -136,5 +185,25 @@ public class OrderService {
         }
         return ResponseEntity.notFound().build();
     }
+
+    // To-do add item to order
+
+    // To-do remove item from order
+
+    // added by team1
+    // @RabbitListener(queues = RabbitMQConfig.ORDER_HISTORY_REQUEST_QUEUE)
+    // public void handleOrderHistoryRequest(RestaurantOrderHistoryRequest request)
+    // {
+    // String restaurantUUID = request.getRestaurantId();
+    // Optional<List<Order>> orders =
+    // orderRepository.findByRestaurantId(restaurantUUID);
+
+    // RestaurantOrderHistoryResponse response = new
+    // RestaurantOrderHistoryResponse();
+    // response.setRestaurantId(request.getRestaurantId());
+    // response.setOrders(orders.orElse(List.of()));
+
+    // rabbitMQPublisher.publishOrderHistoryResponse(response);
+    // }
 
 }
