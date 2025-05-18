@@ -1,6 +1,5 @@
 package com.crepestrips.orderservice.dto;
 
-
 public class DefaultResult {
 
     private String message;

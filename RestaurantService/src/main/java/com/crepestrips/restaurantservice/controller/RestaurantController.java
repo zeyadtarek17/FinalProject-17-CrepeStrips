@@ -28,6 +28,7 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/restaurants")
@@ -239,6 +240,10 @@ public class RestaurantController {
     @PostMapping("/{restaurantId}/fooditems")
     public ResponseEntity<DefaultResult> createFoodItem(@PathVariable String restaurantId,
             @RequestBody FoodItemDTO dto) {
+        if (!restaurantRepository.existsById(restaurantId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new DefaultResult("Restaurant not found", true, null));
+        }
         try {
             DefaultResult result = foodItemClient.createFoodItem(dto);
             if (result.isError()) {
@@ -257,12 +262,17 @@ public class RestaurantController {
     @PutMapping("/{restaurantId}/fooditems/{foodItemId}")
     public ResponseEntity<DefaultResult> updateFoodItemSync(@PathVariable String restaurantId,
             @PathVariable String foodItemId, @RequestBody FoodItemDTO dto) {
+        if (!restaurantRepository.existsById(restaurantId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new DefaultResult("Restaurant not found", true, null));
+        }
         try {
             DefaultResult result = foodItemClient.updateFoodItem(foodItemId, dto);
             if (result.isError()) {
                 return ResponseEntity.ok(new DefaultResult("Failed to update food item", true, null));
             }
-            FoodItemDTO updated = (FoodItemDTO) result.getResult();
+            ObjectMapper mapper = new ObjectMapper();
+            FoodItemDTO updated = mapper.convertValue(result.getResult(), FoodItemDTO.class);
             service.updateFoodItemInRestaurant(restaurantId, foodItemId, updated.getId());
             return ResponseEntity.ok(new DefaultResult("Food item updated in restaurant", false, updated));
         } catch (Exception e) {
@@ -273,6 +283,10 @@ public class RestaurantController {
     @DeleteMapping("/{restaurantId}/fooditems/{foodItemId}")
     public ResponseEntity<DefaultResult> deleteFoodItemSync(@PathVariable String restaurantId,
             @PathVariable String foodItemId) {
+        if (!restaurantRepository.existsById(restaurantId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new DefaultResult("Restaurant not found", true, null));
+        }
         try {
             foodItemClient.deleteFoodItem(foodItemId);
             service.removeFoodItemFromRestaurant(restaurantId, foodItemId);
@@ -304,6 +318,12 @@ public class RestaurantController {
         } catch (Exception e) {
             return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
+    }
+
+    @GetMapping("/{restaurantId}/order-history")
+    public ResponseEntity<List<Order>> getOrderHistory(@PathVariable String restaurantId) {
+        List<Order> orders = service.getOrderHistoryForRestaurant(restaurantId);
+        return ResponseEntity.ok(orders);
     }
 
 }

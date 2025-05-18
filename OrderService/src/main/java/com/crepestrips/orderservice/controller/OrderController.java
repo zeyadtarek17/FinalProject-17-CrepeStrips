@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.crepestrips.orderservice.command.PrioritizeOrderCommand;
-
+import com.crepestrips.orderservice.dto.DefaultResult;
 import com.crepestrips.orderservice.command.OrderCommand;
 import com.crepestrips.orderservice.model.Order;
 import com.crepestrips.orderservice.model.OrderPriority;
@@ -87,6 +87,17 @@ public class OrderController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Optional<Order>> deleteOrder(@PathVariable UUID id) {
         return orderService.deleteOrder(id);
+    }
+
+    @GetMapping("{id}/status")
+    public ResponseEntity<DefaultResult> getOrderStatus(@PathVariable UUID id) {
+        try {
+            OrderStatus status = orderService.getOrderStatus(id);
+            return ResponseEntity.ok(new DefaultResult("Order: " + id + " status is" + status, false, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
     // // Add item to order
     // @PostMapping("/{orderId}/items")

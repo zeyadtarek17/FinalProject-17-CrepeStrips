@@ -39,9 +39,6 @@ public class OrderService {
     private OrderItemRepository orderItemRepository;
 
     @Autowired
-    private UserServiceClient userServiceClient;
-
-    @Autowired
     private RabbitMQPublisher rabbitMQPublisher;
 
     @Autowired
@@ -50,8 +47,7 @@ public class OrderService {
     private final Map<OrderStatus, OrderStatusStrategy> statusStrategies;
 
     public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
-            RabbitMQPublisher rabbitMQPublisher, FoodItemServiceClient foodItemServiceClient,
-            UserServiceClient userServiceClient) {
+            RabbitMQPublisher rabbitMQPublisher, FoodItemServiceClient foodItemServiceClient) {
         this.orderRepository = orderRepository;
         this.rabbitMQPublisher = rabbitMQPublisher;
         this.foodItemServiceClient = foodItemServiceClient;
@@ -186,24 +182,11 @@ public class OrderService {
         return ResponseEntity.notFound().build();
     }
 
-    // To-do add item to order
-
-    // To-do remove item from order
-
-    // added by team1
-    // @RabbitListener(queues = RabbitMQConfig.ORDER_HISTORY_REQUEST_QUEUE)
-    // public void handleOrderHistoryRequest(RestaurantOrderHistoryRequest request)
-    // {
-    // String restaurantUUID = request.getRestaurantId();
-    // Optional<List<Order>> orders =
-    // orderRepository.findByRestaurantId(restaurantUUID);
-
-    // RestaurantOrderHistoryResponse response = new
-    // RestaurantOrderHistoryResponse();
-    // response.setRestaurantId(request.getRestaurantId());
-    // response.setOrders(orders.orElse(List.of()));
-
-    // rabbitMQPublisher.publishOrderHistoryResponse(response);
-    // }
+    // get order status
+    public OrderStatus getOrderStatus(UUID id) {
+        Order order = orderRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("Order not found"));
+        return order.getStatus();
+    }
 
 }
