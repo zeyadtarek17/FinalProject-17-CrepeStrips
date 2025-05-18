@@ -138,7 +138,7 @@ public class AdminController {
             AdminCommand command = new BanRestaurantCommand(restaurantServiceClient, id);
             invoker.setCommand(command);
             invoker.executeCommand();
-            return ResponseEntity.ok(new DefaultResult("fooditemSuspended logged in successfully", false, null));
+            return ResponseEntity.ok(new DefaultResult("fooditem Suspended logged in successfully", false, null));
 
 
         } catch (Exception e) {
