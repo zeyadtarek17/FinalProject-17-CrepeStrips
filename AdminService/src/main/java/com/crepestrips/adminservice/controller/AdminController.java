@@ -153,7 +153,7 @@ public class AdminController {
             AdminCommand command = new UnsuspendFoodItemCommand(foodItemServiceClient, id);
             invoker.setCommand(command);
             invoker.executeCommand();
-            return ResponseEntity.ok(new DefaultResult("fooditem Unsuspended logged in successfully", false, null));
+            return ResponseEntity.ok(new DefaultResult("Food Item Unsuspended successfully", false, null));
 
 
         } catch (Exception e) {
