@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  main:
+    web-application-type: reactive
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/user/**
+
+        - id: order-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/order/**
+
+        - id: fooditem-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/food/**
+
+        - id: restaurant-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/restaurant/**
+
+        - id: admin-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/admin/**
