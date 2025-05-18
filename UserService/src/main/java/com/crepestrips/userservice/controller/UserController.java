@@ -171,7 +171,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DefaultResult> updateUser(@PathVariable UUID id, @Valid @RequestBody User user) {
+    public ResponseEntity<DefaultResult> updateUser(@PathVariable UUID id, @Valid @RequestBody UpdateUser user) {
         try {
             User res = userService.updateUser(id, user);
             return ResponseEntity.ok(new DefaultResult("User updated successfully", false, res));
