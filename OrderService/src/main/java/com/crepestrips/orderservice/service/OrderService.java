@@ -13,10 +13,6 @@ import org.springframework.stereotype.Service;
 
 import com.crepestrips.orderservice.client.FoodItemServiceClient;
 import com.crepestrips.orderservice.client.UserServiceClient;
-import com.crepestrips.orderservice.client.FoodItemServiceClient;
-import com.crepestrips.orderservice.config.RabbitMQConfig;
-// import com.crepestrips.orderservice.dto.FoodItemResponse;
-// import com.crepestrips.orderservice.dto.UserMessage;
 import com.crepestrips.orderservice.model.Order;
 import com.crepestrips.orderservice.model.OrderPriority;
 import com.crepestrips.orderservice.model.OrderStatus;
@@ -160,23 +156,6 @@ public class OrderService {
             return ResponseEntity.ok(order);
         }
         return ResponseEntity.notFound().build();
-    }
-
-    // To-do add item to order
-
-    // To-do remove item from order
-
-    // added by team1
-    @RabbitListener(queues = RabbitMQConfig.ORDER_HISTORY_REQUEST_QUEUE)
-    public void handleOrderHistoryRequest(RestaurantOrderHistoryRequest request) {
-        String restaurantUUID = request.getRestaurantId();
-        Optional<List<Order>> orders = orderRepository.findByRestaurantId(restaurantUUID);
-
-        RestaurantOrderHistoryResponse response = new RestaurantOrderHistoryResponse();
-        response.setRestaurantId(request.getRestaurantId());
-        response.setOrders(orders.orElse(List.of()));
-
-        rabbitMQPublisher.publishOrderHistoryResponse(response);
     }
 
 }
