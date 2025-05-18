@@ -12,7 +12,7 @@ import com.crepestrips.orderservice.dto.FoodItemServiceResponseDto;
 
 import java.util.List;
 
-@FeignClient(name = "fooditem-service", url = "${fooditem-service.url}")
+@FeignClient(name = "fooditemservice", url = "http://fooditemservice:8082")
 public interface FoodItemServiceClient {
 
     @GetMapping("/fooditems/{id}")
