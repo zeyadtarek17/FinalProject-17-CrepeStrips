@@ -15,7 +15,7 @@ public class Cart {
 
     private UUID userId;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> items;
 
     // Getters and setters
