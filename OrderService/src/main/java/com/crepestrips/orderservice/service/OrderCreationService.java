@@ -38,11 +38,6 @@ public class OrderCreationService {
 
     @Transactional
     public Order createOrderFromCart(CartDto cartDetails) {
-        // decrement stock first
-        Boolean success = foodItemServiceClient.decrementStock(cartDetails.getFoodItemIds());
-        if (!success) {
-            throw new RuntimeException("Not enough stock");
-        }
         logger.info("OrderCreationService: Starting to create order for cartId: {}", cartDetails.getCartId());
 
         Map<String, Integer> itemQuantities = calculateItemQuantities(cartDetails.getFoodItemIds());
