@@ -28,10 +28,7 @@ public class OrderCreationService {
     private final FoodItemServiceClient foodItemServiceClient; // <<< INJECTED
 
     @Autowired
-    public OrderCreationService(OrderRepository orderRepository, FoodItemServiceClient foodItemServiceClient) { // <<<
-                                                                                                                // ADDED
-                                                                                                                // TO
-                                                                                                                // CONSTRUCTOR
+    public OrderCreationService(OrderRepository orderRepository, FoodItemServiceClient foodItemServiceClient) {
         this.orderRepository = orderRepository;
         this.foodItemServiceClient = foodItemServiceClient;
     }
