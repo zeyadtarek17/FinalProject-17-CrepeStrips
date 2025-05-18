@@ -21,7 +21,7 @@ public class OrderEventListener {
         this.orderCreationService = orderProcessingService;
     }
 
-    @RabbitListener(queues = "${app.rabbitmq.orderPlacementQueue}")
+    @RabbitListener(queues = "user.to.order.queue")
     public void handleOrderPlacementRequest(OrderPlacementRequestedEvent event) {
         logger.info("============================================================");
         logger.info("||          RECEIVED NEW ORDER PLACEMENT REQUEST          ||");
@@ -45,7 +45,7 @@ public class OrderEventListener {
 
         try {
             // Delegate processing to the service
-            orderCreationService.processOrderPlacement(cartDetails);
+            orderCreationService.createOrderFromCart(cartDetails);
             logger.info("Successfully processed order placement for cartId: {}", cartDetails.getCartId());
         } catch (Exception e) {
             logger.error("Error processing order placement for cartId: {}. Error: {}", cartDetails.getCartId(), e.getMessage(), e);

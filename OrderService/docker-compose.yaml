@@ -17,7 +17,6 @@ services:
     networks:
       - order-network
 
-  # --- RabbitMQ Message Broker ---
   rabbitmq:
     image: rabbitmq:3-management # Use the image with the management plugin
     container_name: rabbitmq_broker

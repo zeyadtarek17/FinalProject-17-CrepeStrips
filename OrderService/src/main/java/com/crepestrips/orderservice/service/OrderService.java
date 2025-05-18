@@ -54,6 +54,7 @@ public class OrderService {
     }
 
     @Transactional
+    @RabbitListener(queues = RabbitMQConfig.USER_TO_ORDER_QUEUE)
     public ResponseEntity<Order> createOrder(UUID userId, UUID restaurantId) {
         Order order = new Order(userId, restaurantId, null);
         ResponseEntity<?> response = userServiceClient.getUserCart(userId);
@@ -80,8 +81,8 @@ public class OrderService {
     // if (!success) {
     // throw new RuntimeException("Stock is being updated");
     // }
-    // // Order order = new Order(userId, restaurantId, foodItems);
-    // // order.calculateTotalAmount();
+    // Order order = new Order(userId, restaurantId, foodItems);
+    // order.calculateTotalAmount();
     // orderRepository.save(order);
     // return order.getId();
     // }
