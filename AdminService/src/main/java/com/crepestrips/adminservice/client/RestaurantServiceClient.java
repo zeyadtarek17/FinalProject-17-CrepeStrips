@@ -5,7 +5,7 @@ import com.crepestrips.adminservice.client.dto.RestaurantDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "restaurant-service", url = "http://localhost:8083")
+@FeignClient(name = "restaurantservice", url = "http://restaurantservice:8083")
 public interface RestaurantServiceClient {
     @GetMapping("/restaurants/{id}")
     RestaurantDTO getRestaurant(@PathVariable String id);

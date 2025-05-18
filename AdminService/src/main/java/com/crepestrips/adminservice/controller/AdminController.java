@@ -124,7 +124,7 @@ public class AdminController {
             AdminCommand command = new SuspendFoodItemCommand(foodItemServiceClient, id);
             invoker.setCommand(command);
             invoker.executeCommand();
-            return ResponseEntity.ok(new DefaultResult("Food Item suspended successfully", false, null));
+            return ResponseEntity.ok(new DefaultResult("Fooditem suspended successfully", false, null));
 
 
         } catch (Exception e) {
@@ -138,7 +138,7 @@ public class AdminController {
             AdminCommand command = new BanRestaurantCommand(restaurantServiceClient, id);
             invoker.setCommand(command);
             invoker.executeCommand();
-            return ResponseEntity.ok(new DefaultResult("fooditemSuspended logged in successfully", false, null));
+            return ResponseEntity.ok(new DefaultResult("Restaurant banned successfully", false, null));
 
 
         } catch (Exception e) {
@@ -153,7 +153,7 @@ public class AdminController {
             AdminCommand command = new UnsuspendFoodItemCommand(foodItemServiceClient, id);
             invoker.setCommand(command);
             invoker.executeCommand();
-            return ResponseEntity.ok(new DefaultResult("Food Item Unsuspended successfully", false, null));
+            return ResponseEntity.ok(new DefaultResult("fooditem Unsuspended logged in successfully", false, null));
 
 
         } catch (Exception e) {
@@ -167,7 +167,7 @@ public class AdminController {
             AdminCommand command = new UnbanRestaurantCommand(restaurantServiceClient, id);
             invoker.setCommand(command);
             invoker.executeCommand();
-            return ResponseEntity.ok(new DefaultResult("restaurant banned ", false, null));
+            return ResponseEntity.ok(new DefaultResult("restaurant unbanned", false, null));
 
 
         } catch (Exception e) {
