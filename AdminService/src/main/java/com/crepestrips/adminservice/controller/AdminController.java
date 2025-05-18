@@ -2,10 +2,7 @@ package com.crepestrips.adminservice.controller;
 
 import com.crepestrips.adminservice.client.FoodItemServiceClient;
 import com.crepestrips.adminservice.client.RestaurantServiceClient;
-import com.crepestrips.adminservice.command.AdminCommand;
-import com.crepestrips.adminservice.command.AdminInvoker;
-import com.crepestrips.adminservice.command.BanRestaurantCommand;
-import com.crepestrips.adminservice.command.SuspendFoodItemCommand;
+import com.crepestrips.adminservice.command.*;
 import com.crepestrips.adminservice.dto.*;
 import com.crepestrips.adminservice.model.Admin;
 import com.crepestrips.adminservice.security.JwtService;
@@ -24,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -95,6 +93,7 @@ public class AdminController {
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
 
             if (authentication.isAuthenticated()) {
+                adminService.login(authRequest.getUsername());
                 LoginResponse response = new LoginResponse(jwtUtil.generateToken(authRequest.getUsername()));
                 return ResponseEntity.ok(new DefaultResult("Admin logged in successfully", false, response));
             } else {
@@ -105,11 +104,18 @@ public class AdminController {
         }
     }
 
-    @PostMapping("/logout")
-    public String logout(@RequestParam String username) {
+    @GetMapping("/logout/{userId}")
+    public ResponseEntity<DefaultResult> logout(@PathVariable String userId) {
         // Logout logic (e.g., invalidate session, clear context, etc.)
-        SecurityContextHolder.clearContext();
-        return "Admin " + username + " logged out successfully.";
+        // SecurityContextHolder.clearContext();
+        // return "User " + username + " logged out successfully.";
+        try {
+            adminService.logout(userId);
+            return ResponseEntity.ok(new DefaultResult("User logged out successfully", false, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
     @PostMapping("/fooditems/{id}/suspend")
     public ResponseEntity<DefaultResult> suspendFoodItem(@PathVariable String id) {
@@ -133,6 +139,35 @@ public class AdminController {
             invoker.setCommand(command);
             invoker.executeCommand();
             return ResponseEntity.ok(new DefaultResult("fooditemSuspended logged in successfully", false, null));
+
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
+
+    }
+    @PostMapping("/fooditems/{id}/unsuspend")
+    public ResponseEntity<DefaultResult> unsuspendFoodItem(@PathVariable String id) {
+
+        try {
+            AdminCommand command = new UnsuspendFoodItemCommand(foodItemServiceClient, id);
+            invoker.setCommand(command);
+            invoker.executeCommand();
+            return ResponseEntity.ok(new DefaultResult("fooditem Unsuspended logged in successfully", false, null));
+
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
+    }
+
+    @PostMapping("/restaurants/{id}/unban")
+    public ResponseEntity<DefaultResult> unbanRestaurant(@PathVariable String id) {
+        try {
+            AdminCommand command = new UnbanRestaurantCommand(restaurantServiceClient, id);
+            invoker.setCommand(command);
+            invoker.executeCommand();
+            return ResponseEntity.ok(new DefaultResult("restaurant banned ", false, null));
 
 
         } catch (Exception e) {

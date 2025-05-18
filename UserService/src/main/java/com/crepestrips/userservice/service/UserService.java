@@ -6,6 +6,8 @@ import com.crepestrips.userservice.model.Report;
 import com.crepestrips.userservice.repository.UserRepository;
 import com.crepestrips.userservice.repository.CartRepository;
 import com.crepestrips.userservice.repository.ReportRepository;
+import com.crepestrips.userservice.session.LoginSessionManager;
+import com.crepestrips.userservice.util.BeanMapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +40,7 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     public UserService(UserRepository userRepository, ReportRepository reportRepository,
-                       PasswordEncoder passwordEncoder, CartRepository cartRepository) {
+            PasswordEncoder passwordEncoder, CartRepository cartRepository) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
         this.passwordEncoder = passwordEncoder;
@@ -62,13 +64,8 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
 
         ReportDTO dto = new ReportDTO();
-        dto.setId(saved.getId());
-        dto.setUserId(user.getId());
-        dto.setType(saved.getType());
-        dto.setContent(saved.getContent());
-        dto.setTargetId(saved.getTargetId());
-        dto.setCreatedAt(saved.getCreatedAt());
-
+        BeanMapperUtils.copyFields(saved, dto);
+        dto.setUserId(user.getId()); // manually set userId since it's nested in Report
         reportProducer.sendReport(dto);
 
         return saved;
@@ -93,20 +90,28 @@ public class UserService implements UserDetailsService {
 
         return userRepository.save(builtUser);
     }
+    public void login(String username) {
+        if (LoginSessionManager.getInstance().isLoggedIn(username)) {
+            throw new RuntimeException("User already logged in");
+        }
 
-    public String login(String username, String password) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Invalid username or password"));
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Invalid username or password");
-        }
-
-        return "Login successful";
+        user.setLoggedIn(true);
+        userRepository.save(user);
+        System.out.println("[LoginManager] User '" + username + "' logged in.");
+        LoginSessionManager.getInstance().login(username); // register login
     }
 
-    public String logout(String username) {
-        return "User " + username + " logged out successfully.";
+    public void logout(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setLoggedIn(false);
+        userRepository.save(user);
+
+        LoginSessionManager.getInstance().logout(user.getUsername()); // unregister login
     }
 
     public String changePassword(String userName, String oldPassword, String newPassword) {
@@ -121,13 +126,15 @@ public class UserService implements UserDetailsService {
         return "Password updated.";
     }
 
-    /*public Report reportIssue(UUID userId, Report report) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        report.setUser(user);
-        return reportRepository.save(report);
-    }*/
+    /*
+     * public Report reportIssue(UUID userId, Report report) {
+     * User user = userRepository.findById(userId)
+     * .orElseThrow(() -> new RuntimeException("User not found"));
+     *
+     * report.setUser(user);
+     * return reportRepository.save(report);
+     * }
+     */
 
     @Cacheable(value = "Users", key = "#id")
     public User getUserById(UUID id) {
@@ -162,7 +169,7 @@ public class UserService implements UserDetailsService {
         );
     }
 
-    //cart
+    // cart
 
     @Cacheable(value = "Carts", key = "#userId")
     public Optional<Cart> getCartByUserId(UUID userId) {
@@ -181,5 +188,10 @@ public class UserService implements UserDetailsService {
         }
         // Additional logic can be added here if needed, such as logging
         System.out.println("Cart evicted from cache for userId: " + userId);
+    }
+
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username) // adjust method
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }
