@@ -152,4 +152,11 @@ public class OrderService {
         return ResponseEntity.notFound().build();
     }
 
+    // get order status
+    public OrderStatus getOrderStatus(UUID id) {
+        Order order = orderRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("Order not found"));
+        return order.getStatus();
+    }
+
 }

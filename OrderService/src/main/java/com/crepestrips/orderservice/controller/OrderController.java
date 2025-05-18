@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.crepestrips.orderservice.dto.DefaultResult;
 import com.crepestrips.orderservice.model.Order;
 import com.crepestrips.orderservice.model.OrderPriority;
 import com.crepestrips.orderservice.model.OrderStatus;
@@ -23,7 +24,6 @@ public class OrderController {
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrderById(@PathVariable UUID id) {
@@ -44,12 +44,12 @@ public class OrderController {
     public ResponseEntity<Optional<List<Order>>> getOrdersByRestaurantId(@PathVariable String restaurantId) {
         return orderService.getOrdersByRestaurantId(restaurantId);
     }
-    
+
     @GetMapping("/status/{status}")
     public ResponseEntity<Optional<List<Order>>> getOrdersByStatus(@PathVariable OrderStatus status) {
         return orderService.getOrdersByStatus(status);
     }
-    
+
     @GetMapping("/priority/{priority}")
     public ResponseEntity<Optional<List<Order>>> getOrdersByPriority(@PathVariable OrderPriority priority) {
         return orderService.getOrdersByPriority(priority);
@@ -61,7 +61,8 @@ public class OrderController {
     }
 
     @PutMapping("/{id}/priority")
-    public ResponseEntity<Optional<Order>> updateOrderPriority(@PathVariable UUID id, @RequestParam OrderPriority priority) {
+    public ResponseEntity<Optional<Order>> updateOrderPriority(@PathVariable UUID id,
+            @RequestParam OrderPriority priority) {
         return orderService.updateOrderPriority(id, priority);
     }
 
@@ -69,24 +70,36 @@ public class OrderController {
     public ResponseEntity<Optional<Order>> deleteOrder(@PathVariable UUID id) {
         return orderService.deleteOrder(id);
     }
+
+    @GetMapping("{id}/status")
+    public ResponseEntity<DefaultResult> getOrderStatus(@PathVariable UUID id) {
+        try {
+            OrderStatus status = orderService.getOrderStatus(id);
+            return ResponseEntity.ok(new DefaultResult("Order: " + id + " status is" + status, false, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
+    }
     // // Add item to order
     // @PostMapping("/{orderId}/items")
     // public ResponseEntity<Order> addItemToOrder(
-    //         @PathVariable UUID orderId,
-    //         @RequestParam UUID foodItemId,
-    //         @RequestParam String foodItemName,
-    //         @RequestParam int quantity,
-    //         @RequestParam double price) {
-    //     Order updatedOrder = orderService.addItemToOrder(orderId, foodItemId, foodItemName, quantity, price);
-    //     return ResponseEntity.ok(updatedOrder);
+    // @PathVariable UUID orderId,
+    // @RequestParam UUID foodItemId,
+    // @RequestParam String foodItemName,
+    // @RequestParam int quantity,
+    // @RequestParam double price) {
+    // Order updatedOrder = orderService.addItemToOrder(orderId, foodItemId,
+    // foodItemName, quantity, price);
+    // return ResponseEntity.ok(updatedOrder);
     // }
 
     // // Remove item from order
     // @DeleteMapping("/{orderId}/items/{itemId}")
-    // public ResponseEntity<Order> removeItemFromOrder(@PathVariable UUID orderId, @PathVariable UUID itemId) {
-    //     Order updatedOrder = orderService.removeItemFromOrder(orderId, itemId);
-    //     return ResponseEntity.ok(updatedOrder);
+    // public ResponseEntity<Order> removeItemFromOrder(@PathVariable UUID orderId,
+    // @PathVariable UUID itemId) {
+    // Order updatedOrder = orderService.removeItemFromOrder(orderId, itemId);
+    // return ResponseEntity.ok(updatedOrder);
     // }
-
 
 }

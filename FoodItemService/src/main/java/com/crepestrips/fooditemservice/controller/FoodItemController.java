@@ -118,13 +118,13 @@ public class FoodItemController {
     }
 
     @PostMapping("/decrement")
-    public ResponseEntity<DefaultResult> decrementStock(@RequestBody List<String> ids) {
+    public ResponseEntity<Boolean> decrementStock(@RequestBody List<String> ids) {
         boolean success = service.decrementStock(ids);
         if (success) {
-            return ResponseEntity.ok(new DefaultResult("Stock decremented", false, null));
+            return ResponseEntity.ok(true);
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new DefaultResult("Failed to decrement stock", true, null));
+                    .body(false);
         }
     }
 

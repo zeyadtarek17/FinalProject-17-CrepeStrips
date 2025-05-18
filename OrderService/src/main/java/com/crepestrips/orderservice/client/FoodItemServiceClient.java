@@ -20,6 +20,6 @@ public interface FoodItemServiceClient {
 
     // decrement food item stock
     @PostMapping("/fooditems/decrement")
-    ResponseEntity<Boolean> decrementStock(@RequestBody List<String> ids);
+    Boolean decrementStock(@RequestBody List<String> ids);
 
 }
