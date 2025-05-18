@@ -7,6 +7,7 @@ import com.crepestrips.userservice.repository.UserRepository;
 import com.crepestrips.userservice.repository.CartRepository;
 import com.crepestrips.userservice.repository.ReportRepository;
 import com.crepestrips.userservice.session.LoginSessionManager;
+import com.crepestrips.userservice.util.BeanMapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -63,13 +64,8 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
 
         ReportDTO dto = new ReportDTO();
-        dto.setId(saved.getId());
-        dto.setUserId(user.getId());
-        dto.setType(saved.getType());
-        dto.setContent(saved.getContent());
-        dto.setTargetId(saved.getTargetId());
-        dto.setCreatedAt(saved.getCreatedAt());
-
+        BeanMapperUtils.copyFields(saved, dto);
+        dto.setUserId(user.getId()); // manually set userId since it's nested in Report
         reportProducer.sendReport(dto);
 
         return saved;
