@@ -17,11 +17,11 @@ public class FoodItem implements IFoodItem {
     private String name;
     private String description;
     private double price;
-    private double discount;       
-    private double rating;         
+    private double discount;
+    private double rating;
     private int availableStock;
     private FoodCategory category;
-    private String restaurantId;   
+    private String restaurantId;
     private String status;
 
     public FoodItem() {
@@ -126,13 +126,14 @@ public class FoodItem implements IFoodItem {
     public void setRestaurantId(String restaurantId) {
         this.restaurantId = restaurantId;
     }
-
     public String getStatus() {
         return status;
     }
     public void setStatus(String status) {
         this.status = status;
     }
+
+
 
 
 }

@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class BanRestaurantRequest {
     @NotNull
-    private Long restaurantId;
+    private String restaurantId;
     private String reason;
 }
