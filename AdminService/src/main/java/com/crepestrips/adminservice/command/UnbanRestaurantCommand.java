@@ -21,15 +21,15 @@ public class UnbanRestaurantCommand implements AdminCommand {
         System.out.println("DEBUG: Entered unbanRestaurantCommand.execute() for restaurant: " + restaurantId);
         try {
             System.out.println("DEBUG: Attempting to call client.getRestaurant(" + restaurantId + ")");
-            RestaurantDTO restaurant = client.getRestaurant(restaurantId);
+            // RestaurantDTO restaurant = client.getRestaurant(restaurantId);
 
-            if (restaurant == null) {
-                System.out.println("DEBUG: client.getRestaurant returned null for restaurantID: " + restaurantId);
-                System.out.println("Restaurant " + restaurantId + " not found or client returned null.");
-                return; // Exit if item is null
-            }
+            // if (restaurant == null) {
+            //     System.out.println("DEBUG: client.getRestaurant returned null for restaurantID: " + restaurantId);
+            //     System.out.println("Restaurant " + restaurantId + " not found or client returned null.");
+            //     return; // Exit if item is null
+            // }
 
-            System.out.println("DEBUG: client.getRestaurant returned. Restaurant ID: " + restaurant.getId() ); // Assuming FoodItemDTO has getId() and isActive()
+            // System.out.println("DEBUG: client.getRestaurant returned. Restaurant ID: " + restaurant.getId() ); // Assuming FoodItemDTO has getId() and isActive()
 
            client.activateRestaurant(restaurantId);
         } catch (FeignException fe) {
