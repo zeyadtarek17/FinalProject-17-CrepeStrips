@@ -7,7 +7,6 @@ import com.crepestrips.userservice.model.Report;
 import com.crepestrips.userservice.model.User;
 import com.crepestrips.userservice.security.JwtService;
 import com.crepestrips.userservice.service.UserService;
-import com.crepestrips.userservice.client.FoodItemClient;
 
 import jakarta.validation.Valid;
 
@@ -31,15 +30,13 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtUtil;
     private final UserProducer producer;
-    private final FoodItemClient foodItemClient;
 
     @Autowired
     public UserController(AuthenticationManager authenticationManager, JwtService jwtUtil,
-            UserProducer producer, FoodItemClient foodItemClient, UserService userService) {
+            UserProducer producer, UserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.producer = producer;
-        this.foodItemClient = foodItemClient;
         this.userService = userService;
     }
 
