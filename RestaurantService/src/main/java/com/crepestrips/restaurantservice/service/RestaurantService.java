@@ -197,6 +197,7 @@ public class RestaurantService {
     }
 
 
+
 //    @RabbitListener(queues = "restaurant.order.response.queue")
 //    public void handleOrderHistoryResponse(RestaurantOrderHistoryResponse response) {
 //        System.out.println("📦 Received orders for restaurant " + response.getRestaurantId());
