@@ -15,8 +15,11 @@ import com.crepestrips.restaurantservice.strategy.FilterStrategy;
 import com.crepestrips.restaurantservice.model.Restaurant;
 import com.crepestrips.restaurantservice.service.RestaurantService;
 import com.crepestrips.restaurantservice.strategy.RestaurantFilterContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/restaurants")
@@ -33,16 +37,18 @@ public class RestaurantController {
     private RestaurantService service;
     @Autowired
     private RestaurantFilterContext context;
-    @Autowired
-    private RestaurantFactory restaurantFactory;
+    // @Autowired
+    // private RestaurantFactory restaurantFactory;
     @Autowired
     private RestaurantRepository restaurantRepository;
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private final RestaurantProducer restaurantProducer;
     private final FoodItemClient foodItemClient;
-
 
     public RestaurantController(RestaurantProducer restaurantProducer, FoodItemClient foodItemClient) {
         this.restaurantProducer = restaurantProducer;
@@ -67,6 +73,7 @@ public class RestaurantController {
             return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<DefaultResult> getById(@PathVariable String id) {
         try {
@@ -77,26 +84,48 @@ public class RestaurantController {
             return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
     }
+
     @PostMapping
-    public ResponseEntity<DefaultResult> createRestaurant(@RequestBody RestaurantCreation restaurantCreation) {
+    public ResponseEntity<DefaultResult> createRestaurant(@RequestBody Map<String, Object> requestData) {
         try {
-            Restaurant created = service.create(restaurantCreation);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new DefaultResult("Restaurant created", false, created));
+            Restaurant created = service.create(requestData);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new DefaultResult("Restaurant created successfully", false, created));
         } catch (Exception e) {
-            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
-        }
-    }
-    @PutMapping("/{id}")
-    public ResponseEntity<DefaultResult> update(@PathVariable String id, @RequestBody Restaurant restaurant) {
-        try {
-            return service.update(id, restaurant)
-                    .map(updated -> ResponseEntity.ok(new DefaultResult("Restaurant updated", false, updated)))
-                    .orElse(ResponseEntity.ok(new DefaultResult("Restaurant not found", true, null)));
-        } catch (Exception e) {
-            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new DefaultResult(e.getMessage(), true, null));
         }
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<DefaultResult> updateRestaurant(@PathVariable String id,
+            @RequestBody Map<String, Object> requestData) {
+        try {
+            return service.update(id, requestData)
+                    .map(updated -> ResponseEntity
+                            .ok(new DefaultResult("Restaurant updated successfully", false, updated)))
+                    .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(new DefaultResult("Restaurant not found", true, null)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new DefaultResult(e.getMessage(), true, null));
+        }
+    }
+
+    // @PostMapping
+    // public ResponseEntity<Restaurant> createRestaurant(@RequestBody Map<String,
+    // Object> requestData) {
+    // Restaurant created = service.create(requestData);
+    // return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    // }
+
+    // @PutMapping("/{id}")
+    // public ResponseEntity<Restaurant> updateRestaurant(@PathVariable String id,
+    // @RequestBody Map<String, Object> requestData) {
+    // return service.update(id, requestData)
+    // .map(ResponseEntity::ok)
+    // .orElse(ResponseEntity.notFound().build());
+    // }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<DefaultResult> delete(@PathVariable String id) {
@@ -120,39 +149,44 @@ public class RestaurantController {
         }
     }
 
-//    @GetMapping("/top-rated")
-//    public ResponseEntity<List<Restaurant>> getTopRatedRestaurants() {
-//        return ResponseEntity.ok(service.getTopRatedRestaurants());
-//    }
+    // @GetMapping("/top-rated")
+    // public ResponseEntity<List<Restaurant>> getTopRatedRestaurants() {
+    // return ResponseEntity.ok(service.getTopRatedRestaurants());
+    // }
 
-
-//    @GetMapping("/filter/by-hours")
-//    public ResponseEntity<List<Restaurant>> filterByOperatingHours(
-//            @RequestParam String from,
-//            @RequestParam String to) {
-//
-//        LocalTime fromTime = LocalTime.parse(from);
-//        LocalTime toTime = LocalTime.parse(to);
-//        String criteria = Arrays.toString(new
-//
-//        LocalTime[] { fromTime, toTime });
-//
-//        List<Restaurant> allRestaurants = service.getAll();
-//        FilterStrategy strategy = FilterFactory.getFilter("hours");
-//        List<Restaurant> filtered = strategy.filter(allRestaurants, criteria);
-//
-//        return ResponseEntity.ok(filtered);
-//    }
+    // @GetMapping("/filter/by-hours")
+    // public ResponseEntity<List<Restaurant>> filterByOperatingHours(
+    // @RequestParam String from,
+    // @RequestParam String to) {
+    //
+    // LocalTime fromTime = LocalTime.parse(from);
+    // LocalTime toTime = LocalTime.parse(to);
+    // String criteria = Arrays.toString(new
+    //
+    // LocalTime[] { fromTime, toTime });
+    //
+    // List<Restaurant> allRestaurants = service.getAll();
+    // FilterStrategy strategy = FilterFactory.getFilter("hours");
+    // List<Restaurant> filtered = strategy.filter(allRestaurants, criteria);
+    //
+    // return ResponseEntity.ok(filtered);
+    // }
     @GetMapping("/filter")
-    public ResponseEntity<DefaultResult> filterRestaurants(@RequestParam String filterType, @RequestParam String criteria) {
+    public ResponseEntity<DefaultResult> filterRestaurants(@RequestParam String filterType,
+            @RequestParam String criteria) {
         try {
             List<Restaurant> allRestaurants = service.getAllRestaurants();
             List<Restaurant> filtered = context.applyFilter(filterType, allRestaurants, criteria);
+            System.out.println("Filtered restaurants: " + filtered);
+            if (filtered.isEmpty()) {
+                return ResponseEntity.ok(new DefaultResult("No restaurants found for the given criteria", true, null));
+            }
             return ResponseEntity.ok(new DefaultResult("Filtered restaurants retrieved", false, filtered));
         } catch (Exception e) {
             return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
     }
+
     @PostMapping("/add-food-item")
     public ResponseEntity<DefaultResult> addFoodItemToRestaurant(@RequestBody FoodItemDTO dto) {
         try {
@@ -162,6 +196,7 @@ public class RestaurantController {
             return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
     }
+
     @PutMapping("/update-food-item/{id}")
     public ResponseEntity<DefaultResult> updateFoodItemAsync(@PathVariable String id, @RequestBody FoodItemDTO dto) {
         try {
@@ -176,7 +211,6 @@ public class RestaurantController {
         }
     }
 
-
     @DeleteMapping("/delete-food-item/{id}")
     public ResponseEntity<DefaultResult> deleteFoodItemAsync(@PathVariable String id) {
         try {
@@ -190,32 +224,39 @@ public class RestaurantController {
         }
     }
 
+    // @PostMapping("/{restaurantId}/order-history-request")
+    // public ResponseEntity<DefaultResult> fetchOrderHistory(@PathVariable String
+    // restaurantId) {
+    // try {
+    // restaurantProducer.sendOrderHistoryRequest(restaurantId);
+    // return ResponseEntity.ok(new DefaultResult("Order history request sent",
+    // false, null));
+    // } catch (Exception e) {
+    // return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+    // }
+    // }
 
-    @PostMapping("/{restaurantId}/order-history-request")
-    public ResponseEntity<DefaultResult> fetchOrderHistory(@PathVariable String restaurantId) {
-        try {
-            restaurantProducer.sendOrderHistoryRequest(restaurantId);
-            return ResponseEntity.ok(new DefaultResult("Order history request sent", false, null));
-        } catch (Exception e) {
-            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
-        }
-    }
     @PostMapping("/{restaurantId}/fooditems")
-    public ResponseEntity<DefaultResult> createFoodItem(@PathVariable String restaurantId, @RequestBody FoodItemDTO dto) {
+    public ResponseEntity<DefaultResult> createFoodItem(@PathVariable String restaurantId,
+            @RequestBody FoodItemDTO dto) {
         try {
             DefaultResult result = foodItemClient.createFoodItem(dto);
             if (result.isError()) {
                 return ResponseEntity.ok(new DefaultResult("Failed to create food item", true, null));
             }
-            FoodItemDTO created = (FoodItemDTO) result.getResult();
+            ObjectMapper mapper = new ObjectMapper();
+            FoodItemDTO created = mapper.convertValue(result.getResult(), FoodItemDTO.class);
+
             service.addFoodItemToRestaurant(restaurantId, created.getId());
             return ResponseEntity.ok(new DefaultResult("Food item created and added to restaurant", false, created));
         } catch (Exception e) {
             return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
     }
+
     @PutMapping("/{restaurantId}/fooditems/{foodItemId}")
-    public ResponseEntity<DefaultResult> updateFoodItemSync(@PathVariable String restaurantId, @PathVariable String foodItemId, @RequestBody FoodItemDTO dto) {
+    public ResponseEntity<DefaultResult> updateFoodItemSync(@PathVariable String restaurantId,
+            @PathVariable String foodItemId, @RequestBody FoodItemDTO dto) {
         try {
             DefaultResult result = foodItemClient.updateFoodItem(foodItemId, dto);
             if (result.isError()) {
@@ -228,8 +269,10 @@ public class RestaurantController {
             return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
     }
+
     @DeleteMapping("/{restaurantId}/fooditems/{foodItemId}")
-    public ResponseEntity<DefaultResult> deleteFoodItemSync(@PathVariable String restaurantId, @PathVariable String foodItemId) {
+    public ResponseEntity<DefaultResult> deleteFoodItemSync(@PathVariable String restaurantId,
+            @PathVariable String foodItemId) {
         try {
             foodItemClient.deleteFoodItem(foodItemId);
             service.removeFoodItemFromRestaurant(restaurantId, foodItemId);
@@ -238,7 +281,6 @@ public class RestaurantController {
             return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
     }
-
 
     @PutMapping("/{id}/ban")
     public ResponseEntity<DefaultResult> banRestaurant(@PathVariable String id) {

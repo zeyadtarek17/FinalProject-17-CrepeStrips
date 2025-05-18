@@ -1,5 +1,7 @@
 package com.crepestrips.adminservice.security;
 
+import com.crepestrips.adminservice.model.Admin;
+import com.crepestrips.adminservice.service.AdminService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,11 +22,11 @@ import org.springframework.context.annotation.Lazy;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final UserDetailsService userDetailsService;
+    private final AdminService userDetailsService;
     private final JwtService jwtService;
 
     @Autowired
-    public JwtAuthFilter(@Lazy UserDetailsService userDetailsService, JwtService jwtService) {
+    public JwtAuthFilter(@Lazy AdminService userDetailsService, JwtService jwtService) {
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
     }
@@ -43,6 +45,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             if (jwtService.validateToken(token, userDetails)) {
+                System.out.println("user is " + userDetails);
+                Admin user = userDetailsService.getAdminByUsername(username);
+
+                if (!user.isLoggedIn()) {
+                    // User is logged out — reject request
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\": \"You are logged out. Please log in again.\"}");
+                    return;
+                }
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
