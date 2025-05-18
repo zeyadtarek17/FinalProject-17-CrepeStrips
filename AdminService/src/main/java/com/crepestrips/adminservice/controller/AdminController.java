@@ -78,7 +78,7 @@ public class AdminController {
     public ResponseEntity<DefaultResult> deleteAdmin(@PathVariable String id) {
         try {
            adminService.deleteAdminById(id);
-            return ResponseEntity.ok(new DefaultResult("User deleted successfully", false, null));
+            return ResponseEntity.ok(new DefaultResult("Admin deleted successfully", false, null));
         } catch (Exception e) {
             return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
