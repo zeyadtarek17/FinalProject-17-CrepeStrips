@@ -41,7 +41,7 @@ public class OrderController {
     }
 
     @GetMapping("/restaurant/{restaurantId}")
-    public ResponseEntity<Optional<List<Order>>> getOrdersByRestaurantId(@PathVariable UUID restaurantId) {
+    public ResponseEntity<Optional<List<Order>>> getOrdersByRestaurantId(@PathVariable String restaurantId) {
         return orderService.getOrdersByRestaurantId(restaurantId);
     }
     

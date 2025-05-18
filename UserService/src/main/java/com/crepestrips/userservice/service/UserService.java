@@ -26,6 +26,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.crepestrips.userservice.dto.ReportDTO;
+import com.crepestrips.userservice.dto.UpdateUser;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -90,6 +91,7 @@ public class UserService implements UserDetailsService {
 
         return userRepository.save(builtUser);
     }
+
     public void login(String username) {
         if (LoginSessionManager.getInstance().isLoggedIn(username)) {
             throw new RuntimeException("User already logged in");
@@ -136,7 +138,7 @@ public class UserService implements UserDetailsService {
      * }
      */
 
-    @Cacheable(value = "Users", key = "#id")
+    @Cacheable(value = "Users", key = "#id", unless = "#result == null || !#result.isPresent()")
     public User getUserById(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -146,13 +148,23 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll();
     }
 
-    @CachePut(value = "Users", key = "#result.id")
-    public User updateUser(UUID id, User newData) {
-        newData.setId(id);
-        return userRepository.save(newData);
+    public User updateUser(UUID id, UpdateUser newData) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (newData.getEmail() != null) {
+            user.setEmail(newData.getEmail());
+        }
+        if (newData.getFirstName() != null) {
+            user.setFirstName(newData.getFirstName());
+        }
+        if (newData.getLastName() != null) {
+            user.setLastName(newData.getLastName());
+        }
+
+        return userRepository.save(user);
     }
 
-    @CacheEvict(value = "Users", key = "#id")
     public String deleteUser(UUID id) {
         userRepository.deleteById(id);
         return "User deleted.";
@@ -178,7 +190,19 @@ public class UserService implements UserDetailsService {
 
     @CachePut(value = "Carts", key = "#result.userId")
     public Cart saveCart(Cart cart) {
-        return cartRepository.save(cart);
+        // check if user has a cart first, if he has saving the cart
+        // if he doesn't have a cart, create a new one
+        // if he has a cart, update the cart
+        // if he has a cart, add the item to the cart
+
+        Optional<Cart> existingCart = cartRepository.findByUserId(cart.getUserId());
+        if (existingCart.isPresent()) {
+            Cart cartToUpdate = existingCart.get();
+            cartToUpdate.setItems(cart.getItems());
+            return cartRepository.save(cartToUpdate);
+        } else {
+            return cartRepository.save(cart);
+        }
     }
 
     @CacheEvict(value = "Carts", key = "#userId")

@@ -1,7 +1,7 @@
 package com.crepestrips.restaurantservice.config;
 
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
-import com.crepestrips.restaurantservice.dto.RestaurantOrderHistoryRequest;
+//import com.crepestrips.restaurantservice.dto.RestaurantOrderHistoryRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -39,14 +39,14 @@ public class RestaurantProducer {
         }
     }
 
-    public void sendOrderHistoryRequest(String restaurantId) {
-        RestaurantOrderHistoryRequest request = new RestaurantOrderHistoryRequest();
-        request.setRestaurantId(restaurantId);
-        try {
-            String json = objectMapper.writeValueAsString(request);
-            rabbitTemplate.convertAndSend("restaurant.order.exchange", "restaurant.order.request", json);
-        } catch (JsonProcessingException e) {
-            System.err.println("Error sending order history request: " + e.getMessage());
-        }
-    }
+//    public void sendOrderHistoryRequest(String restaurantId) {
+//        RestaurantOrderHistoryRequest request = new RestaurantOrderHistoryRequest();
+//        request.setRestaurantId(restaurantId);
+//        try {
+//            String json = objectMapper.writeValueAsString(request);
+//            rabbitTemplate.convertAndSend("restaurant.order.exchange", "restaurant.order.request", json);
+//        } catch (JsonProcessingException e) {
+//            System.err.println("Error sending order history request: " + e.getMessage());
+//        }
+//    }
 }

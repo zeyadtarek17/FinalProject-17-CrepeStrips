@@ -18,8 +18,7 @@ public class RabbitMQConfig {
     public static final String USER_TO_ADMIN_QUEUE = "user_to_admin_report_queue";
 
     @Bean
-    public
-    Queue userToAdminQueue() {
+    public Queue userToAdminQueue() {
         return new Queue(USER_TO_ADMIN_QUEUE, false);
     }
 
@@ -33,10 +32,22 @@ public class RabbitMQConfig {
         return new Jackson2JsonMessageConverter();
     }
 
+    // @Bean
+    // public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+    //     RabbitTemplate template = new RabbitTemplate(connectionFactory);
+    //     template.setMessageConverter(messageConverter());
+    //     return template;
+    // }
+
     @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+    public MessageConverter jsonMessageConverter() {
+        return new Jackson2JsonMessageConverter();
+    }
+
+    @Bean
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, MessageConverter messageConverter) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
-        template.setMessageConverter(messageConverter());
+        template.setMessageConverter(messageConverter);
         return template;
     }
 }
