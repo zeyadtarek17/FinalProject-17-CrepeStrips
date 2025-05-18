@@ -34,14 +34,13 @@ public class OrderItem {
     @JoinColumn(name = "order_id")
     @JsonBackReference // This side will NOT be serialized when serializing OrderItem from Order
     private Order order;
-    @Column(columnDefinition = "uuid")
-    private UUID foodItemId;
+    private String foodItemId;
     private String foodItemName;
     private int quantity;
     private double pricePerUnit;
     private double subTotal;
 
-    public OrderItem(UUID foodItemId, String foodItemName, int quantity, double pricePerUnit) {
+    public OrderItem(String foodItemId, String foodItemName, int quantity, double pricePerUnit) {
         this.id = UUID.randomUUID(); 
         this.foodItemId = foodItemId;
         this.foodItemName = foodItemName;

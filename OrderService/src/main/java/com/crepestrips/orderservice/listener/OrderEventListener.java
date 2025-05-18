@@ -21,7 +21,7 @@ public class OrderEventListener {
         this.orderCreationService = orderProcessingService;
     }
 
-    @RabbitListener(queues = "user.to.order.queue")
+    @RabbitListener(queues = "${app.rabbitmq.orderPlacementQueue}")
     public void handleOrderPlacementRequest(OrderPlacementRequestedEvent event) {
         logger.info("============================================================");
         logger.info("||          RECEIVED NEW ORDER PLACEMENT REQUEST          ||");

@@ -8,14 +8,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.crepestrips.orderservice.dto.FoodItemDto;
+import com.crepestrips.orderservice.dto.FoodItemServiceResponseDto;
 
 import java.util.List;
 
 @FeignClient(name = "fooditem-service", url = "${fooditem-service.url}")
 public interface FoodItemServiceClient {
 
-    @GetMapping("/api/fooditems/{id}") // Example endpoint, confirm with FoodItemService team
-    FoodItemDto getFoodItemById(@PathVariable("id") String id);
+    @GetMapping("/fooditems/{id}")
+    FoodItemServiceResponseDto getFoodItemByIdWrapped(@PathVariable("id") String id);
 
     // decrement food item stock
     @PostMapping("/fooditems/decrement")

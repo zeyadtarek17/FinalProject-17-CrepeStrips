@@ -28,8 +28,7 @@ public class Order {
     @Column(columnDefinition = "uuid")
     private UUID userId;
 
-    @Column(columnDefinition = "uuid")
-    private UUID restaurantId;
+    private String restaurantId;
 
     @Column(columnDefinition = "uuid")
     private UUID cartId;
@@ -47,7 +46,7 @@ public class Order {
 
     private double totalAmount;
 
-    public Order(UUID userId, UUID restaurantId, UUID cartId) {
+    public Order(UUID userId, String restaurantId, UUID cartId) {
         this.id = UUID.randomUUID(); // Generate ID on creation
         this.userId = userId;
         this.restaurantId = restaurantId;

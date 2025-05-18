@@ -2,7 +2,8 @@ package com.crepestrips.orderservice.service;
 
 import com.crepestrips.orderservice.client.FoodItemServiceClient; // Import Feign client
 import com.crepestrips.orderservice.dto.CartDto;
-import com.crepestrips.orderservice.dto.FoodItemDto;         // Import DTO
+import com.crepestrips.orderservice.dto.FoodItemDto; // Import DTO
+import com.crepestrips.orderservice.dto.FoodItemServiceResponseDto;
 import com.crepestrips.orderservice.model.Order;
 import com.crepestrips.orderservice.model.OrderItem;
 import com.crepestrips.orderservice.repository.OrderRepository;
@@ -27,7 +28,10 @@ public class OrderCreationService {
     private final FoodItemServiceClient foodItemServiceClient; // <<< INJECTED
 
     @Autowired
-    public OrderCreationService(OrderRepository orderRepository, FoodItemServiceClient foodItemServiceClient) { // <<< ADDED TO CONSTRUCTOR
+    public OrderCreationService(OrderRepository orderRepository, FoodItemServiceClient foodItemServiceClient) { // <<<
+                                                                                                                // ADDED
+                                                                                                                // TO
+                                                                                                                // CONSTRUCTOR
         this.orderRepository = orderRepository;
         this.foodItemServiceClient = foodItemServiceClient;
     }
@@ -43,8 +47,10 @@ public class OrderCreationService {
         String firstItemRestaurantId = null; // To potentially get a common restaurant ID
 
         if (itemQuantities.isEmpty()) {
-            logger.warn("No items found in cart {}. Order might be created empty or this could be an error.", cartDetails.getCartId());
-            // Depending on business rules, you might throw an exception here if an order must have items.
+            logger.warn("No items found in cart {}. Order might be created empty or this could be an error.",
+                    cartDetails.getCartId());
+            // Depending on business rules, you might throw an exception here if an order
+            // must have items.
         }
 
         for (Map.Entry<String, Integer> entry : itemQuantities.entrySet()) {
@@ -56,41 +62,30 @@ public class OrderCreationService {
             // as the Feign client takes a String ID.
             // The FoodItemDto.id will be a String, which we then parse for OrderItem.
 
+            FoodItemServiceResponseDto responseWrapper = foodItemServiceClient.getFoodItemByIdWrapped(foodItemIdString);
             FoodItemDto foodItemInfo = null;
-            try {
-                logger.debug("Calling FoodItemService for food item ID (string): {}", foodItemIdString);
-                foodItemInfo = foodItemServiceClient.getFoodItemById(foodItemIdString); // <<< ACTUAL FEIGN CALL
-                logger.debug("Received from FoodItemService: {}", foodItemInfo);
-
-            } catch (Exception e) { // Catch FeignException or more general exceptions
-                logger.error("Error calling FoodItemService for food item ID {}: {}. Skipping this item.", foodItemIdString, e.getMessage());
-                // TODO: More sophisticated error handling:
-                // - Retry?
-                // - Mark item as unavailable?
-                // - Fail entire order?
-                // For now, we skip the item.
+            if (responseWrapper != null && !responseWrapper.isError() && responseWrapper.getResult() != null) {
+                foodItemInfo = responseWrapper.getResult();
+            } else {
+                logger.warn("Received error or no result from FoodItemService for ID {}: {}", foodItemIdString,
+                        responseWrapper != null ? responseWrapper.getMessage() : "null response");
                 continue;
             }
 
             if (foodItemInfo == null || foodItemInfo.getId() == null) { // Check if service returned valid data
-                logger.warn("No valid information (or null ID) received from FoodItemService for food item ID string {}. Skipping item.", foodItemIdString);
+                logger.warn(
+                        "No valid information (or null ID) received from FoodItemService for food item ID string {}. Skipping item.",
+                        foodItemIdString);
                 continue;
             }
 
             // Convert String ID from DTO to UUID for OrderItem
-            UUID foodItemIdForOrderItem;
-            try {
-                foodItemIdForOrderItem = UUID.fromString(foodItemInfo.getId());
-            } catch (IllegalArgumentException e) {
-                logger.error("FoodItemService returned an ID '{}' that is not a valid UUID for DTO ID string {}. Skipping item.", foodItemInfo.getId(), foodItemIdString);
-                continue;
-            }
-            
+            String foodItemIdForOrderItem = foodItemInfo.getId();
+
             // Capture the restaurantId from the first valid item (simple strategy)
             if (firstItemRestaurantId == null && foodItemInfo.getRestaurantId() != null) {
                 firstItemRestaurantId = foodItemInfo.getRestaurantId();
             }
-
 
             double priceForOrderItem;
             if (foodItemInfo.getPrice() != null) {
@@ -101,40 +96,42 @@ public class OrderCreationService {
             }
 
             logger.info("Processing item: ID={}, Name={}, Price={}, Quantity={}",
-                        foodItemInfo.getId(), foodItemInfo.getName(), priceForOrderItem, quantity);
+                    foodItemInfo.getId(), foodItemInfo.getName(), priceForOrderItem, quantity);
 
             OrderItem orderItem = new OrderItem(
-                    foodItemIdForOrderItem,    // Use the UUID
-                    foodItemInfo.getName(),    // Use actual name from DTO
+                    foodItemIdForOrderItem, // Use the String
+                    foodItemInfo.getName(), // Use actual name from DTO
                     quantity,
-                    priceForOrderItem          // Use actual price (converted to BigDecimal) from DTO
+                    priceForOrderItem // Use actual price (converted to BigDecimal) from DTO
             );
             orderItems.add(orderItem);
         }
 
         if (orderItems.isEmpty() && !itemQuantities.isEmpty()) {
-            logger.error("No valid order items could be created after fetching from FoodItemService for cart {}.", cartDetails.getCartId());
-            throw new RuntimeException("Failed to create any valid order items for cart " + cartDetails.getCartId() + " after FoodItemService lookup.");
+            logger.error("No valid order items could be created after fetching from FoodItemService for cart {}.",
+                    cartDetails.getCartId());
+            throw new RuntimeException("Failed to create any valid order items for cart " + cartDetails.getCartId()
+                    + " after FoodItemService lookup.");
         }
-        
-        UUID orderRestaurantId = null;
+
+        String orderRestaurantId = null;
         if (firstItemRestaurantId != null) {
             try {
-                orderRestaurantId = UUID.fromString(firstItemRestaurantId);
+                orderRestaurantId = firstItemRestaurantId;
             } catch (IllegalArgumentException e) {
-                logger.warn("The derived restaurantId '{}' is not a valid UUID. Order will have null restaurantId.", firstItemRestaurantId);
+                logger.warn("The derived restaurantId '{}' is not a valid UUID. Order will have null restaurantId.",
+                        firstItemRestaurantId);
             }
         } else {
             logger.warn("Could not determine a restaurantId for the order. Order will have null restaurantId.");
-            // Potentially use a default or throw an error if restaurantId is mandatory for an Order
+            // Potentially use a default or throw an error if restaurantId is mandatory for
+            // an Order
         }
-
 
         Order order = new Order(
                 cartDetails.getUserId(),
                 orderRestaurantId, // Use determined (or null) restaurantId
-                cartDetails.getCartId()
-        );
+                cartDetails.getCartId());
 
         for (OrderItem item : orderItems) {
             order.addOrderItem(item);
@@ -142,13 +139,15 @@ public class OrderCreationService {
         // order.calculateTotalAmount(); // addOrderItem should handle this
 
         Order savedOrder = orderRepository.save(order);
-        logger.info("OrderCreationService: Successfully created order {} with total amount: {}", savedOrder.getId(), savedOrder.getTotalAmount());
+        logger.info("OrderCreationService: Successfully created order {} with total amount: {}", savedOrder.getId(),
+                savedOrder.getTotalAmount());
         return savedOrder;
     }
 
     private Map<String, Integer> calculateItemQuantities(List<String> foodItemIds) {
         Map<String, Integer> quantities = new HashMap<>();
-        if (foodItemIds == null) return quantities;
+        if (foodItemIds == null)
+            return quantities;
         for (String itemId : foodItemIds) {
             quantities.put(itemId, quantities.getOrDefault(itemId, 0) + 1);
         }

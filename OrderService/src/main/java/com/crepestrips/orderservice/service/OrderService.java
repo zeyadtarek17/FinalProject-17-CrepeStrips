@@ -16,8 +16,8 @@ import com.crepestrips.orderservice.client.FoodItemServiceClient;
 import com.crepestrips.orderservice.client.UserServiceClient;
 import com.crepestrips.orderservice.client.FoodItemServiceClient;
 import com.crepestrips.orderservice.config.RabbitMQConfig;
-import com.crepestrips.orderservice.dto.FoodItemResponse;
-import com.crepestrips.orderservice.dto.UserMessage;
+// import com.crepestrips.orderservice.dto.FoodItemResponse;
+// import com.crepestrips.orderservice.dto.UserMessage;
 import com.crepestrips.orderservice.model.Order;
 import com.crepestrips.orderservice.model.OrderPriority;
 import com.crepestrips.orderservice.model.OrderStatus;
@@ -53,20 +53,19 @@ public class OrderService {
 
     }
 
-    @Transactional
-    @RabbitListener(queues = RabbitMQConfig.USER_TO_ORDER_QUEUE)
-    public ResponseEntity<Order> createOrder(UUID userId, UUID restaurantId) {
-        Order order = new Order(userId, restaurantId, null);
-        ResponseEntity<?> response = userServiceClient.getUserCart(userId);
-        if (response.getStatusCode().is2xxSuccessful()) {
-            ResponseEntity<?> cartResponse = userServiceClient.getUserCart(userId);
-            // to do when i have cart data is that i first need to create an order item for
-            // each item in the cart and then add them to the order
-        }
-        order = orderRepository.save(order);
-        rabbitMQPublisher.publishOrderCreated(order);
-        return ResponseEntity.ok(order);
-    }
+    // @Transactional
+    // public ResponseEntity<Order> createOrder(UUID userId, S restaurantId) {
+    //     Order order = new Order(userId, restaurantId, null);
+    //     ResponseEntity<?> response = userServiceClient.getUserCart(userId);
+    //     if (response.getStatusCode().is2xxSuccessful()) {
+    //         ResponseEntity<?> cartResponse = userServiceClient.getUserCart(userId);
+    //         // to do when i have cart data is that i first need to create an order item for
+    //         // each item in the cart and then add them to the order
+    //     }
+    //     order = orderRepository.save(order);
+    //     rabbitMQPublisher.publishOrderCreated(order);
+    //     return ResponseEntity.ok(order);
+    // }
 
     // @RabbitListener(queues = RabbitMQConfig.USER_TO_ORDER_QUEUE)
     // public UUID createOrder(UUID userId, String restaurantId,
@@ -108,7 +107,7 @@ public class OrderService {
         return ResponseEntity.notFound().build();
     }
 
-    public ResponseEntity<Optional<List<Order>>> getOrdersByRestaurantId(UUID restaurantId) {
+    public ResponseEntity<Optional<List<Order>>> getOrdersByRestaurantId(String restaurantId) {
         Optional<List<Order>> orders = orderRepository.findByRestaurantId(restaurantId);
         if (orders.isPresent()) {
             return ResponseEntity.ok(orders);
@@ -171,7 +170,7 @@ public class OrderService {
     // added by team1
     @RabbitListener(queues = RabbitMQConfig.ORDER_HISTORY_REQUEST_QUEUE)
     public void handleOrderHistoryRequest(RestaurantOrderHistoryRequest request) {
-        UUID restaurantUUID = UUID.fromString(request.getRestaurantId());
+        String restaurantUUID = request.getRestaurantId();
         Optional<List<Order>> orders = orderRepository.findByRestaurantId(restaurantUUID);
 
         RestaurantOrderHistoryResponse response = new RestaurantOrderHistoryResponse();
