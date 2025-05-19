@@ -1,10 +1,12 @@
 package com.crepestrips.restaurantservice.controller;
 
 import com.crepestrips.restaurantservice.client.FoodItemClient;
+import com.crepestrips.restaurantservice.client.OrderServiceClient;
 import com.crepestrips.restaurantservice.config.FoodItemMessage;
 import com.crepestrips.restaurantservice.config.RestaurantProducer;
 import com.crepestrips.restaurantservice.dto.DefaultResult;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
+import com.crepestrips.restaurantservice.dto.OrderResponseDto;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
 import com.crepestrips.restaurantservice.model.Category;
 import com.crepestrips.restaurantservice.model.RestaurantCreation;
@@ -44,6 +46,9 @@ public class RestaurantController {
     private RestaurantRepository restaurantRepository;
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private OrderServiceClient orderServiceClient;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -321,9 +326,14 @@ public class RestaurantController {
     }
 
     @GetMapping("/{restaurantId}/order-history")
-    public ResponseEntity<List<Order>> getOrderHistory(@PathVariable String restaurantId) {
-        List<Order> orders = service.getOrderHistoryForRestaurant(restaurantId);
-        return ResponseEntity.ok(orders);
+    public ResponseEntity<?> getOrderHistory(@PathVariable String restaurantId) {
+        try {
+            List<OrderResponseDto> orders = orderServiceClient.getOrdersByRestaurantId(restaurantId);
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching order history: " + e.getMessage());
+        }
     }
 
 }

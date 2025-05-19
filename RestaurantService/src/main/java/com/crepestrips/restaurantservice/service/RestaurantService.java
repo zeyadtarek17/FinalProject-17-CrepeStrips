@@ -5,6 +5,7 @@ import com.crepestrips.restaurantservice.client.FoodItemClient;
 import com.crepestrips.restaurantservice.client.OrderServiceClient;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
 //import com.crepestrips.restaurantservice.dto.RestaurantOrderHistoryResponse;
+import com.crepestrips.restaurantservice.dto.OrderResponseDto;
 import com.crepestrips.restaurantservice.factory.RestaurantFactory;
 import com.crepestrips.restaurantservice.model.Category;
 import com.crepestrips.restaurantservice.model.Restaurant;
@@ -192,7 +193,7 @@ public class RestaurantService {
     }
 
 
-    public List<Order> getOrderHistoryForRestaurant(String restaurantId) {
+    public List<OrderResponseDto> getOrderHistoryForRestaurant(String restaurantId) {
         return orderServiceClient.getOrdersByRestaurantId(restaurantId);
     }
 
