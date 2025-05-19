@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 @Document(collection = "restaurants")
 @TypeAlias("base")
-public class Restaurant implements IRestaurant{
+public class Restaurant implements IRestaurant {
 
     @Id
     private String id;
@@ -22,7 +22,7 @@ public class Restaurant implements IRestaurant{
     private LocalTime openingTime;
     private LocalTime closingTime;
     private String location;
-//    private double rating;
+    // private double rating;
     private boolean isOpen;
     private boolean hasSeating;
     private boolean supportsDelivery;
@@ -34,12 +34,10 @@ public class Restaurant implements IRestaurant{
 
     private List<String> foodItemIds = new ArrayList<>();
 
-
-
     public Restaurant(String name, String location) {
         this.name = name;
         this.location = location;
-//        this.rating = rating;
+        // this.rating = rating;
         isBanned = false;
     }
 
@@ -47,7 +45,7 @@ public class Restaurant implements IRestaurant{
         this.id = id;
         this.name = name;
         this.location = location;
-//        this.rating = rating;
+        // this.rating = rating;
         this.isOpen = isOpen;
         isBanned = false;
     }
@@ -57,10 +55,11 @@ public class Restaurant implements IRestaurant{
 
     }
 
-    public Restaurant(String name, String location, boolean isOpen, LocalTime openingTime, LocalTime closingTime, Category category) {
+    public Restaurant(String name, String location, boolean isOpen, LocalTime openingTime, LocalTime closingTime,
+            Category category) {
         this.name = name;
         this.location = location;
-//        this.rating = rating;
+        // this.rating = rating;
         this.isOpen = isOpen;
         this.openingTime = openingTime;
         this.closingTime = closingTime;
@@ -68,45 +67,78 @@ public class Restaurant implements IRestaurant{
         isBanned = false;
     }
 
-    public String getId() { return id; }
+    public String getId() {
+        return id;
+    }
 
-    public void setId(String id) { this.id = id; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public String getName() { return name; }
+    public String getName() {
+        return name;
+    }
 
-    public void setName(String name) { this.name = name; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public String getLocation() { return location; }
+    public String getLocation() {
+        return location;
+    }
 
-    public void setLocation(String location) { this.location = location; }
+    public void setLocation(String location) {
+        this.location = location;
+    }
 
-//    public double getRating() { return rating; }
+    // public double getRating() { return rating; }
 
-//    public void setRating(double rating) { this.rating = rating; }
+    // public void setRating(double rating) { this.rating = rating; }
 
     public boolean isOpen() {
         if (openingTime == null || closingTime == null) {
             return false;
         }
         LocalTime now = LocalTime.now();
-        return !now.isBefore(openingTime) && !now.isAfter(closingTime);
+        System.out.println("Current time: " + now);
+        System.out.println("Opening time: " + openingTime);
+        System.out.println("Closing time: " + closingTime);
+        if (closingTime.isAfter(openingTime)) {
+            // Normal same-day operation
+            return !now.isBefore(openingTime) && !now.isAfter(closingTime);
+        } else {
+            // Overnight operation
+            return !now.isBefore(openingTime) || !now.isAfter(closingTime);
+        }
     }
 
-    public void setOpen(boolean open) { isOpen = open; }
+    public void setOpen(boolean open) {
+        isOpen = open;
+    }
 
-    public List<String> getFoodItemIds() { return foodItemIds; }
+    public List<String> getFoodItemIds() {
+        return foodItemIds;
+    }
 
-    public void setFoodItemIds(List<String> foodItemIds) { this.foodItemIds = foodItemIds; }
+    public void setFoodItemIds(List<String> foodItemIds) {
+        this.foodItemIds = foodItemIds;
+    }
 
-    public LocalTime getOpeningTime() { return openingTime; }
+    public LocalTime getOpeningTime() {
+        return openingTime;
+    }
 
-    public void setOpeningTime(LocalTime openingTime) { this.openingTime = openingTime; }
+    public void setOpeningTime(LocalTime openingTime) {
+        this.openingTime = openingTime;
+    }
 
-    public LocalTime getClosingTime() { return closingTime; }
+    public LocalTime getClosingTime() {
+        return closingTime;
+    }
 
-    public void setClosingTime(LocalTime closingTime) { this.closingTime = closingTime; }
-
-
+    public void setClosingTime(LocalTime closingTime) {
+        this.closingTime = closingTime;
+    }
 
     public String getCategoryId() {
         return category != null ? category.getId() : null;
@@ -115,8 +147,6 @@ public class Restaurant implements IRestaurant{
     public void setCategory(Category category) {
         this.category = category;
     }
-
-
 
     public void setFoodItem(FoodItemDTO foodItem) {
         this.foodItem = foodItem;
@@ -156,9 +186,11 @@ public class Restaurant implements IRestaurant{
         }
         this.category.setId(categoryId);
     }
+
     public boolean isBanned() {
         return isBanned;
     }
+
     public void setBanned(boolean banned) {
         isBanned = banned;
     }
@@ -167,4 +199,3 @@ public class Restaurant implements IRestaurant{
         return foodItem;
     }
 }
-
