@@ -92,8 +92,7 @@ services:
       - "5432:5432"
     volumes:
        - pgdata:/var/lib/postgresql/data
-
-
+    
   redis_cache:
     image: redis:latest
     container_name: redisCache
@@ -135,6 +134,30 @@ services:
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
+  eurekaserver:
+    build: ./EurekaServer
+    container_name: eurekaserver
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_APPLICATION_NAME: eureka-server
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: false
+      EUREKA_CLIENT_FETCH_REGISTRY: false
+    networks:
+      - default
+
+  apigateway:
+    build: ./APIGateway
+    container_name: apigateway
+    ports:
+      - "8088:8080"  # External 8088 mapped to internal 8080
+    depends_on:
+      - eurekaserver
+    environment:
+      SPRING_APPLICATION_NAME: api-gateway
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8761/eureka
+    networks:
+      - default
 
 volumes:
   mongo_data:

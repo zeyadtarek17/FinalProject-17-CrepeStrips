@@ -8,7 +8,7 @@ import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "food-item-service", url="http://localhost:8082")
+@FeignClient(name = "fooditemservice", url = "http://fooditemservice:8082")
 public interface FoodItemClient {
     @PostMapping("/fooditems")
     DefaultResult createFoodItem(@RequestBody FoodItemDTO foodItemDTO);

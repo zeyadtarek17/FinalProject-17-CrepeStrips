@@ -1,23 +1,32 @@
 package com.crepestrips.orderservice.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import com.crepestrips.orderservice.client.FoodItemServiceClient;
-import com.crepestrips.orderservice.client.UserServiceClient;
+import com.crepestrips.orderservice.client.FoodItemServiceClient;
+import com.crepestrips.orderservice.config.RabbitMQConfig;
+import com.crepestrips.orderservice.dto.DefaultResult;
+// import com.crepestrips.orderservice.dto.FoodItemResponse;
+// import com.crepestrips.orderservice.dto.UserMessage;
 import com.crepestrips.orderservice.model.Order;
 import com.crepestrips.orderservice.model.OrderPriority;
 import com.crepestrips.orderservice.model.OrderStatus;
 import com.crepestrips.orderservice.repository.OrderItemRepository;
 import com.crepestrips.orderservice.repository.OrderRepository;
+import com.crepestrips.orderservice.strategy.CreatedStatusStrategy;
+import com.crepestrips.orderservice.strategy.DefaultStatusStrategy;
+import com.crepestrips.orderservice.strategy.DeliveredStatusStrategy;
+import com.crepestrips.orderservice.strategy.OrderStatusStrategy;
+import com.crepestrips.orderservice.strategy.PreparingStatusStrategy;
 
 import jakarta.transaction.Transactional;
 
@@ -30,132 +39,90 @@ public class OrderService {
     private OrderItemRepository orderItemRepository;
 
     @Autowired
-    private UserServiceClient userServiceClient;
-
-    @Autowired
     private RabbitMQPublisher rabbitMQPublisher;
 
     @Autowired
     private FoodItemServiceClient foodItemServiceClient;
 
+    private final Map<OrderStatus, OrderStatusStrategy> statusStrategies;
+
     public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
-            RabbitMQPublisher rabbitMQPublisher, FoodItemServiceClient foodItemServiceClient,
-            UserServiceClient userServiceClient) {
+            RabbitMQPublisher rabbitMQPublisher, FoodItemServiceClient foodItemServiceClient) {
         this.orderRepository = orderRepository;
         this.rabbitMQPublisher = rabbitMQPublisher;
         this.foodItemServiceClient = foodItemServiceClient;
-        this.userServiceClient = userServiceClient;
-
+        statusStrategies = new HashMap<>();
+        statusStrategies.put(OrderStatus.CREATED, new CreatedStatusStrategy());
+        statusStrategies.put(OrderStatus.PREPARING, new PreparingStatusStrategy());
+        statusStrategies.put(OrderStatus.DELIVERED, new DeliveredStatusStrategy());
     }
 
-    // @Transactional
-    // public ResponseEntity<Order> createOrder(UUID userId, S restaurantId) {
-    //     Order order = new Order(userId, restaurantId, null);
-    //     ResponseEntity<?> response = userServiceClient.getUserCart(userId);
-    //     if (response.getStatusCode().is2xxSuccessful()) {
-    //         ResponseEntity<?> cartResponse = userServiceClient.getUserCart(userId);
-    //         // to do when i have cart data is that i first need to create an order item for
-    //         // each item in the cart and then add them to the order
-    //     }
-    //     order = orderRepository.save(order);
-    //     rabbitMQPublisher.publishOrderCreated(order);
-    //     return ResponseEntity.ok(order);
-    // }
-
-    // @RabbitListener(queues = RabbitMQConfig.USER_TO_ORDER_QUEUE)
-    // public UUID createOrder(UUID userId, String restaurantId,
-    // List<FoodItemResponse> foodItems) {
-    // List<String> foodItemsIds = foodItems.stream()
-    // .map(FoodItemResponse::getId)
-    // .collect(Collectors.toList());
-
-    // // send to endpoint to decrement the food item stock (sync)
-    // boolean success =
-    // foodItemServiceClient.decrementStock(foodItemsIds).getBody();
-    // if (!success) {
-    // throw new RuntimeException("Stock is being updated");
-    // }
-    // Order order = new Order(userId, restaurantId, foodItems);
-    // order.calculateTotalAmount();
-    // orderRepository.save(order);
-    // return order.getId();
-    // }
-
-    public ResponseEntity<?> getOrderById(UUID id) {
-        Optional<Order> order = orderRepository.findById(id);
-        if (order.isPresent()) {
-            return ResponseEntity.ok(order.get());
-        }
-        return ResponseEntity.notFound().build();
+    public Order getOrderById(UUID id) {
+        return orderRepository.findById(id).orElse(null);
     }
 
-    public ResponseEntity<?> getAllOrders() {
-        List<Order> orders = orderRepository.findAll();
-        return ResponseEntity.ok(orders);
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
     }
 
-    public ResponseEntity<Optional<List<Order>>> getOrdersByUserId(UUID userId) {
-        Optional<List<Order>> orders = orderRepository.findByUserId(userId);
-        if (orders.isPresent()) {
-            return ResponseEntity.ok(orders);
-        }
-        return ResponseEntity.notFound().build();
+    public List<Order> getOrdersByUserId(UUID userId) {
+        return orderRepository.findByUserId(userId).orElse(null);
     }
 
-    public ResponseEntity<Optional<List<Order>>> getOrdersByRestaurantId(String restaurantId) {
-        Optional<List<Order>> orders = orderRepository.findByRestaurantId(restaurantId);
-        if (orders.isPresent()) {
-            return ResponseEntity.ok(orders);
-        }
-        return ResponseEntity.notFound().build();
+    public List<Order> getOrdersByRestaurantId(String restaurantId) {
+        return orderRepository.findByRestaurantId(restaurantId).orElse(null);
     }
 
-    public ResponseEntity<Optional<List<Order>>> getOrdersByPriority(OrderPriority priority) {
-        Optional<List<Order>> orders = orderRepository.findByPriority(priority);
-        if (orders.isPresent()) {
-            return ResponseEntity.ok(orders);
-        }
-        return ResponseEntity.notFound().build();
+    public List<Order> getOrdersByPriority(OrderPriority priority) {
+        return orderRepository.findByPriority(priority).orElse(null);
     }
 
-    public ResponseEntity<Optional<List<Order>>> getOrdersByStatus(OrderStatus status) {
-        Optional<List<Order>> orders = orderRepository.findByStatus(status);
-        if (orders.isPresent()) {
-            return ResponseEntity.ok(orders);
-        }
-        return ResponseEntity.notFound().build();
+    public List<Order> getOrdersByStatus(OrderStatus status) {
+        return orderRepository.findByStatus(status).orElse(null);
+    }
+
+    public OrderStatus getOrderStatus(UUID id) {
+        return orderRepository.findById(id).map(Order::getStatus).orElse(null);
     }
 
     @Transactional
-    public ResponseEntity<Optional<Order>> updateOrderPriority(UUID id, OrderPriority priority) {
+    public Order updateOrderPriority(UUID id, OrderPriority priority) {
         Optional<Order> order = orderRepository.findById(id);
         if (order.isPresent()) {
             order.get().setPriority(priority);
-            orderRepository.save(order.get());
-            return ResponseEntity.ok(order);
+            return orderRepository.save(order.get());
         }
-        return ResponseEntity.notFound().build();
+        return null;
     }
 
     @Transactional
-    public ResponseEntity<Optional<Order>> updateOrderStatus(UUID id, OrderStatus status) {
+    public Order updateOrderStatus(UUID id, OrderStatus status) {
         Optional<Order> order = orderRepository.findById(id);
         if (order.isPresent()) {
             order.get().setStatus(status);
-            orderRepository.save(order.get());
-            return ResponseEntity.ok(order);
+            return orderRepository.save(order.get());
         }
-        return ResponseEntity.notFound().build();
+        return null;
+    }
+
+    public String getOrderStatusDetails(UUID orderId) {
+        Optional<Order> orderOptional = orderRepository.findById(orderId);
+        if (orderOptional.isEmpty()) {
+            return "Order with ID " + orderId + " not found.";
+        }
+
+        Order order = orderOptional.get();
+        OrderStatusStrategy strategy = statusStrategies.getOrDefault(order.getStatus(), new DefaultStatusStrategy());
+        return strategy.getStatusDetails(order);
     }
 
     @Transactional
-    public ResponseEntity<Optional<Order>> deleteOrder(UUID id) {
+    public Order deleteOrder(UUID id) {
         Optional<Order> order = orderRepository.findById(id);
         if (order.isPresent()) {
             orderRepository.delete(order.get());
-            return ResponseEntity.ok(order);
+            return order.get();
         }
-        return ResponseEntity.notFound().build();
+        return null;
     }
-
 }
