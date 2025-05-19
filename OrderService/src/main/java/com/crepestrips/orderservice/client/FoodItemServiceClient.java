@@ -23,4 +23,7 @@ public interface FoodItemServiceClient {
     @PostMapping("/fooditems/decrement")
     ResponseEntity<DefaultResult> decrementStock(@RequestBody List<String> ids);
 
+
+    @PostMapping("/clean-cart")
+    DefaultResult cleanCart(@RequestBody List<String> ids);
 }

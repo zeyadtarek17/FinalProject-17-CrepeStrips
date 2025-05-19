@@ -36,19 +36,47 @@ public class OrderCreationService {
 
     @Transactional
     public Order createOrderFromCart(CartDto cartDetails) {
-        logger.info("OrderCreationService: Starting to create order for cartId: {}", cartDetails.getCartId());
+        logger.info("Starting to create order for cartId: {}", cartDetails.getCartId());
 
-        Map<String, Integer> itemQuantities = calculateItemQuantities(cartDetails.getFoodItemIds());
-        logger.info("Calculated item quantities: {}", itemQuantities);
+        // Clean cart to remove suspended items
+        DefaultResult cleanCartResult = foodItemServiceClient.cleanCart(cartDetails.getFoodItemIds());
 
+        if (cleanCartResult == null || cleanCartResult.isError()) {
+            logger.error("Failed to clean cart for cartId: {}", cartDetails.getCartId());
+            return null;
+        }
+
+        // Extract the cleaned list of food item IDs
+        List<String> cleanedFoodItemIds;
+        if (cleanCartResult.getResult() instanceof List<?>) {
+            try {
+                @SuppressWarnings("unchecked")
+                List<String> castedResult = (List<String>) cleanCartResult.getResult();
+                cleanedFoodItemIds = castedResult;
+                cartDetails.setFoodItemIds(cleanedFoodItemIds);
+            } catch (ClassCastException e) {
+                logger.error("Error casting cleaned cart result: {}", e.getMessage());
+                return null;
+            }
+        } else {
+            logger.error("Unexpected result type from cleanCart");
+            return null;
+        }
+
+        // If the cleaned cart is empty, return null
+        if (cleanedFoodItemIds.isEmpty()) {
+            logger.warn("Cart is empty after cleaning");
+            return null;
+        }
+
+        Map<String, Integer> itemQuantities = calculateItemQuantities(cleanedFoodItemIds);
         List<OrderItem> orderItems = new ArrayList<>();
         String orderLevelRestaurantId = null;
         List<String> allFoodItemIdsForStockDecrement = new ArrayList<>();
-        boolean proceedWithOrderCreation = true; // Flag to control if we should create the order
+        boolean proceedWithOrderCreation = true;
 
         if (itemQuantities.isEmpty()) {
-            logger.warn("No items found in cart {}. Order creation will be skipped.", cartDetails.getCartId());
-            return null; // Or handle as per business rule for empty carts
+            return null;
         }
 
         for (Map.Entry<String, Integer> entry : itemQuantities.entrySet()) {
@@ -62,56 +90,34 @@ public class OrderCreationService {
                 if (responseWrapper != null && !responseWrapper.isError() && responseWrapper.getResult() != null) {
                     foodItemInfo = responseWrapper.getResult();
                 } else {
-                    String errorMessage = responseWrapper != null ? responseWrapper.getMessage() : "null response";
-                    logger.warn("Received error or no result from FoodItemService for ID {}: {}. Skipping item.", foodItemIdStringFromCart, errorMessage);
                     continue;
                 }
             } catch (Exception e) {
-                logger.error("Error calling FoodItemService for food item ID {}: {}. Skipping this item.", foodItemIdStringFromCart, e.getMessage(), e);
+                logger.error("Error calling FoodItemService: {}", e.getMessage());
                 continue;
             }
 
             if (foodItemInfo.getId() == null) {
-                logger.warn("FoodItemService returned item with null ID for cart item ID string {}. Skipping item.", foodItemIdStringFromCart);
                 continue;
             }
 
-            // --- Logic for Restaurant ID ---
             if (foodItemInfo.getRestaurantId() != null && !foodItemInfo.getRestaurantId().isBlank()) {
                 if (orderLevelRestaurantId == null) {
                     orderLevelRestaurantId = foodItemInfo.getRestaurantId();
-                    logger.info("Derived order-level restaurantId: {} from food item: {}", orderLevelRestaurantId, foodItemInfo.getId());
                 } else if (!orderLevelRestaurantId.equals(foodItemInfo.getRestaurantId())) {
-                    logger.error("CRITICAL: Items from different restaurants found in the same cart! Cart ID: {}. Expected restaurant: {}, Found: {} for item: {}. Order creation will be aborted.",
-                            cartDetails.getCartId(), orderLevelRestaurantId, foodItemInfo.getRestaurantId(), foodItemInfo.getId());
-                    proceedWithOrderCreation = false; // Mark to abort order creation
-                    break; // Stop processing further items as this is a fundamental issue
+                    logger.error("Items from different restaurants found in the same cart");
+                    proceedWithOrderCreation = false;
+                    break;
                 }
-            } else {
-                logger.warn("Food item {} from FoodItemService has a null or blank restaurantId. This might be an issue if a restaurantId is mandatory for the order.", foodItemInfo.getId());
-                // If restaurantId is absolutely mandatory per item for an order to be valid,
-                // you might set proceedWithOrderCreation = false; and break; here too.
-                // For now, we'll allow it and see if an overall orderLevelRestaurantId can be determined.
-            }
-            // --- End of Logic for Restaurant ID ---
-
-            double priceForOrderItem;
-            if (foodItemInfo.getPrice() != null) {
-                priceForOrderItem = foodItemInfo.getPrice();
-            } else {
-                priceForOrderItem = 0.0;
-                logger.warn("FoodItemDTO for id {} has null price. Defaulting to 0.0.", foodItemInfo.getId());
             }
 
-            logger.info("Processing item: ID={}, Name={}, Price={}, Quantity={}, RestaurantID={}",
-                        foodItemInfo.getId(), foodItemInfo.getName(), priceForOrderItem, quantity, foodItemInfo.getRestaurantId());
+            double priceForOrderItem = (foodItemInfo.getPrice() != null) ? foodItemInfo.getPrice() : 0.0;
 
             OrderItem orderItem = new OrderItem(
                     foodItemInfo.getId(),
                     foodItemInfo.getName(),
                     quantity,
-                    priceForOrderItem
-            );
+                    priceForOrderItem);
             orderItems.add(orderItem);
 
             for (int i = 0; i < quantity; i++) {
@@ -119,82 +125,66 @@ public class OrderCreationService {
             }
         }
 
-        if (!proceedWithOrderCreation) {
-            logger.error("Order creation aborted due to critical issues (e.g., mismatched restaurant IDs). Cart ID: {}", cartDetails.getCartId());
-            return null; // Indicate failure to the listener
-        }
-
-        if (orderItems.isEmpty() && !itemQuantities.isEmpty()) {
-            logger.error("No valid order items could be created after fetching from FoodItemService for cart {}. Aborting order creation.", cartDetails.getCartId());
-            // This is a fundamental failure if there were items in the cart but none could be processed.
-            // Returning null will signal the listener that order creation failed.
+        if (!proceedWithOrderCreation || orderItems.isEmpty() ||
+                (orderLevelRestaurantId == null && !orderItems.isEmpty())) {
             return null;
         }
 
-        // If after processing all items, orderLevelRestaurantId is still null,
-        // and there are items, this might be an error condition.
-        if (orderLevelRestaurantId == null && !orderItems.isEmpty()) {
-            logger.error("Could not determine a restaurantId for order from any of its items. Cart ID: {}. Order creation will be aborted.", cartDetails.getCartId());
-            // Depending on business rules, you might allow orders without a restaurant ID,
-            // or this could be a hard failure. For now, let's treat it as a failure.
-            return null;
-        }
-
-        Order order = new Order(
-                cartDetails.getUserId(),
-                orderLevelRestaurantId, // This might be null if no items had a restaurantId and we decided to allow it
-                cartDetails.getCartId()
-        );
-
-        for (OrderItem item : orderItems) {
-            order.addOrderItem(item);
-        }
-
-        Order savedOrder = orderRepository.save(order);
-        logger.info("OrderCreationService: Successfully created and saved order {} for restaurant {} with total amount: {}",
-                savedOrder.getId(), savedOrder.getRestaurantId(), savedOrder.getTotalAmount());
-
-        // --- Decrement Stock AFTER order is successfully saved ---
+        // decrement stock before creating the order
         if (!allFoodItemIdsForStockDecrement.isEmpty()) {
             try {
-                logger.info("Attempting to decrement stock for order {}. Item IDs to decrement (repeated for quantity): {}",
-                            savedOrder.getId(), allFoodItemIdsForStockDecrement);
-                ResponseEntity<DefaultResult> stockDecrementResponse = foodItemServiceClient.decrementStock(allFoodItemIdsForStockDecrement);
+                ResponseEntity<DefaultResult> stockDecrementResponse = foodItemServiceClient
+                        .decrementStock(allFoodItemIdsForStockDecrement);
 
                 if (stockDecrementResponse.getStatusCode().is2xxSuccessful() &&
-                    stockDecrementResponse.getBody() != null &&
-                    !stockDecrementResponse.getBody().isError()) {
-                    logger.info("Successfully decremented stock for order {}. Response message: {}",
-                                savedOrder.getId(), stockDecrementResponse.getBody().getMessage());
-                } else {
-                    String errorMessage = "Unknown error during stock decrement.";
-                    if (stockDecrementResponse.getBody() != null && stockDecrementResponse.getBody().getMessage() != null) {
-                        errorMessage = stockDecrementResponse.getBody().getMessage();
-                    } else if (!stockDecrementResponse.getStatusCode().is2xxSuccessful()){
-                        errorMessage = "Received non-2xx status: " + stockDecrementResponse.getStatusCode();
+                        stockDecrementResponse.getBody() != null &&
+                        !stockDecrementResponse.getBody().isError()) {
+
+                    // Create and save order only if stock decrement was successful
+                    Order order = new Order(
+                            cartDetails.getUserId(),
+                            orderLevelRestaurantId,
+                            cartDetails.getCartId());
+
+                    for (OrderItem item : orderItems) {
+                        order.addOrderItem(item);
                     }
-                    logger.error("CRITICAL: Failed to decrement stock for order {} after creation. Details: {}",
-                            savedOrder.getId(), errorMessage);
-                    // In a real system, this requires a compensation action (e.g., publish StockDecrementFailedEvent)
+
+                    Order savedOrder = orderRepository.save(order);
+                    logger.info("Successfully created order: {}", savedOrder.getId());
+                    return savedOrder;
+                } else {
+                    logger.error("Failed to decrement stock. Order will not be created.");
+                    return null;
                 }
             } catch (Exception e) {
-                logger.error("CRITICAL: Exception occurred while trying to decrement stock for order {} after creation: {}",
-                        savedOrder.getId(), e.getMessage(), e);
-                // Compensation needed here too.
+                logger.error("Exception during stock decrement: {}", e.getMessage());
+                return null;
             }
         } else {
-            // This case can happen if orderItems was empty but an order was still created (if business rules allow)
-            // OR if allFoodItemIdsForStockDecrement ended up empty due to all items being skipped.
-            logger.info("No items to decrement stock for order {} (perhaps cart was empty or all items failed lookup/processing)", savedOrder.getId());
-        }
-        // --- End of Stock Decrement ---
+            if (!orderItems.isEmpty()) {
+                Order order = new Order(
+                        cartDetails.getUserId(),
+                        orderLevelRestaurantId,
+                        cartDetails.getCartId());
 
-        return savedOrder;
+                for (OrderItem item : orderItems) {
+                    order.addOrderItem(item);
+                }
+
+                Order savedOrder = orderRepository.save(order);
+                logger.info("Successfully created order: {}", savedOrder.getId());
+                return savedOrder;
+            } else {
+                return null;
+            }
+        }
     }
 
     private Map<String, Integer> calculateItemQuantities(List<String> foodItemIds) {
         Map<String, Integer> quantities = new HashMap<>();
-        if (foodItemIds == null) return quantities;
+        if (foodItemIds == null)
+            return quantities;
         for (String itemId : foodItemIds) {
             quantities.put(itemId, quantities.getOrDefault(itemId, 0) + 1);
         }
