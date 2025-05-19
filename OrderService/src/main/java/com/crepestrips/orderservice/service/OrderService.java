@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.crepestrips.orderservice.client.FoodItemServiceClient;
-import com.crepestrips.orderservice.client.UserServiceClient;
 import com.crepestrips.orderservice.client.FoodItemServiceClient;
 import com.crepestrips.orderservice.config.RabbitMQConfig;
 import com.crepestrips.orderservice.dto.DefaultResult;
@@ -40,9 +39,6 @@ public class OrderService {
     private OrderItemRepository orderItemRepository;
 
     @Autowired
-    private UserServiceClient userServiceClient;
-
-    @Autowired
     private RabbitMQPublisher rabbitMQPublisher;
 
     @Autowired
@@ -51,12 +47,10 @@ public class OrderService {
     private final Map<OrderStatus, OrderStatusStrategy> statusStrategies;
 
     public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
-            RabbitMQPublisher rabbitMQPublisher, FoodItemServiceClient foodItemServiceClient,
-            UserServiceClient userServiceClient) {
+            RabbitMQPublisher rabbitMQPublisher, FoodItemServiceClient foodItemServiceClient) {
         this.orderRepository = orderRepository;
         this.rabbitMQPublisher = rabbitMQPublisher;
         this.foodItemServiceClient = foodItemServiceClient;
-        this.userServiceClient = userServiceClient;
         statusStrategies = new HashMap<>();
         statusStrategies.put(OrderStatus.CREATED, new CreatedStatusStrategy());
         statusStrategies.put(OrderStatus.PREPARING, new PreparingStatusStrategy());
