@@ -5,7 +5,7 @@ metadata:
   namespace: crepestrips
 spec:
   selector:
-    app: gateway
+    app: gateway-service
   ports:
     - protocol: TCP
       port: 80

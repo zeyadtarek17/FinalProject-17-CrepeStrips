@@ -18,7 +18,7 @@ spec:
           image: omaradell88/gateway-service
           imagePullPolicy: Never
           ports:
-            - containerPort: 8085
+            - containerPort: 8080
           env:
             - name: SPRING_DATA_MONGODB_URI
               valueFrom:
