@@ -16,7 +16,7 @@ import com.crepestrips.orderservice.model.OrderStatus;
 import com.crepestrips.orderservice.service.OrderService;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/orders")
 public class OrderController {
 
     private final OrderService orderService;
