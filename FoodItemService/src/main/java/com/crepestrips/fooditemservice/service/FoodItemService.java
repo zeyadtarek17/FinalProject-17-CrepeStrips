@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -147,34 +148,40 @@ public class FoodItemService {
     }
 
     public List<String> removeSuspendedItems(List<String> ids) {
-        // check if all items of same restaurant
-        List<String> restaurantIds = ids.stream()
-                .map(id -> repository.findById(id).orElse(null))
-                .filter(item -> item != null)
+        // Fetch existing items and remove invalid IDs
+        List<FoodItem> existingItems = repository.findAllById(ids);
+        Set<String> foundIds = existingItems.stream()
+                .map(FoodItem::getId)
+                .collect(Collectors.toSet());
+
+        // Keep only valid IDs
+        ids = ids.stream()
+                .filter(foundIds::contains)
+                .collect(Collectors.toList());
+
+        // Check if all items belong to the same restaurant
+        List<String> restaurantIds = existingItems.stream()
                 .map(FoodItem::getRestaurantId)
                 .distinct()
                 .collect(Collectors.toList());
+
         if (restaurantIds.size() > 1) {
             throw new IllegalArgumentException("All items must belong to the same restaurant");
         }
 
-        // check if restaurant is open
+        // Check if restaurant is open
         String restaurantId = restaurantIds.get(0);
         if (!restaurantServiceClient.isRestaurantAvailable(restaurantId)) {
             throw new IllegalArgumentException("Restaurant is closed");
         }
 
-        //remove suspended items
-        List<FoodItem> suspendedItems = repository.findAllById(ids).stream()
+        // Remove suspended items
+        List<String> suspendedIds = existingItems.stream()
                 .filter(item -> "SUSPENDED".equals(item.getStatus()))
-                .collect(Collectors.toList());
-        List<String> suspendedIds = suspendedItems.stream()
                 .map(FoodItem::getId)
                 .collect(Collectors.toList());
 
-        // Remove suspended items from the original list
         ids.removeAll(suspendedIds);
-
         return ids;
     }
 
