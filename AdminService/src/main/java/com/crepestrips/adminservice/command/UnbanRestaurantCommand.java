@@ -21,24 +21,17 @@ public class UnbanRestaurantCommand implements AdminCommand {
         System.out.println("DEBUG: Entered unbanRestaurantCommand.execute() for restaurant: " + restaurantId);
         try {
             System.out.println("DEBUG: Attempting to call client.getRestaurant(" + restaurantId + ")");
-            RestaurantDTO restaurant = client.getRestaurant(restaurantId);
+            // RestaurantDTO restaurant = client.getRestaurant(restaurantId);
 
-            if (restaurant == null) {
-                System.out.println("DEBUG: client.getRestaurant returned null for restaurantID: " + restaurantId);
-                System.out.println("Restaurant " + restaurantId + " not found or client returned null.");
-                return; // Exit if item is null
-            }
+            // if (restaurant == null) {
+            //     System.out.println("DEBUG: client.getRestaurant returned null for restaurantID: " + restaurantId);
+            //     System.out.println("Restaurant " + restaurantId + " not found or client returned null.");
+            //     return; // Exit if item is null
+            // }
 
-            System.out.println("DEBUG: client.getRestaurant returned. Restaurant ID: " + restaurant.getId() ); // Assuming FoodItemDTO has getId() and isActive()
+            // System.out.println("DEBUG: client.getRestaurant returned. Restaurant ID: " + restaurant.getId() ); // Assuming FoodItemDTO has getId() and isActive()
 
-            if (restaurant.isBanned()) {
-                System.out.println("DEBUG: Item " + restaurantId + " is not banned. Attempting to call client.banRestaurant(" + restaurantId + ")");
-                client.activateRestaurant(restaurantId);
-                System.out.println("Restaurant " + restaurantId + " unbanned."); // Your target message
-                System.out.println("DEBUG: Successfully called client.unBanRestaurnat(" + restaurantId + ")");
-            } else {
-                System.out.println("Food item " + restaurantId + " is not active. Current active status: " + restaurant.isBanned() + ". Not banning.");
-            }
+           client.activateRestaurant(restaurantId);
         } catch (FeignException fe) {
             System.err.println("ERROR: FeignException caught in SuspendFoodItemCommand.execute() for foodItemId: " + restaurantId);
             System.err.println("FeignException status: " + fe.status());

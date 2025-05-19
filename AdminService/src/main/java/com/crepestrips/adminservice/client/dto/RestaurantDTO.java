@@ -46,8 +46,8 @@ public class RestaurantDTO {
     private List<String> foodItemIds;
 
     private int tableCount; // Or Integer
-    private boolean open;
-    private boolean banned;
+    private boolean isOpen;
+    private boolean isBanned;
 
     private String categoryId;
 
