@@ -9,8 +9,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableRabbit
-@EnableFeignClients
 @EnableDiscoveryClient
+@EnableFeignClients
 public class FoodItemServiceApplication {
 
 	public static void main(String[] args) {
