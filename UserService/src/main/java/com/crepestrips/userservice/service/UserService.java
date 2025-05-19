@@ -25,6 +25,8 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import com.crepestrips.userservice.client.FoodItemServiceClient;
+import com.crepestrips.userservice.dto.DefaultResult;
 import com.crepestrips.userservice.dto.ReportDTO;
 import com.crepestrips.userservice.dto.UpdateUser;
 
@@ -35,17 +37,20 @@ public class UserService implements UserDetailsService {
     private final ReportRepository reportRepository;
     private final PasswordEncoder passwordEncoder;
     private final CartRepository cartRepository;
+    private final FoodItemServiceClient foodItemServiceClient;
 
     @Autowired
     private ReportProducer reportProducer;
 
     @Autowired
     public UserService(UserRepository userRepository, ReportRepository reportRepository,
-            PasswordEncoder passwordEncoder, CartRepository cartRepository) {
+            PasswordEncoder passwordEncoder, CartRepository cartRepository,
+            FoodItemServiceClient foodItemServiceClient) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
         this.passwordEncoder = passwordEncoder;
         this.cartRepository = cartRepository;
+        this.foodItemServiceClient = foodItemServiceClient;
     }
 
     public Report reportIssue(UUID userId, String type, String content, String targetId) {
@@ -199,6 +204,15 @@ public class UserService implements UserDetailsService {
         if (existingCart.isPresent()) {
             Cart cartToUpdate = existingCart.get();
             cartToUpdate.setItems(cart.getItems());
+            // clean cart
+            List<String> ids = cartToUpdate.getItems();
+            DefaultResult res = foodItemServiceClient.cleanCart(ids);
+            if (res.isError()) {
+                throw new RuntimeException(res.getMessage());
+            }
+            List<String> cleanedIds = (List<String>) res.getResult();
+            cartToUpdate.setItems(cleanedIds);
+
             return cartRepository.save(cartToUpdate);
         } else {
             return cartRepository.save(cart);

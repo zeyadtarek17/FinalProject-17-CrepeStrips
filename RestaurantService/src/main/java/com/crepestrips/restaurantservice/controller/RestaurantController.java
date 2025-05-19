@@ -336,4 +336,16 @@ public class RestaurantController {
         }
     }
 
+    @GetMapping("/available/{restaurantId}")
+    public ResponseEntity<Boolean> isRestaurantAvailable(@PathVariable String restaurantId) {
+        try {
+            boolean available = service.isRestaurantAvailable(restaurantId);
+            return ResponseEntity.ok(available);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(false);
+        }
+    }
+    
+
 }
