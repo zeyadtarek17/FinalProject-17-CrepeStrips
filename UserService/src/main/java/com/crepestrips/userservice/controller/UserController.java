@@ -97,10 +97,12 @@ public class UserController {
 
             // 3. Call the UserProducer to publish the event
             producer.requestOrderPlacement(cartDtoForEvent);
+            userService.evictCartFromCache(userId);
             return ResponseEntity.ok(new DefaultResult("Order placement request received for user " + userId + 
                     " and cart " + cart.getId() + ". It is being processed.", false, cartDtoForEvent));
                     
-        } catch (Exception e) {
+        
+                } catch (Exception e) {
             e.printStackTrace(); // Add this for debugging
             return ResponseEntity.ok(new DefaultResult("Failed to initiate order placement: " + e.getMessage(), true, null));
         }
