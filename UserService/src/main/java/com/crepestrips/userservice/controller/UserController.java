@@ -23,7 +23,7 @@ import com.crepestrips.userservice.service.UserProducer;
 import org.springframework.http.ResponseEntity;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 public class UserController {
 
     private final UserService userService;

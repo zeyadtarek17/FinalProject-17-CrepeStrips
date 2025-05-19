@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/admin")
 public class AdminController {
 
     private final AdminService adminService;
@@ -153,7 +153,7 @@ public class AdminController {
             AdminCommand command = new UnsuspendFoodItemCommand(foodItemServiceClient, id);
             invoker.setCommand(command);
             invoker.executeCommand();
-            return ResponseEntity.ok(new DefaultResult("Fooditem unsuspended successfully", false, null));
+            return ResponseEntity.ok(new DefaultResult("fooditem unsuspended successfully", false, null));
 
 
         } catch (Exception e) {

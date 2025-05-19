@@ -59,5 +59,6 @@
     </orderEntry>
     <orderEntry type="library" name="Maven: org.springframework.amqp:spring-amqp:3.2.5" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.amqp:spring-rabbit:3.2.5" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.cloud:spring-cloud-commons:4.2.1" level="project" />
   </component>
 </module>
