@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.crepestrips.orderservice.command.PrioritizeOrderCommand;
 import com.crepestrips.orderservice.dto.DefaultResult;
+import com.crepestrips.orderservice.dto.OrderSummaryDto;
 import com.crepestrips.orderservice.command.OrderCommand;
 import com.crepestrips.orderservice.model.Order;
 import com.crepestrips.orderservice.model.OrderPriority;
@@ -142,6 +143,20 @@ public class OrderController {
         } catch (Exception e) {
             return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
+    }
+
+    @GetMapping("/{orderId}/summary")
+    public ResponseEntity<OrderSummaryDto> getOrderSummary(@PathVariable UUID orderId) {
+        Optional<OrderSummaryDto> summaryDtoOptional = orderService.getOrderSummaryById(orderId);
+        return summaryDtoOptional
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/summaries")
+    public ResponseEntity<List<OrderSummaryDto>> getAllOrderSummaries() {
+        List<OrderSummaryDto> summaries = orderService.getAllOrderSummaries();
+        return ResponseEntity.ok(summaries);
     }
     // // Add item to order
     // @PostMapping("/{orderId}/items")

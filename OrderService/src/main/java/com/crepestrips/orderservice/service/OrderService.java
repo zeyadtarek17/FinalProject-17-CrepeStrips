@@ -15,6 +15,7 @@ import com.crepestrips.orderservice.client.FoodItemServiceClient;
 import com.crepestrips.orderservice.client.FoodItemServiceClient;
 import com.crepestrips.orderservice.config.RabbitMQConfig;
 import com.crepestrips.orderservice.dto.DefaultResult;
+import com.crepestrips.orderservice.dto.OrderSummaryDto;
 // import com.crepestrips.orderservice.dto.FoodItemResponse;
 // import com.crepestrips.orderservice.dto.UserMessage;
 import com.crepestrips.orderservice.model.Order;
@@ -27,6 +28,7 @@ import com.crepestrips.orderservice.strategy.DefaultStatusStrategy;
 import com.crepestrips.orderservice.strategy.DeliveredStatusStrategy;
 import com.crepestrips.orderservice.strategy.OrderStatusStrategy;
 import com.crepestrips.orderservice.strategy.PreparingStatusStrategy;
+import com.crepestrips.orderservice.util.BeanMapperUtils;
 
 import jakarta.transaction.Transactional;
 
@@ -124,5 +126,31 @@ public class OrderService {
             return order.get();
         }
         return null;
+    }
+
+    // Method to demonstrate BeanMapperUtils for getting an order summary
+    @Transactional
+    public Optional<OrderSummaryDto> getOrderSummaryById(UUID orderId) {
+        Optional<Order> orderOptional = orderRepository.findById(orderId);
+        if (orderOptional.isPresent()) {
+            Order order = orderOptional.get();
+            OrderSummaryDto summaryDto = new OrderSummaryDto();
+
+            // *** Using BeanMapperUtils to copy matching fields ***
+            BeanMapperUtils.copyFields(order, summaryDto);
+            return Optional.of(summaryDto);
+        }
+        return Optional.empty();
+    }
+
+    // Example for getting all order summaries
+    @Transactional
+    public List<OrderSummaryDto> getAllOrderSummaries() {
+        List<Order> orders = orderRepository.findAll();
+        return orders.stream().map(order -> {
+            OrderSummaryDto summaryDto = new OrderSummaryDto();
+            BeanMapperUtils.copyFields(order, summaryDto);
+            return summaryDto;
+        }).collect(Collectors.toList());
     }
 }
