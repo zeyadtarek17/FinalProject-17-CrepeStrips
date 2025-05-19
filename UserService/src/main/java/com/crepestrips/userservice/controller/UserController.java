@@ -95,6 +95,7 @@ public class UserController {
                 return ResponseEntity.ok(new DefaultResult("Cart does not belong to the specified user.", true, null));
             }
 
+
             // 3. Call the UserProducer to publish the event
             producer.requestOrderPlacement(cartDtoForEvent);
             userService.evictCartFromCache(userId);
