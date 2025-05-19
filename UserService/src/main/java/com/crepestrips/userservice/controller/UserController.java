@@ -45,7 +45,7 @@ public class UserController {
         try {
             // 1. Get the cart for the given userId
             Optional<Object> cartOptional = Optional.ofNullable(userService.getCartByUserId(userId).orElse(null));
-            
+
             if (cartOptional.isEmpty()) {
                 return ResponseEntity.ok(new DefaultResult("Cart not found for user ID: " + userId, true, null));
             }
@@ -53,24 +53,24 @@ public class UserController {
             // Handle the case where it might be a LinkedHashMap
             Cart cart;
             Object cartObj = cartOptional.get();
-            
+
             if (cartObj instanceof LinkedHashMap) {
                 @SuppressWarnings("unchecked")
                 LinkedHashMap<String, Object> cartMap = (LinkedHashMap<String, Object>) cartObj;
                 cart = new Cart();
-                
+
                 // Extract ID - handle both String and UUID
                 Object idObj = cartMap.get("id");
                 if (idObj != null) {
                     cart.setId(idObj instanceof UUID ? (UUID) idObj : UUID.fromString(idObj.toString()));
                 }
-                
+
                 // Extract userId - handle both String and UUID
                 Object userIdObj = cartMap.get("userId");
                 if (userIdObj != null) {
                     cart.setUserId(userIdObj instanceof UUID ? (UUID) userIdObj : UUID.fromString(userIdObj.toString()));
                 }
-                
+
                 // Extract items list
                 @SuppressWarnings("unchecked")
                 List<String> items = (List<String>) cartMap.get("items");
@@ -78,7 +78,7 @@ public class UserController {
             } else {
                 cart = (Cart) cartObj;
             }
-            
+
             if (cart.getItems() == null || cart.getItems().isEmpty()) {
                 return ResponseEntity.ok(new DefaultResult("Cart is empty for user ID: " + userId, true, null));
             }
@@ -97,9 +97,10 @@ public class UserController {
 
             // 3. Call the UserProducer to publish the event
             producer.requestOrderPlacement(cartDtoForEvent);
-            return ResponseEntity.ok(new DefaultResult("Order placement request received for user " + userId + 
+            userService.evictCartFromCache(userId);
+            return ResponseEntity.ok(new DefaultResult("Order placement request received for user " + userId +
                     " and cart " + cart.getId() + ". It is being processed.", false, cartDtoForEvent));
-                    
+
         } catch (Exception e) {
             e.printStackTrace(); // Add this for debugging
             return ResponseEntity.ok(new DefaultResult("Failed to initiate order placement: " + e.getMessage(), true, null));
