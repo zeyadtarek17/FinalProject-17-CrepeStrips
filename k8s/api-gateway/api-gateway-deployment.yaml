@@ -18,3 +18,50 @@ spec:
         image: zeyadtarek17/apigateway:latest
         ports:
         - containerPort: 8080
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        env:
+          - name: SPRING_PROFILES_ACTIVE
+            value: k8s
+          - name: SPRING_MAIN_WEB_APPLICATION_TYPE
+            value: reactive
+
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_0_ID
+            value: user-service
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_0_URI
+            value: http://user-service:8081
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0
+            value: Path=/api/user/**
+
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_1_ID
+            value: admin-service
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_1_URI
+            value: http://admin-service:8080
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0
+            value: Path=/api/admin/**
+
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_2_ID
+            value: restaurant-service
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_2_URI
+            value: http://restaurant-service:8083
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0
+            value: Path=/api/restaurants/**
+
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_3_ID
+            value: fooditem-service
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_3_URI
+            value: http://fooditem-service:8082
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_3_PREDICATES_0
+            value: Path=/api/fooditems/**
+
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_4_ID
+            value: order-service
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_4_URI
+            value: http://order-service:8084
+          - name: SPRING_CLOUD_GATEWAY_ROUTES_4_PREDICATES_0
+            value: Path=/api/orders/**
