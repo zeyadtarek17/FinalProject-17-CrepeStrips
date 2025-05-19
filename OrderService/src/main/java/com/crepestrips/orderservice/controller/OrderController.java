@@ -27,66 +27,110 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getOrderById(@PathVariable UUID id) {
-        return orderService.getOrderById(id);
+    public ResponseEntity<DefaultResult> getOrderById(@PathVariable UUID id) {
+        try {
+            Order order = orderService.getOrderById(id);
+            return ResponseEntity.ok(new DefaultResult("Order: " + id + " found", false, order));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllOrders() {
-        return orderService.getAllOrders();
+    public ResponseEntity<DefaultResult> getAllOrders() {
+        try {
+            List<Order> orders = orderService.getAllOrders();
+            return ResponseEntity.ok(new DefaultResult("All orders found", false, orders));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Optional<List<Order>>> getOrdersByUserId(@PathVariable UUID userId) {
-        return orderService.getOrdersByUserId(userId);
+    public ResponseEntity<DefaultResult> getOrdersByUserId(@PathVariable UUID userId) {
+        try {
+            List<Order> orders = orderService.getOrdersByUserId(userId);
+            return ResponseEntity.ok(new DefaultResult("Orders for user: " + userId + " found", false, orders));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @GetMapping("/restaurant/{restaurantId}")
-    public ResponseEntity<Optional<List<Order>>> getOrdersByRestaurantId(@PathVariable String restaurantId) {
-        return orderService.getOrdersByRestaurantId(restaurantId);
+    public ResponseEntity<DefaultResult> getOrdersByRestaurantId(@PathVariable String restaurantId) {
+        try {
+            List<Order> orders = orderService.getOrdersByRestaurantId(restaurantId);
+            return ResponseEntity
+                    .ok(new DefaultResult("Orders for restaurant: " + restaurantId + " found", false, orders));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<Optional<List<Order>>> getOrdersByStatus(@PathVariable OrderStatus status) {
-        return orderService.getOrdersByStatus(status);
+    public ResponseEntity<DefaultResult> getOrdersByStatus(@PathVariable OrderStatus status) {
+        try {
+            List<Order> orders = orderService.getOrdersByStatus(status);
+            return ResponseEntity.ok(new DefaultResult("Orders with status: " + status + " found", false, orders));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @GetMapping("/priority/{priority}")
-    public ResponseEntity<Optional<List<Order>>> getOrdersByPriority(@PathVariable OrderPriority priority) {
-        return orderService.getOrdersByPriority(priority);
+    public ResponseEntity<DefaultResult> getOrdersByPriority(@PathVariable OrderPriority priority) {
+        try {
+            List<Order> orders = orderService.getOrdersByPriority(priority);
+            return ResponseEntity.ok(new DefaultResult("Orders with priority: " + priority + " found", false, orders));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<Optional<Order>> updateOrderStatus(@PathVariable UUID id, @RequestParam OrderStatus status) {
-        return orderService.updateOrderStatus(id, status);
+    public ResponseEntity<DefaultResult> updateOrderStatus(@PathVariable UUID id, @RequestParam OrderStatus status) {
+        try {
+            Order order = orderService.updateOrderStatus(id, status);
+            return ResponseEntity.ok(new DefaultResult("Order: " + id + " status updated to " + status, false, order));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @PutMapping("/{id}/priority")
-    public ResponseEntity<Optional<Order>> updateOrderPriority(@PathVariable UUID orderId,
+    public ResponseEntity<DefaultResult> updateOrderPriority(@PathVariable UUID orderId,
             @RequestParam String priority) {
         OrderPriority newPriority;
         try {
             newPriority = OrderPriority.valueOf(priority.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.ok((new DefaultResult("Invalid priority value", true, null)));
         }
         OrderCommand command = new PrioritizeOrderCommand(orderService, orderId, newPriority);
         command.execute();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new DefaultResult("Order: " + orderId + " priority updated to " + newPriority, false,
+                null));
     }
 
     @GetMapping("/{orderId}/status-details")
-    public ResponseEntity<String> getOrderStatusDescription(@PathVariable UUID orderId) {
-        String statusDetails = orderService.getOrderStatusDetails(orderId);
-        if (statusDetails.startsWith("Order with ID")) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<DefaultResult> getOrderStatusDescription(@PathVariable UUID orderId) {
+        try {
+            String statusDetails = orderService.getOrderStatusDetails(orderId);
+            return ResponseEntity.ok(new DefaultResult("Order: " + orderId + " status details: " + statusDetails, false,
+                    null));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
         }
-        return ResponseEntity.ok(statusDetails);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Optional<Order>> deleteOrder(@PathVariable UUID id) {
-        return orderService.deleteOrder(id);
+    public ResponseEntity<DefaultResult> deleteOrder(@PathVariable UUID id) {
+        try {
+            Order order = orderService.deleteOrder(id);
+            return ResponseEntity.ok(new DefaultResult("Order: " + id + " deleted", false, order));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
     }
 
     @GetMapping("{id}/status")
