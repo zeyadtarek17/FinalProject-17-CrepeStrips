@@ -1,6 +1,5 @@
 package com.crepestrips.restaurantservice.service;
 
-
 import com.crepestrips.restaurantservice.client.FoodItemClient;
 import com.crepestrips.restaurantservice.client.OrderServiceClient;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
@@ -34,8 +33,8 @@ public class RestaurantService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-//    @Autowired
-//    private RestaurantFactory restaurantFactory;
+    // @Autowired
+    // private RestaurantFactory restaurantFactory;
 
     @Autowired
     private OrderServiceClient orderServiceClient;
@@ -63,7 +62,6 @@ public class RestaurantService {
         return repository.findById(id);
     }
 
-
     public Optional<Restaurant> update(String id, Map<String, Object> updates) {
         return repository.findById(id).map(existing -> {
             Map<String, Object> merged = objectMapper.convertValue(existing, Map.class);
@@ -76,7 +74,8 @@ public class RestaurantService {
     }
 
     private boolean isWithinOperatingHours(LocalTime openingTime, LocalTime closingTime) {
-        if (openingTime == null || closingTime == null) return false;
+        if (openingTime == null || closingTime == null)
+            return false;
         LocalTime now = LocalTime.now();
 
         if (closingTime.isBefore(openingTime)) {
@@ -96,13 +95,13 @@ public class RestaurantService {
         return repository.findByIsOpenTrue();
     }
 
-//    public List<Restaurant> getTopRatedRestaurants() {
-//        return repository.findAllByOrderByRatingDesc();
-//    }
-    
-//    public Restaurant getRestaurantById(String id) {
-//        return repository.findById(id).get();
-//    }
+    // public List<Restaurant> getTopRatedRestaurants() {
+    // return repository.findAllByOrderByRatingDesc();
+    // }
+
+    // public Restaurant getRestaurantById(String id) {
+    // return repository.findById(id).get();
+    // }
 
     public void addFoodItemToRestaurant(String restaurantId, String foodItemId) {
         Restaurant restaurant = repository.findById(restaurantId).orElse(null);
@@ -142,7 +141,8 @@ public class RestaurantService {
                 .filter(restaurant -> {
                     LocalTime opening = restaurant.getOpeningTime();
                     LocalTime closing = restaurant.getClosingTime();
-                    if (opening == null || closing == null) return false;
+                    if (opening == null || closing == null)
+                        return false;
 
                     if (closing.isBefore(opening)) {
                         return !now.isBefore(opening) || !now.isAfter(closing);
@@ -152,7 +152,6 @@ public class RestaurantService {
                 .collect(Collectors.toList());
     }
 
-
     public List<Restaurant> getAllRestaurants() {
         return repository.findAll();
     }
@@ -160,12 +159,13 @@ public class RestaurantService {
     public boolean banRestaurant(String restaurantId) {
         Restaurant restaurant = repository.findById(restaurantId).orElse(null);
         if (restaurant != null) {
-           restaurant.setBanned(true);
-           repository.save(restaurant);
-           return true;
+            restaurant.setBanned(true);
+            repository.save(restaurant);
+            return true;
         }
         return false;
     }
+
     public boolean addFoodItemIdToRestaurant(String restaurantId, String foodItemId) {
         Optional<Restaurant> optionalRestaurant = repository.findById(restaurantId);
 
@@ -192,19 +192,26 @@ public class RestaurantService {
         }).orElse(false);
     }
 
-
     public List<OrderResponseDto> getOrderHistoryForRestaurant(String restaurantId) {
         return orderServiceClient.getOrdersByRestaurantId(restaurantId);
     }
 
+    public boolean isRestaurantAvailable(String restaurantId) {
+        // check if restaurant is open and not banned
+        return repository.findById(restaurantId).map(restaurant -> {
+            return restaurant.isOpen() && !restaurant.isBanned();
+        }).orElse(false);
+    }
 
-
-//    @RabbitListener(queues = "restaurant.order.response.queue")
-//    public void handleOrderHistoryResponse(RestaurantOrderHistoryResponse response) {
-//        System.out.println("📦 Received orders for restaurant " + response.getRestaurantId());
-//        response.getOrders().forEach(order ->
-//                System.out.println("Order ID: " + order.getId() + " | Total: " + order.getTotalAmount())
-//        );
-//    }
+    // @RabbitListener(queues = "restaurant.order.response.queue")
+    // public void handleOrderHistoryResponse(RestaurantOrderHistoryResponse
+    // response) {
+    // System.out.println("📦 Received orders for restaurant " +
+    // response.getRestaurantId());
+    // response.getOrders().forEach(order ->
+    // System.out.println("Order ID: " + order.getId() + " | Total: " +
+    // order.getTotalAmount())
+    // );
+    // }
 
 }

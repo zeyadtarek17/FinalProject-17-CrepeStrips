@@ -4,6 +4,7 @@ package com.crepestrips.fooditemservice.service;
 import com.crepestrips.fooditemservice.FoodItemFactory.DessertItem;
 import com.crepestrips.fooditemservice.FoodItemFactory.FoodItemFactory;
 import com.crepestrips.fooditemservice.FoodItemFactory.MainCourseItem;
+import com.crepestrips.fooditemservice.client.RestaurantServiceClient;
 import com.crepestrips.fooditemservice.model.FoodCategory;
 import com.crepestrips.fooditemservice.model.FoodItem;
 import com.crepestrips.fooditemservice.repository.FoodItemRepository;
@@ -25,6 +26,8 @@ public class FoodItemService {
     private ObjectMapper objectMapper;
     @Autowired
     private FoodItemRepository repository;
+    @Autowired
+    private RestaurantServiceClient restaurantServiceClient;
 
     public List<FoodItem> getAll() {
         return repository.findAll();
@@ -102,6 +105,7 @@ public class FoodItemService {
             return repository.save(item);
         });
     }
+
     public List<FoodItem> getFoodItemsByRestaurantId(String restaurantId) {
         return repository.findByRestaurantId(restaurantId);
     }
@@ -140,6 +144,38 @@ public class FoodItemService {
         repository.saveAll(itemMap.values());
 
         return true;
+    }
+
+    public List<String> removeSuspendedItems(List<String> ids) {
+        // check if all items of same restaurant
+        List<String> restaurantIds = ids.stream()
+                .map(id -> repository.findById(id).orElse(null))
+                .filter(item -> item != null)
+                .map(FoodItem::getRestaurantId)
+                .distinct()
+                .collect(Collectors.toList());
+        if (restaurantIds.size() > 1) {
+            throw new IllegalArgumentException("All items must belong to the same restaurant");
+        }
+
+        // check if restaurant is open
+        String restaurantId = restaurantIds.get(0);
+        if (!restaurantServiceClient.isRestaurantAvailable(restaurantId)) {
+            throw new IllegalArgumentException("Restaurant is closed");
+        }
+
+        //remove suspended items
+        List<FoodItem> suspendedItems = repository.findAllById(ids).stream()
+                .filter(item -> "SUSPENDED".equals(item.getStatus()))
+                .collect(Collectors.toList());
+        List<String> suspendedIds = suspendedItems.stream()
+                .map(FoodItem::getId)
+                .collect(Collectors.toList());
+
+        // Remove suspended items from the original list
+        ids.removeAll(suspendedIds);
+
+        return ids;
     }
 
 }

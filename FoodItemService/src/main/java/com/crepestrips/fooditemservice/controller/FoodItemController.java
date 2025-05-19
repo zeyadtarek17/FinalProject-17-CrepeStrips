@@ -128,4 +128,15 @@ public class FoodItemController {
         }
     }
 
+    @PostMapping("/clean-cart")
+    public ResponseEntity<DefaultResult> cleanCart(@RequestBody List<String> ids) {
+        try {
+            List<String> items = service.removeSuspendedItems(ids);
+            return ResponseEntity.ok(new DefaultResult("Items retrieved by ID list", false, items));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new DefaultResult(e.getMessage(), true, null));
+        }
+
+    }
+
 }
