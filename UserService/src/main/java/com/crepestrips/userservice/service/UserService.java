@@ -215,6 +215,12 @@ public class UserService implements UserDetailsService {
 
             return cartRepository.save(cartToUpdate);
         } else {
+            DefaultResult res = foodItemServiceClient.cleanCart(cart.getItems());
+            if (res.isError()) {
+                throw new RuntimeException(res.getMessage());
+            }
+            List<String> cleanedIds = (List<String>) res.getResult();
+            cart.setItems(cleanedIds);
             return cartRepository.save(cart);
         }
     }
