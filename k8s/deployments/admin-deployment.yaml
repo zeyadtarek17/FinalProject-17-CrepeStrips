@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: admin-service
-        image: <your-dockerhub>/adminservice:latest
+        image: zeyadtarek17/adminservice:latest
         ports:
         - containerPort: 8080
         envFrom:

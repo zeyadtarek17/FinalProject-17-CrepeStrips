@@ -4,10 +4,10 @@ metadata:
   name: fooditem-config
   namespace: crepestrips
 data:
-  SPRING_DATASOURCE_URL: jdbc:postgresql://fooditem-db:5432/fooditemservice
-  SPRING_DATASOURCE_USERNAME: postgres
-  SPRING_REDIS_HOST: redis
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://fooditem-db:5432/fooditemservice"
+  SPRING_DATASOURCE_USERNAME: "postgres"
+  SPRING_REDIS_HOST: "redis"
   SPRING_REDIS_PORT: "6379"
-  SPRING_RABBITMQ_HOST: rabbitmq
+  SPRING_RABBITMQ_HOST: "rabbitmq"
   SPRING_RABBITMQ_PORT: "5672"
-  SPRING_RABBITMQ_USERNAME: guest
+  SPRING_RABBITMQ_USERNAME: "guest"

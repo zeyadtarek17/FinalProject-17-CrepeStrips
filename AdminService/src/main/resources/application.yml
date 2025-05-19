@@ -4,16 +4,48 @@ spring:
 
   data:
     mongodb:
-      host: ${SPRING_DATA_MONGODB_HOST:localhost}
-      port: ${SPRING_DATA_MONGODB_PORT:27017}
+      host: mongodb       # << Use service name, not localhost!
+      port: 27017
       database: admindb
 
-
   rabbitmq:
-    host:     localhost
-    port:     5672
+    host: rabbitmq        # << Use service name
+    port: 5672
     username: guest
     password: guest
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: adham.elsegeeny@gmail.com
+    password: btcfjymflovnskjy
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
 server:
   port: 8080
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
+  instance:
+    prefer-ip-address: true
+    hostname: admin-service
+
+feign:
+  client:
+    config:
+      food-item-service:
+        url: http://fooditem-service:8082
+      default:
+        connect-timeout: 5000
+        read-timeout: 60000

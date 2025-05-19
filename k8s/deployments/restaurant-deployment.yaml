@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: restaurant-service
-        image: <your-dockerhub>/restaurantservice:latest
+        image: zeyadtarek17/restaurantservice:latest
         ports:
         - containerPort: 8083
         envFrom:

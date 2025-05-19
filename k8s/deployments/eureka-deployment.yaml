@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
       - name: eureka-server
-        image: <your-dockerhub>/eurekaserver:latest
+        image: zeyadtarek17/eurekaserver:latest
         ports:
         - containerPort: 8761
