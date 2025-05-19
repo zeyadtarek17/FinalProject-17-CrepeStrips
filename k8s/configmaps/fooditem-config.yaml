@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fooditem-config
+  namespace: crepestrips
+data:
+  SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/fooditemdb
+  SPRING_RABBITMQ_HOST: rabbitmq

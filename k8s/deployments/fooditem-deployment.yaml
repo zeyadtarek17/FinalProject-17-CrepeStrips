@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fooditem-service
+  namespace: crepestrips
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fooditem-service
+  template:
+    metadata:
+      labels:
+        app: fooditem-service
+    spec:
+      containers:
+        - name: fooditem-service
+          image: omaradell88/fooditem-service
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SPRING_DATA_MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: admin-config
+                  key: SPRING_DATA_MONGODB_URI
+            - name: SPRING_RABBITMQ_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: admin-config
+                  key: SPRING_RABBITMQ_HOST
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: admin-db-secret
+                  key: username
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: admin-db-secret
+                  key: password

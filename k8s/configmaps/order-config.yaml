@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: order-config
+  namespace: crepestrips
+data:
+  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/orderdb
+  SPRING_RABBITMQ_HOST: rabbitmq

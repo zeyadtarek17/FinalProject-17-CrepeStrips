@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-config
+  namespace: crepestrips
+data:
+  SPRING_PROFILES_ACTIVE: "k8s"
+  GATEWAY_PORT: "8085"
