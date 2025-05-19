@@ -16,28 +16,37 @@ spring:
         - id: user-service
           uri: http://userservice:8081
           predicates:
-            - Path=/user/**
+            - Path=/api/user/**
+          filters:
+            - StripPrefix=1
 
         - id: admin-service
           uri: http://adminservice:8080
           predicates:
-            - Path=/admin/**
+            - Path=/api/admin/**
+          filters:
+            - StripPrefix=1
 
         - id: restaurant-service
           uri: http://restaurantservice:8083
           predicates:
-            - Path=/restaurants/**
+            - Path=/api/restaurants/**
+          filters:
+            - StripPrefix=1
 
         - id: fooditem-service
           uri: http://fooditemservice:8082
           predicates:
-            - Path=/fooditems/**
+            - Path=/api/fooditems/**
+          filters:
+            - StripPrefix=1
 
         - id: order-service
           uri: http://orderservice:8084
           predicates:
-            - Path=/orders/**
-
+            - Path=/api/orders/**
+          filters:
+            - StripPrefix=1
 eureka:
   client:
     service-url:
