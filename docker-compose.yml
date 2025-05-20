@@ -29,8 +29,8 @@ services:
       - rabbitmq
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/fooditemdb
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_HOST:    rabbitmq
+      SPRING_RABBITMQ_PORT:    5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
 
@@ -44,11 +44,10 @@ services:
       - rabbitmq
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/restaurantdb
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_HOST:    rabbitmq
+      SPRING_RABBITMQ_PORT:    5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
-
   adminservice:
     build: ./AdminService
     container_name: adminservice
@@ -63,7 +62,6 @@ services:
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
-
   userservice:
     build: ./UserService
     container_name: userservice
@@ -71,7 +69,7 @@ services:
       - "8081:8081"
     depends_on:
       - postgres
-      - redis_cache
+      - redisCache
       - rabbitmq
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/userservice
@@ -95,7 +93,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  redis_cache:
+  redisCache:
     image: redis:latest
     container_name: redisCache
     ports:
@@ -116,7 +114,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5434:5432"  # Avoid conflict with other Postgres services
+      - "5434:5432"  # ⚠ Avoid conflict with other Postgres services
     volumes:
       - order_pgdata:/var/lib/postgresql/data
 
@@ -145,11 +143,13 @@ services:
     depends_on:
       - userservice
       - orderservice
-      - restaurantservice
       - fooditemservice
+      - restaurantservice
       - adminservice
     environment:
       SPRING_APPLICATION_NAME: api-gateway
+    networks:
+      - default
 
 volumes:
   mongo_data:

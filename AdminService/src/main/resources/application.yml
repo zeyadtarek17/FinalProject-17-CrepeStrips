@@ -1,15 +1,15 @@
 spring:
   application:
-    name: admin-service
+    name: adminservice
 
   data:
     mongodb:
-      host: mongodb       # << Use service name, not localhost!
+      host: mongodb
       port: 27017
       database: admindb
 
   rabbitmq:
-    host: rabbitmq        # << Use service name
+    host: rabbitmq
     port: 5672
     username: guest
     password: guest
@@ -37,7 +37,7 @@ feign:
   client:
     config:
       food-item-service:
-        url: http://fooditem-service:8082
+        url: http://fooditemservice:8082
       default:
         connect-timeout: 5000
         read-timeout: 60000

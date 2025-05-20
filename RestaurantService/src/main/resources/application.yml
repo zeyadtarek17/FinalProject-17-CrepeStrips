@@ -1,15 +1,15 @@
 spring:
   application:
-    name: restaurant-service
+    name: restaurantservice
 
   data:
     mongodb:
-      host: mongodb         # << Use the K8s service name
+      host: mongodb
       port: 27017
       database: restaurantdb
 
   rabbitmq:
-    host: rabbitmq          # << Use the K8s service name
+    host: rabbitmq
     port: 5672
     username: guest
     password: guest
