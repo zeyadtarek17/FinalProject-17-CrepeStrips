@@ -48,7 +48,7 @@ public class SecurityConfig {
                 // Configure endpoint authorization
                 .authorizeHttpRequests(auth -> auth
                                 // Public endpoints
-                                .requestMatchers("/admin/login","admin/create","admin/getAdmins").permitAll()
+                                .requestMatchers("/admin/login","/admin/create","/admin/getAdmins").permitAll()
 
                                 // Role-based endpoints
 //                 .requestMatchers("/api/user/**").hasAuthority("ROLE_USER")

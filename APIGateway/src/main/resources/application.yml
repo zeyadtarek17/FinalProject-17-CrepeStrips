@@ -34,6 +34,13 @@ spring:
           filters:
             - StripPrefix=1
 
+        - id: restaurant-service-categories
+          uri: http://restaurantservice:8083
+          predicates:
+            - Path=/api/categories/**
+          filters:
+            - StripPrefix=1
+
         - id: fooditem-service
           uri: http://fooditemservice:8082
           predicates:

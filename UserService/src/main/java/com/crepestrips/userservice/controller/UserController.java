@@ -95,7 +95,10 @@ public class UserController {
                 return ResponseEntity.ok(new DefaultResult("Cart does not belong to the specified user.", true, null));
             }
 
-            // 3. Call the UserProducer to publish the event
+            // 3. Evict the cart from cache
+            userService.evictCartFromCache(userId);
+
+            // 4. Call the UserProducer to publish the event
             producer.requestOrderPlacement(cartDtoForEvent);
             return ResponseEntity.ok(new DefaultResult("Order placement request received for user " + userId + 
                     " and cart " + cart.getId() + ". It is being processed.", false, cartDtoForEvent));
