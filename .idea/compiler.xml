@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="api-gateway" />
+        <module name="Eureka" />
       </profile>
       <profile name="Annotation profile for RestaurantService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -32,7 +33,6 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="Eureka" target="23" />
       <module name="eureka-server" target="21" />
     </bytecodeTargetLevel>
   </component>
