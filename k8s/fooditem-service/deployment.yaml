@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fooditem-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: fooditem-service
+  template:
+    metadata:
+      labels:
+        app: fooditem-service
+    spec:
+      containers:
+        - name: fooditem-service
+          image: mostafaahmedd2/fooditem-service:1.0
+          ports:
+            - containerPort: 8082  # Replace with FoodItemService's port
+          env:
+            - name: SPRING_DATA_MONGODB_URI
+              value: "mongodb://mongodb:27017/fooditemdb"
+            - name: SPRING_RABBITMQ_HOST
+              value: "rabbitmq"
