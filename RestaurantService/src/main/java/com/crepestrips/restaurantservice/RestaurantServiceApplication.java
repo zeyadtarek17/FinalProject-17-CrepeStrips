@@ -9,7 +9,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 @EnableFeignClients
 @EnableRabbit
-@EnableDiscoveryClient
 public class RestaurantServiceApplication {
 
 	public static void main(String[] args) {

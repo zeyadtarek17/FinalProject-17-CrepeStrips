@@ -8,7 +8,6 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
 @EnableRabbit
-@EnableDiscoveryClient
 public class FoodItemServiceApplication {
 
 	public static void main(String[] args) {

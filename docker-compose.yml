@@ -29,39 +29,41 @@ services:
       - rabbitmq
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/fooditemdb
-      SPRING_RABBITMQ_HOST:    rabbitmq
-      SPRING_RABBITMQ_PORT:    5672
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
 
   restaurantservice:
-   build: ./RestaurantService
-   container_name: restaurantservice
-   ports:
-     - "8083:8083"
-   depends_on:
-     - mongodb
-     - rabbitmq
-   environment:
-     SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/restaurantdb
-     SPRING_RABBITMQ_HOST:    rabbitmq
-     SPRING_RABBITMQ_PORT:    5672
-     SPRING_RABBITMQ_USERNAME: guest
-     SPRING_RABBITMQ_PASSWORD: guest
+    build: ./RestaurantService
+    container_name: restaurantservice
+    ports:
+      - "8083:8083"
+    depends_on:
+      - mongodb
+      - rabbitmq
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/restaurantdb
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+
   adminservice:
-     build: ./AdminService
-     container_name: adminservice
-     ports:
-       - "8080:8080"
-     depends_on:
-       - mongodb
-       - rabbitmq
-     environment:
-       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/admindb
-       SPRING_RABBITMQ_HOST: rabbitmq
-       SPRING_RABBITMQ_PORT: 5672
-       SPRING_RABBITMQ_USERNAME: guest
-       SPRING_RABBITMQ_PASSWORD: guest
+    build: ./AdminService
+    container_name: adminservice
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+      - rabbitmq
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/admindb
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+
   userservice:
     build: ./UserService
     container_name: userservice
@@ -91,8 +93,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-       - pgdata:/var/lib/postgresql/data
-    
+      - pgdata:/var/lib/postgresql/data
+
   redis_cache:
     image: redis:latest
     container_name: redisCache
@@ -114,7 +116,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5434:5432"  # ⚠ Avoid conflict with other Postgres services
+      - "5434:5432"  # Avoid conflict with other Postgres services
     volumes:
       - order_pgdata:/var/lib/postgresql/data
 
@@ -134,17 +136,6 @@ services:
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
-  eurekaserver:
-    build: ./EurekaServer
-    container_name: eurekaserver
-    ports:
-      - "8761:8761"
-    environment:
-      SPRING_APPLICATION_NAME: eureka-server
-      EUREKA_CLIENT_REGISTER_WITH_EUREKA: false
-      EUREKA_CLIENT_FETCH_REGISTRY: false
-    networks:
-      - default
 
   apigateway:
     build: ./APIGateway
@@ -152,12 +143,13 @@ services:
     ports:
       - "8088:8080"  # External 8088 mapped to internal 8080
     depends_on:
-      - eurekaserver
+      - userservice
+      - orderservice
+      - restaurantservice
+      - fooditemservice
+      - adminservice
     environment:
       SPRING_APPLICATION_NAME: api-gateway
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8761/eureka
-    networks:
-      - default
 
 volumes:
   mongo_data:
