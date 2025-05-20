@@ -4,10 +4,10 @@ metadata:
   name: api-gateway
   namespace: crepestrips
 spec:
+  type: NodePort
   selector:
     app: api-gateway
   ports:
-    - port: 8080
+    - port: 80
       targetPort: 8080
-  type: LoadBalancer
-
+      nodePort: 30081
