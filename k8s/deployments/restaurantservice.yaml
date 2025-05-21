@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restaurantservice
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restaurantservice
+  template:
+    metadata:
+      labels:
+        app: restaurantservice
+    spec:
+      containers:
+      - name: restaurantservice
+        image: zeyadtarek17/restaurantservice
+        ports:
+        - containerPort: 8080

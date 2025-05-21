@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apigateway-service
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apigateway-service
+  template:
+    metadata:
+      labels:
+        app: apigateway-service
+    spec:
+      containers:
+        - name: apigateway-service
+          image: zeyadtarek17/apigateway
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+            - name: SPRING_MAIN_WEB_APPLICATION_TYPE
+              value: reactive
+
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_0_ID
+              value: user-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_0_URI
+              value: http://userservice:8080
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0
+              value: Path=/api/user/**
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_0_FILTERS_0
+              value: StripPrefix=1
+
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_1_ID
+              value: admin-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_1_URI
+              value: http://adminservice:8080
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0
+              value: Path=/api/admin/**
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_1_FILTERS_0
+              value: StripPrefix=1
+
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_ID
+              value: restaurant-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_URI
+              value: http://restaurantservice:8080
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0
+              value: Path=/api/restaurants/**
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_FILTERS_0
+              value: StripPrefix=1
+
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_ID
+              value: restaurant-service-categories
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_URI
+              value: http://restaurantservice:8080
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_PREDICATES_0
+              value: Path=/api/categories/**
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_FILTERS_0
+              value: StripPrefix=1
+
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_ID
+              value: fooditem-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_URI
+              value: http://fooditemservice:8080
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_PREDICATES_0
+              value: Path=/api/fooditems/**
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_FILTERS_0
+              value: StripPrefix=1
+
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_5_ID
+              value: order-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_5_URI
+              value: http://orderservice:8080
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_5_PREDICATES_0
+              value: Path=/api/orders/**
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_5_FILTERS_0
+              value: StripPrefix=1

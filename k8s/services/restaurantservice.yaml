@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: restaurantservice
+  namespace: default
+spec:
+  type: ClusterIP
+  selector:
+    app: restaurantservice
+  ports:
+    - port: 8080
+      targetPort: 8083

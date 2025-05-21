@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fooditemservice
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fooditemservice
+  template:
+    metadata:
+      labels:
+        app: fooditemservice
+    spec:
+      containers:
+      - name: fooditemservice
+        image: zeyadtarek17/fooditemservice
+        ports:
+        - containerPort: 8080

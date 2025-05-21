@@ -1,9 +1,7 @@
 FROM openjdk:25-ea-4-jdk-oraclelinux9
 
 WORKDIR /app
-
-COPY target/restaurant-service-0.0.1-SNAPSHOT.jar restaurant-service-0.0.1-SNAPSHOT.jar
+COPY target/*.jar /target/app.jar
 
 EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar","restaurant-service-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "/target/app.jar"]

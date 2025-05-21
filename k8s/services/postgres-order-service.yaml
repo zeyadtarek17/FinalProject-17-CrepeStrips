@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-order-db
+  namespace: default
+spec:
+  ports:
+    - port: 5432
+  clusterIP: None
+  selector:
+    app: postgres-order-db

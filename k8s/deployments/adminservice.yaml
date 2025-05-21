@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adminservice
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adminservice
+  template:
+    metadata:
+      labels:
+        app: adminservice
+    spec:
+      containers:
+      - name: adminservice
+        image: zeyadtarek17/adminservice
+        ports:
+        - containerPort: 8080
