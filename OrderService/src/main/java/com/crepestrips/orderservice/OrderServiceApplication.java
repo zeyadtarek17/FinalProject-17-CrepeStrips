@@ -9,8 +9,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 @EnableFeignClients
 @EnableRabbit
-@EnableDiscoveryClient
-
 public class OrderServiceApplication {
 
 	public static void main(String[] args) {
