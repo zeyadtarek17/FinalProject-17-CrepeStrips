@@ -14,7 +14,20 @@ spec:
         app: userservice
     spec:
       containers:
-      - name: userservice
-        image: zeyadtarek17/userservice
-        ports:
-        - containerPort: 8080
+        - name: userservice
+          image: zeyadtarek17/userservice
+          ports:
+            - containerPort: 8080 # Expose port 8080 for the user service
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-user-db:5432/userservice
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-user-secret
+                  key: POSTGRES_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-user-secret
+                  key: POSTGRES_PASSWORD

@@ -2,6 +2,7 @@ package com.crepestrips.restaurantservice.service;
 
 import com.crepestrips.restaurantservice.client.FoodItemClient;
 import com.crepestrips.restaurantservice.client.OrderServiceClient;
+import com.crepestrips.restaurantservice.dto.DefaultResult;
 import com.crepestrips.restaurantservice.dto.FoodItemDTO;
 //import com.crepestrips.restaurantservice.dto.RestaurantOrderHistoryResponse;
 import com.crepestrips.restaurantservice.dto.OrderResponseDto;
@@ -193,7 +194,16 @@ public class RestaurantService {
     }
 
     public List<OrderResponseDto> getOrderHistoryForRestaurant(String restaurantId) {
-        return orderServiceClient.getOrdersByRestaurantId(restaurantId);
+        DefaultResult response = orderServiceClient.getOrdersByRestaurantId(restaurantId);
+
+        if (response.isError() || response.getResult() == null) {
+            return List.of(); // or throw exception/log it
+        }
+
+        return objectMapper.convertValue(
+                response.getResult(),
+                new com.fasterxml.jackson.core.type.TypeReference<List<OrderResponseDto>>() {}
+        );
     }
 
     public boolean isRestaurantAvailable(String restaurantId) {

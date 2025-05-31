@@ -1,5 +1,6 @@
 package com.crepestrips.restaurantservice.client;
 
+import com.crepestrips.restaurantservice.dto.DefaultResult;
 import com.crepestrips.restaurantservice.dto.OrderResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.core.annotation.Order;
@@ -10,6 +11,6 @@ import java.util.List;
 
 @FeignClient(name = "orderservice", url = "http://orderservice:8084")
 public interface OrderServiceClient {
-    @GetMapping("/api/orders/restaurant/{restaurantId}")
-    List<OrderResponseDto> getOrdersByRestaurantId(@PathVariable("restaurantId") String restaurantId);
+    @GetMapping("/orders/restaurant/{restaurantId}")
+    DefaultResult getOrdersByRestaurantId(@PathVariable("restaurantId") String restaurantId);
 }

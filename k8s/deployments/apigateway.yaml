@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: apigateway-service
+  name: apigateway
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: apigateway-service
+      app: apigateway
   template:
     metadata:
       labels:
-        app: apigateway-service
+        app: apigateway
     spec:
       containers:
-        - name: apigateway-service
+        - name: apigateway
           image: zeyadtarek17/apigateway
           ports:
             - containerPort: 8080

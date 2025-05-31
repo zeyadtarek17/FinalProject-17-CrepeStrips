@@ -18,3 +18,15 @@ spec:
         image: zeyadtarek17/fooditemservice
         ports:
         - containerPort: 8080
+        env:
+          # Override MongoDB host and port
+          - name: SPRING_DATA_MONGODB_HOST
+            value: "mongodb"
+          - name: SPRING_DATA_MONGODB_PORT
+            value: "27017"
+
+          # Override RabbitMQ host and port
+          - name: SPRING_RABBITMQ_HOST
+            value: "rabbitmq"
+          - name: SPRING_RABBITMQ_PORT
+            value: "5672"

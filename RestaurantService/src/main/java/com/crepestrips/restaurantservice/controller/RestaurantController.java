@@ -105,7 +105,7 @@ public class RestaurantController {
 
     @PutMapping("/{id}")
     public ResponseEntity<DefaultResult> updateRestaurant(@PathVariable String id,
-            @RequestBody Map<String, Object> requestData) {
+                                                          @RequestBody Map<String, Object> requestData) {
         try {
             return service.update(id, requestData)
                     .map(updated -> ResponseEntity
@@ -179,7 +179,7 @@ public class RestaurantController {
     // }
     @GetMapping("/filter")
     public ResponseEntity<DefaultResult> filterRestaurants(@RequestParam String filterType,
-            @RequestParam String criteria) {
+                                                           @RequestParam String criteria) {
         try {
             List<Restaurant> allRestaurants = service.getAllRestaurants();
             List<Restaurant> filtered = context.applyFilter(filterType, allRestaurants, criteria);
@@ -244,7 +244,7 @@ public class RestaurantController {
 
     @PostMapping("/{restaurantId}/fooditems")
     public ResponseEntity<DefaultResult> createFoodItem(@PathVariable String restaurantId,
-            @RequestBody FoodItemDTO dto) {
+                                                        @RequestBody FoodItemDTO dto) {
         if (!restaurantRepository.existsById(restaurantId)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new DefaultResult("Restaurant not found", true, null));
@@ -266,7 +266,7 @@ public class RestaurantController {
 
     @PutMapping("/{restaurantId}/fooditems/{foodItemId}")
     public ResponseEntity<DefaultResult> updateFoodItemSync(@PathVariable String restaurantId,
-            @PathVariable String foodItemId, @RequestBody FoodItemDTO dto) {
+                                                            @PathVariable String foodItemId, @RequestBody FoodItemDTO dto) {
         if (!restaurantRepository.existsById(restaurantId)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new DefaultResult("Restaurant not found", true, null));
@@ -287,7 +287,7 @@ public class RestaurantController {
 
     @DeleteMapping("/{restaurantId}/fooditems/{foodItemId}")
     public ResponseEntity<DefaultResult> deleteFoodItemSync(@PathVariable String restaurantId,
-            @PathVariable String foodItemId) {
+                                                            @PathVariable String foodItemId) {
         if (!restaurantRepository.existsById(restaurantId)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new DefaultResult("Restaurant not found", true, null));
@@ -328,8 +328,20 @@ public class RestaurantController {
     @GetMapping("/{restaurantId}/order-history")
     public ResponseEntity<?> getOrderHistory(@PathVariable String restaurantId) {
         try {
-            List<OrderResponseDto> orders = orderServiceClient.getOrdersByRestaurantId(restaurantId);
+            DefaultResult response = orderServiceClient.getOrdersByRestaurantId(restaurantId);
+
+            if (response.isError() || response.getResult() == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("No orders found or error: " + response.getMessage());
+            }
+
+            List<OrderResponseDto> orders = objectMapper.convertValue(
+                    response.getResult(),
+                    new com.fasterxml.jackson.core.type.TypeReference<List<OrderResponseDto>>() {}
+            );
+
             return ResponseEntity.ok(orders);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error fetching order history: " + e.getMessage());
@@ -346,6 +358,6 @@ public class RestaurantController {
                     .body(false);
         }
     }
-    
+
 
 }
