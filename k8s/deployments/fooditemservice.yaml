@@ -24,6 +24,19 @@ spec:
             value: "mongodb"
           - name: SPRING_DATA_MONGODB_PORT
             value: "27017"
+          - name: SPRING_DATA_MONGODB_DATABASE
+            value: "fooditemdb"
+          - name: SPRING_DATA_MONGODB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-secret
+                key: MONGO_INITDB_ROOT_USERNAME
+
+          - name: SPRING_DATA_MONGODB_PASSWORD
+            valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: MONGO_INITDB_ROOT_PASSWORD
 
           # Override RabbitMQ host and port
           - name: SPRING_RABBITMQ_HOST

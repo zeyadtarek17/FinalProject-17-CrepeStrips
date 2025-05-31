@@ -32,7 +32,7 @@ spec:
                   name: postgres-order-secret
                   key: POSTGRES_PASSWORD
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres-order-db:5432/orderdb
+              value: jdbc:postgresql://postgres-order-db:5432/orderservice
             - name: SPRING_RABBITMQ_HOST
               value: rabbitmq
             - name: SPRING_RABBITMQ_PORT
