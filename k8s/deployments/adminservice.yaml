@@ -14,32 +14,17 @@ spec:
         app: adminservice
     spec:
       containers:
-      - name: adminservice
-        image: zeyadtarek17/adminservice
-        ports:
-        - containerPort: 8080
-        env:
-          # Override MongoDB host and port
-          - name: SPRING_DATA_MONGODB_HOST
-            value: "mongodb"
-          - name: SPRING_DATA_MONGODB_PORT
-            value: "27017"
-          - name: SPRING_DATA_MONGODB_DATABASE
-            value: "admindb"
-          - name: SPRING_DATA_MONGODB_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: mongodb-secret
-                key: MONGO_INITDB_ROOT_USERNAME
-
-          - name: SPRING_DATA_MONGODB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: mongodb-secret
-                key: MONGO_INITDB_ROOT_PASSWORD
-
-          # Override RabbitMQ host and port
-          - name: SPRING_RABBITMQ_HOST
-            value: "rabbitmq"
-          - name: SPRING_RABBITMQ_PORT
-            value: "5672"
+        - name: adminservice
+          image: zeyadtarek17/adminservice
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATA_MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: SPRING_MONGO_URI
+            - name: SPRING_RABBITMQ_HOST
+              value: "rabbitmq"
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
