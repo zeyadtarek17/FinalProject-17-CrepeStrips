@@ -16,7 +16,10 @@ public class LoginSessionManager {
 
     private LoginSessionManager() {}
 
-    public static LoginSessionManager getInstance() {
+    public static synchronized LoginSessionManager getInstance() {
+        if(instance == null){
+            new LoginSessionManager();
+        }
         return instance;
     }
 

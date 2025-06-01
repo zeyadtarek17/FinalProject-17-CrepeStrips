@@ -112,9 +112,28 @@ public class OrderService {
         }
 
         Order order = orderOptional.get();
-        OrderStatusStrategy strategy = statusStrategies.getOrDefault(order.getStatus(), new DefaultStatusStrategy());
-        return strategy.getStatusDetails(order);
+        OrderStatus status = order.getStatus();
+
+        try {
+            // Dynamically build the class name
+            String className = "com.crepestrips.orderservice.strategy." + capitalize(status.name().toLowerCase()) + "StatusStrategy";
+
+            // Load the class dynamically and create an instance
+            Class<?> clazz = Class.forName(className);
+            OrderStatusStrategy strategy = (OrderStatusStrategy) clazz.getDeclaredConstructor().newInstance();
+
+            return strategy.getStatusDetails(order);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new DefaultStatusStrategy().getStatusDetails(order);
+        }
     }
+
+    private String capitalize(String str) {
+        if (str == null || str.isEmpty()) return str;
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
 
     @Transactional
     public Order deleteOrder(UUID id) {

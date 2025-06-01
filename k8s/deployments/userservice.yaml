@@ -31,3 +31,12 @@ spec:
                 secretKeyRef:
                   name: postgres-user-secret
                   key: POSTGRES_PASSWORD
+            - name: SPRING_RABBITMQ_HOST
+              value: rabbitmq
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
+            - name: SPRING_RABBITMQ_USERNAME
+              value: guest
+
+            - name: SPRING_RABBITMQ_PASSWORD
+              value : guest
