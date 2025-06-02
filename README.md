@@ -3,7 +3,7 @@
 
 **LeftOverPal** is a distributed microservices-based system designed to connect users with restaurants offering surplus meals at discounted prices. The platform promotes sustainability by reducing daily food waste while providing users access to affordable, end-of-day meals.
 
-This project is developed by 15 students from the German University in Cairo as part of the **Architecture of Massively Scalable Applications – Spring 2025** course. The system features modular services for user management, restaurant operations, food item handling, order processing, and administrative control — each implemented as an independent microservice.
+This project is developed by 15 students from the German University in Cairo as part of the **Architecture of Massively Scalable Applications – Spring 2025** course. The system features modular services for user management, restaurant operations, food item handling, order processing, and administrative control, each implemented as an independent microservice.
 
 ---
 
@@ -50,7 +50,7 @@ This project is developed by 15 students from the German University in Cairo as 
 | **User**        | Singleton, Builder            |
 | **Order**       | Command, Strategy             |
 | **Restaurant**  | Factory, Strategy             |
-| **FoodItem**    | Factory, Observer             |
+| **FoodItem**    | Factory                       |
 | **Admin**       | Command, Observer             |
 
 ---
@@ -59,5 +59,8 @@ This project is developed by 15 students from the German University in Cairo as 
 
 - **RESTful:** All microservices support synchronous HTTP communication  
 - **RabbitMQ (Async):** Used primarily between **User → Order Service**
+
+##  Reflection
+- **Order Service:** Used when checking the status of orders made in different Enums to be returned.  
 
 ---
